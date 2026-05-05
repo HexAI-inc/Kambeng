@@ -1,0 +1,361 @@
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .page { background: #f7f8fa; min-height: 100vh; font-family: var(--font-sans); color: #1a1a1a; }
+
+  .topnav { background: #fff; border-bottom: 1px solid #e8eaed; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+  .nav-brand { font-size: 18px; font-weight: 500; color: #1dc5ff; letter-spacing: -0.3px; }
+  .nav-links { display: flex; align-items: center; gap: 24px; }
+  .nav-link { font-size: 14px; color: #555; cursor: pointer; text-decoration: none; }
+  .nav-link:hover { color: #1a1a1a; }
+  .nav-link.active { color: #1dc5ff; font-weight: 500; }
+  .nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e6f9ff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: #0a9fcc; }
+
+  .layout { display: grid; grid-template-columns: 240px 1fr; gap: 0; min-height: calc(100vh - 56px); }
+
+  .sidebar { background: #fff; border-right: 1px solid #e8eaed; padding: 24px 16px; }
+  .sidebar-section { margin-bottom: 24px; }
+  .sidebar-label { font-size: 11px; font-weight: 500; color: #999; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; padding: 0 8px; }
+  .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; font-size: 14px; color: #444; cursor: pointer; margin-bottom: 2px; }
+  .sidebar-item:hover { background: #f5f5f5; }
+  .sidebar-item.active { background: #e6f9ff; color: #0a9fcc; font-weight: 500; }
+  .sidebar-icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .campaign-mini { background: #f7f8fa; border-radius: 8px; padding: 12px; margin-top: 8px; }
+  .campaign-mini-name { font-size: 13px; font-weight: 500; color: #1a1a1a; margin-bottom: 4px; }
+  .campaign-mini-bar { height: 5px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
+  .campaign-mini-fill { height: 100%; background: #1dc5ff; border-radius: 3px; width: 73%; }
+  .campaign-mini-meta { font-size: 11px; color: #888; }
+
+  .main { padding: 32px 40px; max-width: 860px; }
+
+  .page-header { margin-bottom: 28px; }
+  .breadcrumb { font-size: 13px; color: #888; margin-bottom: 6px; }
+  .breadcrumb span { color: #1dc5ff; cursor: pointer; }
+  .page-title { font-size: 22px; font-weight: 500; color: #1a1a1a; margin-bottom: 4px; }
+  .page-subtitle { font-size: 14px; color: #666; }
+
+  .step-bar { display: flex; align-items: center; gap: 0; margin-bottom: 32px; }
+  .step { display: flex; align-items: center; gap: 8px; }
+  .step-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+  .step-circle.done { background: #1dc5ff; color: #fff; }
+  .step-circle.current { background: #1dc5ff; color: #fff; outline: 3px solid #b3eeff; }
+  .step-circle.pending { background: #e8eaed; color: #999; }
+  .step-label { font-size: 13px; color: #555; white-space: nowrap; }
+  .step-label.current { color: #1a1a1a; font-weight: 500; }
+  .step-connector { flex: 1; height: 1px; background: #e0e0e0; margin: 0 8px; min-width: 20px; }
+  .step-connector.done { background: #1dc5ff; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 13px; font-weight: 500; color: #333; }
+  .form-hint { font-size: 12px; color: #888; }
+  .form-input { width: 100%; padding: 9px 12px; border: 1px solid #d8dce0; border-radius: 8px; font-size: 14px; color: #1a1a1a; background: #fff; outline: none; font-family: var(--font-sans); }
+  .form-input:focus { border-color: #1dc5ff; box-shadow: 0 0 0 3px #e6f9ff; }
+  .form-select { width: 100%; padding: 9px 12px; border: 1px solid #d8dce0; border-radius: 8px; font-size: 14px; color: #1a1a1a; background: #fff; outline: none; font-family: var(--font-sans); cursor: pointer; }
+  .form-select:focus { border-color: #1dc5ff; }
+  .form-textarea { width: 100%; padding: 10px 12px; border: 1px solid #d8dce0; border-radius: 8px; font-size: 14px; color: #1a1a1a; background: #fff; outline: none; font-family: var(--font-sans); resize: vertical; min-height: 90px; line-height: 1.6; }
+  .form-textarea:focus { border-color: #1dc5ff; box-shadow: 0 0 0 3px #e6f9ff; }
+
+  .section-card { background: #fff; border: 1px solid #e8eaed; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .section-card-title { font-size: 15px; font-weight: 500; color: #1a1a1a; margin-bottom: 4px; }
+  .section-card-sub { font-size: 13px; color: #777; margin-bottom: 20px; }
+
+  .upload-zone { border: 1.5px dashed #c8d0d8; border-radius: 10px; padding: 28px 20px; text-align: center; cursor: pointer; background: #fafbfc; transition: border-color 0.15s, background 0.15s; }
+  .upload-zone:hover { border-color: #1dc5ff; background: #f0fdff; }
+  .upload-zone.has-files { border-color: #1dc5ff; background: #f0fdff; }
+  .upload-icon { width: 40px; height: 40px; background: #e6f9ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+  .upload-icon svg { width: 20px; height: 20px; stroke: #0a9fcc; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .upload-title { font-size: 14px; font-weight: 500; color: #333; margin-bottom: 3px; }
+  .upload-sub { font-size: 12px; color: #888; }
+  .upload-sub span { color: #1dc5ff; font-weight: 500; cursor: pointer; }
+
+  .file-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 14px; }
+  .file-thumb { border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; position: relative; background: #f5f5f5; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; }
+  .file-thumb-img { width: 100%; height: 100%; object-fit: cover; }
+  .file-thumb-name { font-size: 10px; color: #666; text-align: center; padding: 0 4px; }
+  .file-remove { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; background: rgba(0,0,0,0.55); border-radius: 50%; border: none; color: #fff; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+  .ledger-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .ledger-table th { text-align: left; font-size: 12px; font-weight: 500; color: #888; padding: 8px 10px; border-bottom: 1px solid #e8eaed; }
+  .ledger-table td { padding: 10px 10px; border-bottom: 1px solid #f0f0f0; color: #333; vertical-align: middle; }
+  .ledger-table tr:last-child td { border-bottom: none; }
+  .ledger-tag { font-size: 11px; padding: 3px 8px; border-radius: 20px; background: #e6f9ff; color: #0a9fcc; }
+  .ledger-add-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #1dc5ff; background: none; border: 1px dashed #b3eeff; border-radius: 8px; padding: 8px 14px; cursor: pointer; margin-top: 10px; width: 100%; justify-content: center; }
+  .ledger-add-btn:hover { background: #f0fdff; }
+
+  .balance-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .bal-card { background: #f7f8fa; border-radius: 8px; padding: 14px 16px; }
+  .bal-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .bal-num { font-size: 20px; font-weight: 500; color: #1a1a1a; }
+  .bal-num.positive { color: #2a8a3e; }
+  .bal-num.wave { color: #0a9fcc; }
+  .bal-num.spent { color: #555; }
+
+  .visibility-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: #f7f8fa; border-radius: 8px; margin-top: 4px; }
+  .vis-check { width: 16px; height: 16px; accent-color: #1dc5ff; margin-top: 2px; flex-shrink: 0; }
+  .vis-text strong { font-size: 14px; font-weight: 500; color: #1a1a1a; display: block; margin-bottom: 2px; }
+  .vis-text span { font-size: 12px; color: #777; }
+
+  .action-row { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; }
+  .btn-secondary { padding: 9px 20px; border: 1px solid #d8dce0; border-radius: 8px; font-size: 14px; color: #444; background: #fff; cursor: pointer; font-family: var(--font-sans); }
+  .btn-secondary:hover { background: #f5f5f5; }
+  .btn-primary { padding: 9px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; color: #fff; background: #1dc5ff; cursor: pointer; font-family: var(--font-sans); }
+  .btn-primary:hover { background: #0aafea; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .tip-box { background: #fffbf0; border: 1px solid #fde4a0; border-radius: 8px; padding: 12px 14px; display: flex; gap: 10px; margin-bottom: 20px; }
+  .tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .tip-text { font-size: 13px; color: #7a5c00; line-height: 1.6; }
+
+  .success-overlay { display: none; background: rgba(0,0,0,0.38); min-height: 500px; align-items: center; justify-content: center; border-radius: 12px; margin-top: 20px; }
+  .success-overlay.show { display: flex; }
+  .success-modal { background: #fff; border-radius: 16px; padding: 40px 32px; text-align: center; max-width: 380px; width: 100%; }
+  .success-check { width: 60px; height: 60px; background: #e6f9ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .success-check svg { width: 28px; height: 28px; stroke: #1dc5ff; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .success-title { font-size: 20px; font-weight: 500; color: #1a1a1a; margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 24px; }
+  .success-btn { background: #1dc5ff; border: none; color: #fff; font-size: 14px; font-weight: 500; padding: 11px 28px; border-radius: 8px; cursor: pointer; }
+</style>
+
+<div class="page" id="root">
+
+  <div class="topnav">
+    <div class="nav-brand">Kambeng</div>
+    <div class="nav-links">
+      <a class="nav-link" href="#">Discover</a>
+      <a class="nav-link active" href="#">My campaigns</a>
+      <a class="nav-link" href="#">Payouts</a>
+      <div class="nav-avatar">OJ</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Campaigns</div>
+        <div class="sidebar-item">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+          Overview
+        </div>
+        <div class="sidebar-item active">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 1v14M1 8h14"/></svg>
+          Post update
+        </div>
+        <div class="sidebar-item">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><path d="M8 5v3l2 2"/></svg>
+          Payout history
+        </div>
+        <div class="sidebar-item">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h8M2 12h5"/></svg>
+          Donors
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Active campaign</div>
+        <div class="campaign-mini">
+          <div class="campaign-mini-name">Rebuild Banjul Primary School</div>
+          <div class="campaign-mini-bar"><div class="campaign-mini-fill"></div></div>
+          <div class="campaign-mini-meta">D36,500 of D50,000 · 73%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="page-header">
+        <div class="breadcrumb"><span>My campaigns</span> › Banjul Primary School › Post update</div>
+        <div class="page-title">Post expenditure update</div>
+        <div class="page-subtitle">Show donors exactly how their money is being used — this builds trust and encourages more contributions.</div>
+      </div>
+
+      <div class="step-bar">
+        <div class="step"><div class="step-circle done">1</div><div class="step-label">Details</div></div>
+        <div class="step-connector done"></div>
+        <div class="step"><div class="step-circle current">2</div><div class="step-label current">Upload proof</div></div>
+        <div class="step-connector"></div>
+        <div class="step"><div class="step-circle pending">3</div><div class="step-label">Ledger</div></div>
+        <div class="step-connector"></div>
+        <div class="step"><div class="step-circle pending">4</div><div class="step-label">Publish</div></div>
+      </div>
+
+      <div class="tip-box">
+        <div class="tip-icon">💡</div>
+        <div class="tip-text">Updates posted within 48 hours of spending funds are 3× more likely to be shared by donors. Include receipts, progress photos, and a short written explanation for maximum trust.</div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-title">Update details</div>
+        <div class="section-card-sub">Describe what was purchased and the current status of the project.</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Update title</label>
+            <input class="form-input" type="text" placeholder="e.g. Cement and foundations complete" value="Cement and foundations complete" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-select">
+              <option>Construction</option>
+              <option>Medical supplies</option>
+              <option>Education materials</option>
+              <option>Labour & services</option>
+              <option>Equipment</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Written update</label>
+            <textarea class="form-textarea" placeholder="Describe what was purchased, how much was spent, and what it achieved...">We purchased 80 bags of cement from Banjul Hardware on March 28 for D12,400. Foundation work on classrooms 1 and 2 is now complete. Next step is the block-laying phase, which begins next week.</textarea>
+            <div class="form-hint">Aim for 2–4 sentences. Be specific about amounts, vendors, and dates.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-title">Upload proof of expenditure</div>
+        <div class="section-card-sub">Upload receipts, invoices, progress photos, or medical documents. Accepted: JPG, PNG, PDF — max 10MB each.</div>
+
+        <div class="upload-zone has-files" id="uploadZone" onclick="triggerUpload()">
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="upload-title">Drop files here or <span>browse</span></div>
+          <div class="upload-sub">Receipts, invoices, site photos, medical bills</div>
+        </div>
+
+        <div class="file-preview-grid" id="previewGrid">
+          <div class="file-thumb">
+            <div style="font-size:28px; margin-bottom:4px;">🧾</div>
+            <div class="file-thumb-name">receipt_01.jpg</div>
+            <button class="file-remove" onclick="removeFile(this)">✕</button>
+          </div>
+          <div class="file-thumb">
+            <div style="font-size:28px; margin-bottom:4px;">🏗️</div>
+            <div class="file-thumb-name">site_progress.jpg</div>
+            <button class="file-remove" onclick="removeFile(this)">✕</button>
+          </div>
+          <div class="file-thumb">
+            <div style="font-size:28px; margin-bottom:4px;">📋</div>
+            <div class="file-thumb-name">invoice_hardware.pdf</div>
+            <button class="file-remove" onclick="removeFile(this)">✕</button>
+          </div>
+          <div class="file-thumb" style="border:1.5px dashed #d0d0d0; background:#fafafa; cursor:pointer;" onclick="triggerUpload()">
+            <div style="font-size:22px; color:#bbb;">+</div>
+            <div class="file-thumb-name" style="color:#aaa;">Add more</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-title">Spending ledger</div>
+        <div class="section-card-sub">Break down exactly how the funds were spent. This is shown publicly to donors.</div>
+
+        <div class="balance-bar">
+          <div class="bal-card"><div class="bal-label">Total received</div><div class="bal-num wave">D36,500</div></div>
+          <div class="bal-card"><div class="bal-label">Spent so far</div><div class="bal-num spent">D12,400</div></div>
+          <div class="bal-card"><div class="bal-label">Remaining</div><div class="bal-num positive">D24,100</div></div>
+        </div>
+
+        <table class="ledger-table">
+          <thead>
+            <tr>
+              <th>Item / description</th>
+              <th>Vendor</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Tag</th>
+            </tr>
+          </thead>
+          <tbody id="ledgerBody">
+            <tr>
+              <td>80 bags of cement</td>
+              <td>Banjul Hardware</td>
+              <td>28 Mar 2026</td>
+              <td style="font-weight:500; color:#1a1a1a;">D9,600</td>
+              <td><span class="ledger-tag">Construction</span></td>
+            </tr>
+            <tr>
+              <td>Labour — foundation team</td>
+              <td>Ceesay & Sons</td>
+              <td>29 Mar 2026</td>
+              <td style="font-weight:500; color:#1a1a1a;">D2,800</td>
+              <td><span class="ledger-tag">Labour</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button class="ledger-add-btn" onclick="addRow()">+ Add line item</button>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-title">Visibility settings</div>
+        <div class="section-card-sub">Choose what donors can see when this update is published.</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div class="visibility-row">
+            <input type="checkbox" class="vis-check" checked />
+            <div class="vis-text"><strong>Show spending ledger publicly</strong><span>Donors can see the itemised breakdown of expenses</span></div>
+          </div>
+          <div class="visibility-row">
+            <input type="checkbox" class="vis-check" checked />
+            <div class="vis-text"><strong>Show uploaded proof documents</strong><span>Receipts and photos will be visible on the campaign page</span></div>
+          </div>
+          <div class="visibility-row">
+            <input type="checkbox" class="vis-check" />
+            <div class="vis-text"><strong>Notify all donors by Wave notification</strong><span>Send an in-app ping to everyone who donated</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-secondary">Save as draft</button>
+        <div style="display:flex; gap:10px;">
+          <button class="btn-secondary">Preview update</button>
+          <button class="btn-primary" onclick="publishUpdate()">Publish update</button>
+        </div>
+      </div>
+
+      <div class="success-overlay" id="successOverlay">
+        <div class="success-modal">
+          <div class="success-check">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="success-title">Update published!</div>
+          <div class="success-sub">Your proof of expenditure is now live on your campaign page. Donors can see exactly how their money is being used.</div>
+          <button class="success-btn" onclick="closeSuccess()">Back to dashboard</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function triggerUpload() {
+    const grid = document.getElementById('previewGrid');
+    const types = ['🧾','📸','📄'];
+    const names = ['receipt_new.jpg','photo_update.jpg','vendor_quote.pdf'];
+    const idx = Math.floor(Math.random() * 3);
+    const addBtn = grid.querySelector('[onclick="triggerUpload()"]');
+    const newThumb = document.createElement('div');
+    newThumb.className = 'file-thumb';
+    newThumb.innerHTML = `<div style="font-size:28px;margin-bottom:4px;">${types[idx]}</div><div class="file-thumb-name">${names[idx]}</div><button class="file-remove" onclick="removeFile(this)">✕</button>`;
+    grid.insertBefore(newThumb, addBtn);
+  }
+  function removeFile(btn) {
+    btn.closest('.file-thumb').remove();
+  }
+  function addRow() {
+    const tbody = document.getElementById('ledgerBody');
+    const items = [['Gravel & sand','Local quarry','30 Mar 2026','D1,200','Construction'],['Nails & fixings','Serekunda Market','30 Mar 2026','D340','Materials']];
+    const r = items[tbody.rows.length % items.length];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td style="font-weight:500;color:#1a1a1a;">${r[3]}</td><td><span class="ledger-tag">${r[4]}</span></td>`;
+    tbody.appendChild(tr);
+  }
+  function publishUpdate() {
+    document.getElementById('successOverlay').classList.add('show');
+  }
+  function closeSuccess() {
+    document.getElementById('successOverlay').classList.remove('show');
+  }
+</script>

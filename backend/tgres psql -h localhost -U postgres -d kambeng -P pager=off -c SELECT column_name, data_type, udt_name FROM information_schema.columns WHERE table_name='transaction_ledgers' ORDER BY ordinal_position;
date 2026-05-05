@@ -1,0 +1,29 @@
+                                                                      Table "public.transaction_ledgers"
+       Column        |           Type           | Collation | Nullable |                     Default                     | Storage  | Compression | Stats target | Description 
+---------------------+--------------------------+-----------+----------+-------------------------------------------------+----------+-------------+--------------+-------------
+ id                  | integer                  |           | not null | nextval('transaction_ledgers_id_seq'::regclass) | plain    |             |              | 
+ campaign_id         | integer                  |           | not null |                                                 | plain    |             |              | 
+ transaction_type    | character varying        |           | not null |                                                 | extended |             |              | 
+ status              | character varying        |           | not null |                                                 | extended |             |              | 
+ gross_amount        | double precision         |           | not null |                                                 | plain    |             |              | 
+ hexai_fee           | double precision         |           |          | '0'::double precision                           | plain    |             |              | 
+ platform_commission | double precision         |           |          | '0'::double precision                           | plain    |             |              | 
+ net_amount          | double precision         |           | not null |                                                 | plain    |             |              | 
+ external_reference  | character varying        |           |          |                                                 | extended |             |              | 
+ description         | character varying        |           |          |                                                 | extended |             |              | 
+ created_by_user_id  | integer                  |           |          |                                                 | plain    |             |              | 
+ created_at          | timestamp with time zone |           | not null | now()                                           | plain    |             |              | 
+ updated_at          | timestamp with time zone |           | not null | now()                                           | plain    |             |              | 
+ confirmed_at        | timestamp with time zone |           |          |                                                 | plain    |             |              | 
+Indexes:
+    "transaction_ledgers_pkey" PRIMARY KEY, btree (id)
+    "ix_transaction_ledgers_campaign_id" btree (campaign_id)
+    "ix_transaction_ledgers_created_at" btree (created_at)
+    "ix_transaction_ledgers_external_reference" btree (external_reference)
+    "ix_transaction_ledgers_status" btree (status)
+    "ix_transaction_ledgers_transaction_type" btree (transaction_type)
+Foreign-key constraints:
+    "transaction_ledgers_campaign_id_fkey" FOREIGN KEY (campaign_id) REFERENCES campaigns(id)
+    "transaction_ledgers_created_by_user_id_fkey" FOREIGN KEY (created_by_user_id) REFERENCES users(id)
+Access method: heap
+

@@ -1,0 +1,528 @@
+{
+  "total": 74,
+  "pass": 39,
+  "skip": 28,
+  "warn": 7,
+  "fail": 0,
+  "failed_endpoints": [],
+  "results": [
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status_code": 400,
+      "outcome": "WARN",
+      "detail": "Unexpected status: 400"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status_code": 422,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 422"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status_code": 422,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 422"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/request-password-reset",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/reset-password",
+      "status_code": 400,
+      "outcome": "WARN",
+      "detail": "Unexpected status: 400"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/request-email-verification",
+      "status_code": 400,
+      "outcome": "WARN",
+      "detail": "Unexpected status: 400"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify-email",
+      "status_code": 400,
+      "outcome": "WARN",
+      "detail": "Unexpected status: 400"
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "POST",
+      "path": "/api/campaigns/",
+      "status_code": 422,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 422"
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/me",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/{slug}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/campaigns/{slug}",
+      "status_code": 422,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 422"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/campaigns/{slug}/status",
+      "status_code": 400,
+      "outcome": "WARN",
+      "detail": "Unexpected status: 400"
+    },
+    {
+      "method": "GET",
+      "path": "/api/campaigns/{slug}/donations",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "POST",
+      "path": "/api/payments/admin/donations/{client_reference}/approve",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "POST",
+      "path": "/api/payments/admin/donations/{client_reference}/reject",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "POST",
+      "path": "/api/payments/donate",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "POST",
+      "path": "/api/payments/withdraw",
+      "status_code": 403,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 403"
+    },
+    {
+      "method": "POST",
+      "path": "/api/webhooks/hexai",
+      "status_code": 401,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 401"
+    },
+    {
+      "method": "GET",
+      "path": "/api/uploads/proofs/{slug}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "POST",
+      "path": "/api/uploads/proofs/{slug}",
+      "status_code": 422,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 422"
+    },
+    {
+      "method": "GET",
+      "path": "/api/uploads/campaigns/{slug}/images",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "POST",
+      "path": "/api/uploads/campaigns/{slug}/images",
+      "status_code": 422,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 422"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/uploads/campaigns/{slug}/images/{file_name}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reviews/campaigns/{slug}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "POST",
+      "path": "/api/reviews/campaigns/{slug}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/reviews/{review_id}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/reviews/admin/{review_id}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "POST",
+      "path": "/api/kyc/submit",
+      "status_code": 422,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 422"
+    },
+    {
+      "method": "GET",
+      "path": "/api/kyc/status",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/aliases/campaigns/{campaign_id}",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "POST",
+      "path": "/api/aliases/campaigns/{campaign_id}",
+      "status_code": 400,
+      "outcome": "WARN",
+      "detail": "Unexpected status: 400"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/aliases/campaigns/{campaign_id}/{alias_id}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "GET",
+      "path": "/api/aliases/redirect/{short_code}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/campaigns",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/campaigns/{slug}/status",
+      "status_code": 400,
+      "outcome": "WARN",
+      "detail": "Unexpected status: 400"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/reviews",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/reviews/{review_id}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/kyc/queue",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/kyc/{submission_id}/approve",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/kyc/{submission_id}/reject",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/reports/transactions",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/reports/summary",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/reports/campaign/{campaign_id}",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/audit-logs",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/users/overview",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/payouts/overview",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/system/stats",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "POST",
+      "path": "/api/moderation/reports",
+      "status_code": 422,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 422"
+    },
+    {
+      "method": "GET",
+      "path": "/api/moderation/reports/queue",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/moderation/reports/{report_id}",
+      "status_code": 404,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 404"
+    },
+    {
+      "method": "POST",
+      "path": "/api/moderation/reports/{report_id}/resolve",
+      "status_code": 422,
+      "outcome": "SKIP",
+      "detail": "Expected/acceptable non-success: 422"
+    },
+    {
+      "method": "GET",
+      "path": "/api/moderation/stats",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/search",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/bootstrap",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/filter-options",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/me-summary",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/admin-summary",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/suggestions",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/home-feed",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/counts",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/v1/contract",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/v1/bootstrap",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/v1/filter-options",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/v1/home-feed",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/v1/counts",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/v1/me-summary",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/v1/admin-summary",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/utils/frontend/v1/suggestions",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/logs",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/api/monitor",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "status_code": 200,
+      "outcome": "PASS",
+      "detail": "Success: 200"
+    }
+  ]
+}

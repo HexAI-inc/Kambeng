@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, rgba(29,197,255,0.1), rgba(255,255,255,0.95));
+            padding: 32px 24px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #1dc5ff;
+            font-weight: 600;
+        }
+        .content {
+            padding: 32px 24px;
+        }
+        .greeting {
+            font-size: 16px;
+            color: #333;
+            margin: 0 0 16px 0;
+        }
+        .campaign-section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #1dc5ff;
+        }
+        .campaign-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 0 0 8px 0;
+        }
+        .campaign-amount {
+            font-size: 14px;
+            color: #666;
+            margin: 8px 0;
+        }
+        .amount-highlight {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1dc5ff;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #1dc5ff;
+            color: #ffffff;
+            padding: 14px 32px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 16px 0;
+            cursor: pointer;
+            border: none;
+        }
+        .cta-button:hover {
+            background-color: #17a8d0;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #e0e0e0;
+            line-height: 1.6;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 24px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Monthly Donation Reminder</h1>
+        </div>
+        
+        <div class="content">
+            <p class="greeting">Hi {{ donor_name }},</p>
+            
+            <p>It's time for your monthly donation to support <strong>{{ campaign_title }}</strong>. Your recurring donation makes a real difference!</p>
+            
+            <div class="campaign-section">
+                <div class="campaign-title">{{ campaign_title }}</div>
+                <div class="campaign-amount">Amount due: <span class="amount-highlight">{{ amount }} GMD</span></div>
+                <div class="campaign-amount">Frequency: {{ frequency }}</div>
+            </div>
+            
+            <p>Ready to make your impact? Click the button below to complete your donation:</p>
+            
+            <center>
+                <a href="{{ payment_link }}" class="cta-button">Pay Now</a>
+            </center>
+            
+            <p style="font-size: 14px; color: #666; margin-top: 16px;">Or copy this link in your browser: <br><code style="background: #f5f5f5; padding: 4px 8px; border-radius: 3px; word-break: break-all;">{{ payment_link }}</code></p>
+            
+            <div class="divider"></div>
+            
+            <p style="font-size: 14px; color: #666;">Thank you for being a consistent supporter of {{ campaign_title }}. Your donations enable real change in our community.</p>
+            
+            <div class="footer-text">
+                <p><strong>Need help?</strong> If you have any issues with your payment, please reply to this email or visit our support page.</p>
+                <p>If you'd like to modify or cancel this recurring donation, you can manage it anytime in your Kambeng dashboard.</p>
+                <p style="margin-top: 20px; color: #bbb;">© 2026 Kambeng. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

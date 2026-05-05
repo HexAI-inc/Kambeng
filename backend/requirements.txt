@@ -1,0 +1,21 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0.post1
+sqlalchemy==2.0.23
+aiosqlite==0.19.0      # Async SQLite (Keep it as a fallback)
+asyncpg==0.29.0        # Async PostgreSQL string support
+pydantic[email]==2.5.2
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+httpx==0.25.2          # For HexAI Payment Gateway requests
+boto3==1.33.4          # For DigitalOcean Spaces (Proof of Expenditure)
+qrcode==7.4.2          # For QR Code generation
+Pillow==10.1.0         # Image processing for QR codes
+passlib[bcrypt]==1.7.4 # For secure passwords
+PyJWT==2.8.0           # For Authentication
+alembic==1.13.1        # Database Migrations
+python-multipart==0.0.6 # For accepting file uploads (Proof of Expenditure)
+resend==0.8.0
+apscheduler==3.10.4    # For scheduled background jobs (recurring donations)
+cryptography==42.0.8   # For field-level encryption of sensitive data
+pytest==8.3.5
+pytest-asyncio==0.25.3

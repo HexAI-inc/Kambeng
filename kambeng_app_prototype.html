@@ -1,0 +1,401 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); background: transparent; }
+  :root { --wave: #1dc5ff; --wave-dark: #0a9fcc; --wave-light: #e6f9ff; --wave-text: #004d66; }
+
+  .app-shell { max-width: 420px; margin: 0 auto; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-xl); overflow: hidden; min-height: 700px; display: flex; flex-direction: column; }
+
+  .topbar { background: var(--wave); padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-logo { font-size: 20px; font-weight: 500; color: #fff; letter-spacing: -0.3px; }
+  .topbar-sub { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 1px; }
+  .topbar-btn { background: rgba(255,255,255,0.22); border: none; color: #fff; font-size: 12px; padding: 5px 12px; border-radius: 20px; cursor: pointer; }
+
+  .nav-tabs { display: flex; border-bottom: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); }
+  .nav-tab { flex: 1; text-align: center; padding: 10px 4px; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .nav-tab.active { color: var(--wave-text); border-bottom-color: var(--wave); font-weight: 500; }
+
+  .screen { flex: 1; overflow-y: auto; padding: 0; display: none; }
+  .screen.active { display: block; }
+
+  /* HOME SCREEN */
+  .hero-search { background: var(--wave-light); padding: 16px; }
+  .hero-search input { width: 100%; padding: 10px 14px; border: 0.5px solid #b3eeff; border-radius: 20px; font-size: 14px; background: #fff; color: var(--color-text-primary); outline: none; }
+  .hero-search input::placeholder { color: var(--color-text-secondary); }
+  .section-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); padding: 14px 16px 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .campaign-card { margin: 0 16px 16px; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); overflow: hidden; background: var(--color-background-primary); cursor: pointer; }
+  .campaign-img { width: 100%; height: 160px; object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+  .campaign-img.edu { background: linear-gradient(135deg, #e8f4fd, #cce8f7); }
+  .campaign-img.med { background: linear-gradient(135deg, #fde8e8, #f7cccc); }
+  .campaign-img.farm { background: linear-gradient(135deg, #e8f7e8, #ccf0cc); }
+  .campaign-body { padding: 12px 14px 14px; }
+  .campaign-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+  .campaign-desc { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 10px; line-height: 1.5; }
+  .progress-track { height: 6px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+  .progress-fill { height: 100%; border-radius: 3px; background: var(--wave); transition: width 0.6s ease; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; }
+  .progress-raised { color: var(--wave-text); font-weight: 500; }
+  .progress-goal { color: var(--color-text-secondary); }
+  .donate-btn { width: 100%; margin-top: 12px; background: var(--wave); border: none; color: #fff; font-size: 14px; font-weight: 500; padding: 11px; border-radius: 10px; cursor: pointer; letter-spacing: 0.1px; }
+  .donate-btn:active { background: var(--wave-dark); }
+
+  .badge-row { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 16px 12px; }
+  .badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 400; }
+  .badge-edu { background: #e8f4fd; color: #185FA5; }
+  .badge-med { background: #FCEBEB; color: #A32D2D; }
+  .badge-farm { background: #EAF3DE; color: #3B6D11; }
+  .badge-anon { background: var(--color-background-secondary); color: var(--color-text-secondary); }
+
+  /* CAMPAIGN PAGE */
+  .camp-hero { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; font-size: 60px; background: linear-gradient(135deg, #e8f4fd, #cce8f7); }
+  .camp-body { padding: 16px; }
+  .camp-title { font-size: 20px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; }
+  .camp-creator { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 14px; }
+  .camp-creator span { color: var(--wave-text); font-weight: 500; }
+  .big-progress { height: 10px; background: var(--color-background-secondary); border-radius: 5px; overflow: hidden; margin-bottom: 10px; }
+  .big-progress-fill { height: 100%; border-radius: 5px; background: var(--wave); }
+  .fund-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .fund-stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 8px; text-align: center; }
+  .fund-stat-num { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+  .fund-stat-lbl { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  .big-donate-btn { width: 100%; background: var(--wave); border: none; color: #fff; font-size: 16px; font-weight: 500; padding: 14px; border-radius: 12px; cursor: pointer; margin-bottom: 12px; }
+  .qr-section { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .qr-box { width: 64px; height: 64px; background: #fff; border: 0.5px solid var(--color-border-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .qr-inner { display: grid; grid-template-columns: repeat(5,10px); grid-template-rows: repeat(5,10px); gap: 1px; }
+  .qr-cell { border-radius: 1px; }
+  .qr-dark { background: #111; }
+  .qr-light { background: #eee; }
+  .qr-text h4 { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .qr-text p { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .camp-story { font-size: 14px; color: var(--color-text-secondary); line-height: 1.7; margin-bottom: 16px; }
+  .proof-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .proof-imgs { display: flex; gap: 8px; }
+  .proof-thumb { width: 72px; height: 72px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-secondary); }
+
+  /* DONATE SCREEN */
+  .donate-screen { padding: 16px; }
+  .donate-screen h2 { font-size: 18px; font-weight: 500; margin-bottom: 4px; color: var(--color-text-primary); }
+  .donate-screen .sub { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 20px; }
+  .amount-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .amt-btn { border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 10px; text-align: center; font-size: 14px; font-weight: 500; color: var(--color-text-primary); cursor: pointer; background: var(--color-background-primary); }
+  .amt-btn.selected { border-color: var(--wave); background: var(--wave-light); color: var(--wave-text); }
+  .field-label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 6px; }
+  .field-input { width: 100%; padding: 10px 14px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 14px; color: var(--color-text-primary); background: var(--color-background-primary); outline: none; margin-bottom: 14px; }
+  .anon-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .anon-row input { width: 16px; height: 16px; accent-color: var(--wave); }
+  .anon-row label { font-size: 14px; color: var(--color-text-secondary); }
+  .fee-note { background: var(--wave-light); border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 12px; color: var(--wave-text); margin-bottom: 16px; }
+  .wave-pay-btn { width: 100%; background: var(--wave); border: none; color: #fff; font-size: 16px; font-weight: 500; padding: 14px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+  /* DASHBOARD SCREEN */
+  .dash-screen { padding: 16px; }
+  .dash-welcome { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+  .dash-sub { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 16px; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .stat-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; }
+  .stat-num { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+  .stat-num.wave-colored { color: var(--wave-dark); }
+  .stat-lbl { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .my-campaigns-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .dash-campaign-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .dash-thumb { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .dash-camp-info { flex: 1; }
+  .dash-camp-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+  .dash-camp-prog { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .dash-mini-bar { height: 4px; background: var(--color-background-secondary); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .dash-mini-fill { height: 100%; border-radius: 2px; background: var(--wave); }
+  .withdraw-btn { font-size: 12px; background: var(--wave-light); color: var(--wave-text); border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; white-space: nowrap; font-weight: 500; }
+  .update-btn { width: 100%; margin-top: 16px; border: 0.5px solid var(--wave); color: var(--wave-text); background: transparent; font-size: 14px; padding: 11px; border-radius: 10px; cursor: pointer; }
+
+  /* ADMIN SCREEN */
+  .admin-screen { padding: 16px; }
+  .admin-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .admin-badge { background: #FCEBEB; color: #A32D2D; font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+  .admin-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+  .admin-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .full-width { grid-column: 1 / -1; }
+  .admin-stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; }
+  .admin-stat-num { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+  .admin-stat-lbl { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .revenue-num { color: #3B6D11; }
+  .table-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .admin-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .admin-table th { text-align: left; color: var(--color-text-secondary); font-weight: 400; padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .admin-table td { padding: 9px 0; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+  .status-pill { font-size: 11px; padding: 3px 8px; border-radius: 20px; }
+  .status-active { background: #EAF3DE; color: #3B6D11; }
+  .status-suspended { background: #FCEBEB; color: #A32D2D; }
+  .status-pending { background: #FAEEDA; color: #854F0B; }
+  .action-btn { font-size: 11px; background: none; border: 0.5px solid var(--color-border-secondary); border-radius: 6px; padding: 3px 8px; cursor: pointer; color: var(--color-text-secondary); }
+
+  /* DONATE SUCCESS */
+  .success-screen { padding: 32px 16px; text-align: center; display: none; }
+  .success-screen.active { display: block; }
+  .success-icon { width: 72px; height: 72px; background: var(--wave-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 32px; }
+  .success-title { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 24px; }
+  .rating-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
+  .star { font-size: 28px; cursor: pointer; color: #ccc; transition: color 0.1s; }
+  .star.lit { color: #EF9F27; }
+  .back-btn { background: var(--wave); border: none; color: #fff; font-size: 14px; padding: 12px 32px; border-radius: 10px; cursor: pointer; }
+</style>
+
+<div class="app-shell" id="app">
+  <div class="topbar">
+    <div>
+      <div class="topbar-logo">Kambeng</div>
+      <div class="topbar-sub">Community Crowdfunding</div>
+    </div>
+    <button class="topbar-btn" onclick="showScreen('create')">+ Start campaign</button>
+  </div>
+
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="switchTab('home', this)">Discover</div>
+    <div class="nav-tab" onclick="switchTab('campaign', this)">Campaign</div>
+    <div class="nav-tab" onclick="switchTab('dashboard', this)">My Dashboard</div>
+    <div class="nav-tab" onclick="switchTab('admin', this)">Admin</div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen active" id="screen-home">
+    <div class="hero-search">
+      <input type="text" placeholder="Search campaigns in The Gambia..." />
+    </div>
+    <div class="badge-row">
+      <span class="badge badge-edu">Education</span>
+      <span class="badge badge-med">Medical</span>
+      <span class="badge badge-farm">Agriculture</span>
+      <span class="badge badge-anon">Community</span>
+    </div>
+    <div class="section-title">Trending now</div>
+
+    <div class="campaign-card" onclick="switchTabById('campaign')">
+      <div class="campaign-img edu" style="font-size:48px;">🏫</div>
+      <div class="campaign-body">
+        <div class="campaign-title">Rebuild Banjul Primary School</div>
+        <div class="campaign-desc">Help us restore classrooms and provide desks for 300 children in Banjul.</div>
+        <div class="progress-track"><div class="progress-fill" style="width:73%"></div></div>
+        <div class="progress-meta">
+          <span class="progress-raised">D36,500 raised</span>
+          <span class="progress-goal">of D50,000</span>
+        </div>
+        <button class="donate-btn">Donate with Wave</button>
+      </div>
+    </div>
+
+    <div class="campaign-card">
+      <div class="campaign-img med" style="font-size:48px;">🏥</div>
+      <div class="campaign-body">
+        <div class="campaign-title">Fatou's surgery fund</div>
+        <div class="campaign-desc">Fatou needs urgent heart surgery. Her family needs your support.</div>
+        <div class="progress-track"><div class="progress-fill" style="width:42%"></div></div>
+        <div class="progress-meta">
+          <span class="progress-raised">D21,000 raised</span>
+          <span class="progress-goal">of D50,000</span>
+        </div>
+        <button class="donate-btn">Donate with Wave</button>
+      </div>
+    </div>
+
+    <div class="campaign-card">
+      <div class="campaign-img farm" style="font-size:48px;">🌱</div>
+      <div class="campaign-body">
+        <div class="campaign-title">Brikama Women's Farm Cooperative</div>
+        <div class="campaign-desc">Irrigation equipment for 40 farming families in rural Brikama.</div>
+        <div class="progress-track"><div class="progress-fill" style="width:88%"></div></div>
+        <div class="progress-meta">
+          <span class="progress-raised">D17,600 raised</span>
+          <span class="progress-goal">of D20,000</span>
+        </div>
+        <button class="donate-btn">Donate with Wave</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMPAIGN PAGE -->
+  <div class="screen" id="screen-campaign">
+    <div class="camp-hero">🏫</div>
+    <div class="camp-body">
+      <div class="camp-title">Rebuild Banjul Primary School</div>
+      <div class="camp-creator">by <span>Ousman Jallow</span> · Banjul, The Gambia</div>
+      <div class="big-progress"><div class="big-progress-fill" id="bigBar" style="width:73%"></div></div>
+      <div class="fund-stats">
+        <div class="fund-stat"><div class="fund-stat-num" style="color:var(--wave-dark)">D36,500</div><div class="fund-stat-lbl">raised</div></div>
+        <div class="fund-stat"><div class="fund-stat-num">D50,000</div><div class="fund-stat-lbl">goal</div></div>
+        <div class="fund-stat"><div class="fund-stat-num">142</div><div class="fund-stat-lbl">donors</div></div>
+      </div>
+      <button class="big-donate-btn" onclick="switchTabById('donate')">Donate with Wave</button>
+      <div class="qr-section">
+        <div class="qr-box">
+          <div class="qr-inner">
+            <div class="qr-cell qr-dark"></div><div class="qr-cell qr-dark"></div><div class="qr-cell qr-dark"></div><div class="qr-cell qr-light"></div><div class="qr-cell qr-dark"></div>
+            <div class="qr-cell qr-dark"></div><div class="qr-cell qr-light"></div><div class="qr-cell qr-dark"></div><div class="qr-cell qr-dark"></div><div class="qr-cell qr-light"></div>
+            <div class="qr-cell qr-dark"></div><div class="qr-cell qr-light"></div><div class="qr-cell qr-light"></div><div class="qr-cell qr-dark"></div><div class="qr-cell qr-dark"></div>
+            <div class="qr-cell qr-light"></div><div class="qr-cell qr-dark"></div><div class="qr-cell qr-dark"></div><div class="qr-cell qr-light"></div><div class="qr-cell qr-dark"></div>
+            <div class="qr-cell qr-dark"></div><div class="qr-cell qr-light"></div><div class="qr-cell qr-dark"></div><div class="qr-cell qr-dark"></div><div class="qr-cell qr-light"></div>
+          </div>
+        </div>
+        <div class="qr-text"><h4>Share or print this QR</h4><p>Scan to donate instantly via Wave. Print for posters & WhatsApp flyers.</p></div>
+      </div>
+      <p class="camp-story">300 students at Banjul Primary School have been learning in damaged classrooms since the 2022 storms. We need to rebuild 4 classrooms, replace 120 desks, and install a clean water point. Every dalasi goes directly to materials and labour. See proof of expenditure below.</p>
+      <div class="proof-title">Proof of expenditure</div>
+      <div class="proof-imgs">
+        <div class="proof-thumb">🧾</div>
+        <div class="proof-thumb">🏗️</div>
+        <div class="proof-thumb">📋</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DONATE -->
+  <div class="screen" id="screen-donate">
+    <div class="donate-screen">
+      <h2>Donate to Banjul School</h2>
+      <p class="sub">Choose an amount in Gambian Dalasi</p>
+      <div class="amount-grid">
+        <div class="amt-btn selected" onclick="selectAmt(this)">D50</div>
+        <div class="amt-btn" onclick="selectAmt(this)">D100</div>
+        <div class="amt-btn" onclick="selectAmt(this)">D250</div>
+        <div class="amt-btn" onclick="selectAmt(this)">D500</div>
+        <div class="amt-btn" onclick="selectAmt(this)">D1,000</div>
+        <div class="amt-btn" onclick="selectAmt(this)">Custom</div>
+      </div>
+      <div class="field-label">Your name (optional)</div>
+      <input class="field-input" type="text" placeholder="e.g. Aminata Ceesay" />
+      <div class="field-label">Leave a message</div>
+      <input class="field-input" type="text" placeholder="e.g. Stay strong, Banjul!" />
+      <div class="anon-row">
+        <input type="checkbox" id="anon" />
+        <label for="anon">Donate anonymously</label>
+      </div>
+      <div class="fee-note">Platform fee: 2% · D1.00 · You donate D50, campaign receives D49.00</div>
+      <button class="wave-pay-btn" onclick="showSuccess()">
+        <span style="font-size:18px;">📱</span> Open Wave to pay D50
+      </button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="screen" id="screen-success">
+    <div style="padding: 32px 16px; text-align: center;">
+      <div class="success-icon">✓</div>
+      <div class="success-title">Payment sent!</div>
+      <div class="success-sub">Your donation of <strong>D50</strong> to <strong>Banjul Primary School</strong> was received. The progress bar has updated in real-time.</div>
+      <div style="font-size:13px; color:var(--color-text-secondary); margin-bottom:12px;">Rate this campaign</div>
+      <div class="rating-row" id="stars">
+        <span class="star" onclick="rate(1)">★</span>
+        <span class="star" onclick="rate(2)">★</span>
+        <span class="star" onclick="rate(3)">★</span>
+        <span class="star" onclick="rate(4)">★</span>
+        <span class="star" onclick="rate(5)">★</span>
+      </div>
+      <button class="back-btn" onclick="switchTabById('home')">Back to discover</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="screen" id="screen-dashboard">
+    <div class="dash-screen">
+      <div class="dash-welcome">Welcome back, Ousman</div>
+      <div class="dash-sub">Your fundraising overview</div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num wave-colored">D36,500</div><div class="stat-lbl">Total raised</div></div>
+        <div class="stat-card"><div class="stat-num">D35,770</div><div class="stat-lbl">Available (after 2%)</div></div>
+        <div class="stat-card"><div class="stat-num">142</div><div class="stat-lbl">Donors</div></div>
+        <div class="stat-card"><div class="stat-num">73%</div><div class="stat-lbl">Goal progress</div></div>
+      </div>
+      <div class="my-campaigns-title">My campaigns</div>
+      <div class="dash-campaign-row">
+        <div class="dash-thumb edu">🏫</div>
+        <div class="dash-camp-info">
+          <div class="dash-camp-name">Rebuild Banjul Primary School</div>
+          <div class="dash-camp-prog">D36,500 / D50,000 · Active</div>
+          <div class="dash-mini-bar"><div class="dash-mini-fill" style="width:73%"></div></div>
+        </div>
+        <button class="withdraw-btn">Withdraw</button>
+      </div>
+      <div class="dash-campaign-row">
+        <div class="dash-thumb farm">🌱</div>
+        <div class="dash-camp-info">
+          <div class="dash-camp-name">School garden project</div>
+          <div class="dash-camp-prog">D4,200 / D10,000 · Active</div>
+          <div class="dash-mini-bar"><div class="dash-mini-fill" style="width:42%"></div></div>
+        </div>
+        <button class="withdraw-btn">Withdraw</button>
+      </div>
+      <button class="update-btn" onclick="sendPrompt('I want to post a proof of expenditure update for my Kambeng campaign. What should I include?')">+ Post expenditure update ↗</button>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="screen" id="screen-admin">
+    <div class="admin-screen">
+      <div class="admin-header">
+        <div class="admin-title">Superadmin portal</div>
+        <span class="admin-badge">Owner</span>
+      </div>
+      <div class="admin-stat-grid">
+        <div class="admin-stat full-width"><div class="admin-stat-num revenue-num">D2,847</div><div class="admin-stat-lbl">Platform revenue (2% fees)</div></div>
+        <div class="admin-stat"><div class="admin-stat-num">D142,350</div><div class="admin-stat-lbl">Total volume processed</div></div>
+        <div class="admin-stat"><div class="admin-stat-num">23</div><div class="admin-stat-lbl">Active campaigns</div></div>
+        <div class="admin-stat"><div class="admin-stat-num">1,204</div><div class="admin-stat-lbl">Total donors</div></div>
+        <div class="admin-stat"><div class="admin-stat-num" style="color:#A32D2D">2</div><div class="admin-stat-lbl">Reported campaigns</div></div>
+      </div>
+      <div class="table-title">Campaign moderation</div>
+      <table class="admin-table">
+        <thead>
+          <tr><th>Campaign</th><th>Raised</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Banjul School</td><td>D36,500</td><td><span class="status-pill status-active">Active</span></td><td><button class="action-btn" onclick="suspendRow(this)">Suspend</button></td></tr>
+          <tr><td>Fatou Surgery</td><td>D21,000</td><td><span class="status-pill status-active">Active</span></td><td><button class="action-btn" onclick="suspendRow(this)">Suspend</button></td></tr>
+          <tr><td>Fake charity XYZ</td><td>D3,200</td><td><span class="status-pill status-pending">Flagged</span></td><td><button class="action-btn" onclick="suspendRow(this)">Suspend</button></td></tr>
+          <tr><td>Old campaign</td><td>D900</td><td><span class="status-pill status-suspended">Suspended</span></td><td><button class="action-btn">Restore</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchTab(name, el) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+  }
+  function switchTabById(name) {
+    const tabs = document.querySelectorAll('.nav-tab');
+    const screens = ['home','campaign','dashboard','admin'];
+    const donateSpecial = name === 'donate' || name === 'success';
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    if (!donateSpecial) {
+      tabs.forEach(t => t.classList.remove('active'));
+      const idx = screens.indexOf(name);
+      if (idx >= 0) tabs[idx].classList.add('active');
+    }
+  }
+  function selectAmt(el) {
+    document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function showSuccess() {
+    switchTabById('success');
+    const bar = document.getElementById('bigBar');
+    if (bar) bar.style.width = '74.1%';
+  }
+  function rate(n) {
+    document.querySelectorAll('.star').forEach((s, i) => {
+      s.classList.toggle('lit', i < n);
+    });
+  }
+  function suspendRow(btn) {
+    const pill = btn.closest('tr').querySelector('.status-pill');
+    pill.className = 'status-pill status-suspended';
+    pill.textContent = 'Suspended';
+    btn.textContent = 'Restore';
+  }
+  function showScreen(s) { switchTabById(s === 'create' ? 'dashboard' : s); }
+</script>

@@ -221,6 +221,38 @@ curl -X DELETE "http://localhost:8001/api/uploads/campaigns/<slug>/images/<file_
 
 Uploaded files are stored under `backend/uploads/campaigns/<campaign_id>/` and served from `/uploads/...`.
 
+## Using DigitalOcean Spaces for media
+
+This project supports using DigitalOcean Spaces (S3-compatible) to store campaign images and KYC documents.
+
+1. Create a Space in the DigitalOcean control panel (for example: `hexaistorage` in region `lon1`).
+2. Set the following environment variables in `backend/.env` (or provide via your deployment environment):
+
+```
+STORAGE_STRATEGY=do_spaces
+DO_SPACES_KEY=your_spaces_key_here
+DO_SPACES_SECRET=your_spaces_secret_here
+DO_SPACES_REGION=lon1
+DO_SPACES_BUCKET=hexaistorage
+# Recommended: region endpoint
+DO_SPACES_ENDPOINT=https://lon1.digitaloceanspaces.com
+```
+
+Notes on endpoints and URL generation:
+- If you set `DO_SPACES_ENDPOINT` to the region endpoint (e.g. `https://lon1.digitaloceanspaces.com`), the backend will construct object URLs as `https://lon1.digitaloceanspaces.com/{bucket}/{key}`.
+- If you set `DO_SPACES_ENDPOINT` to the bucket subdomain endpoint (e.g. `https://hexaistorage.lon1.digitaloceanspaces.com`) the backend will construct URLs as `https://hexaistorage.lon1.digitaloceanspaces.com/{key}`.
+
+Make sure the Space has the appropriate ACL/CORS configuration. If you want files to be publicly accessible from the browser, mark the Space (or the uploaded objects) as public.
+
+Example: upload campaign images using the existing API (replace `<TOKEN>` and `<slug>`):
+
+```bash
+curl -X POST "http://localhost:8001/api/uploads/campaigns/<slug>/images" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -F "files=@/absolute/path/image1.jpg"
+```
+
+
 Legacy media migration helper:
 
 ```bash

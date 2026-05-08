@@ -1,7 +1,7 @@
 from typing import List, Optional
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import and_, cast, String
@@ -16,9 +16,10 @@ from app.models.audit_log import AdminAuditLog, AuditActionType
 from app.models.payout import Payout
 from app.models.ledger import TransactionLedger, TransactionType, TransactionStatus
 from app.schemas.campaign import CampaignRead
-from app.schemas.kyc import KYCRead
+from app.schemas.kyc import KYCRead, KYCRejectRequest
 from app.schemas.review import ReviewRead
 from app.schemas.audit import AdminAuditLogRead, UserOverviewItem, PayoutOverviewItem, AdminSystemStats
+from app.schemas.commissions import CommissionSummary, CommissionSourceItem, AdminCommissionWithdrawalRequest, AdminCommissionWithdrawalResponse
 from sqlalchemy import func
 
 
@@ -39,6 +40,20 @@ async def list_all_campaigns(
 
     result = await db.execute(query.order_by(Campaign.created_at.desc()).offset(skip).limit(limit))
     return result.scalars().all()
+
+
+@router.get("/campaigns/{campaign_id}", response_model=CampaignRead)
+async def get_campaign_detail(
+    campaign_id: int,
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Get campaign details by ID."""
+    result = await db.execute(select(Campaign).where(Campaign.id == campaign_id))
+    campaign = result.scalars().first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    return campaign
 
 
 @router.patch("/campaigns/{slug}/status")
@@ -156,6 +171,20 @@ async def list_kyc_queue(
     return result.scalars().all()
 
 
+@router.get("/kyc/{submission_id}", response_model=KYCRead)
+async def get_kyc_detail(
+    submission_id: int,
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Get KYC submission details by ID."""
+    result = await db.execute(select(KYC).where(KYC.id == submission_id))
+    submission = result.scalars().first()
+    if not submission:
+        raise HTTPException(status_code=404, detail="KYC submission not found")
+    return submission
+
+
 @router.post("/kyc/{submission_id}/approve", response_model=KYCRead)
 async def approve_kyc(
     submission_id: int,
@@ -202,11 +231,12 @@ async def approve_kyc(
 @router.post("/kyc/{submission_id}/reject")
 async def reject_kyc(
     submission_id: int,
-    rejection_reason: str,
+    payload: KYCRejectRequest = Body(...),
     db: AsyncSession = Depends(get_db),
     admin_user: User = Depends(get_admin_user),
 ):
-    """Reject a KYC submission."""
+    """Reject a KYC submission. Accepts JSON body `{rejection_reason: str}`."""
+    rejection_reason = payload.rejection_reason
     if not rejection_reason or not rejection_reason.strip():
         raise HTTPException(status_code=400, detail="rejection_reason is required")
     
@@ -514,6 +544,7 @@ async def list_users_overview(
             email=user.email,
             wave_number=user.wave_number,
             role=user.role,
+            is_active=user.is_active,
             kyc_status=user.kyc_status,
             created_at=user.created_at,
             campaign_count=campaign_count,
@@ -522,6 +553,106 @@ async def list_users_overview(
         ))
     
     return overview
+
+
+@router.get("/users/{user_id}", response_model=UserOverviewItem)
+async def get_user_detail(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Get user details by ID."""
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get campaign count
+    campaign_result = await db.execute(select(func.count(Campaign.id)).where(Campaign.user_id == user.id))
+    campaign_count = campaign_result.scalar() or 0
+    
+    # Get total raised
+    total_result = await db.execute(select(func.sum(Campaign.amount_raised)).where(Campaign.user_id == user.id))
+    total_raised = total_result.scalar() or 0.0
+    
+    # Get last activity timestamp
+    last_campaign = await db.execute(
+        select(Campaign.created_at).where(Campaign.user_id == user.id).order_by(Campaign.created_at.desc()).limit(1)
+    )
+    last_activity = last_campaign.scalars().first()
+    
+    return UserOverviewItem(
+        id=user.id,
+        full_name=user.full_name,
+        email=user.email,
+        wave_number=user.wave_number,
+        role=user.role,
+        is_active=user.is_active,
+        kyc_status=user.kyc_status,
+        created_at=user.created_at,
+        campaign_count=campaign_count,
+        total_raised=total_raised,
+        last_activity=last_activity,
+    )
+
+
+@router.patch("/users/{user_id}/status", response_model=UserOverviewItem)
+async def update_user_status(
+    user_id: int,
+    status: str = Query(...),
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(get_admin_user),
+):
+    """Activate or suspend a user account."""
+    if status not in ["ACTIVE", "SUSPENDED"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    old_status = "ACTIVE" if user.is_active else "SUSPENDED"
+    user.is_active = status == "ACTIVE"
+    await db.commit()
+    await db.refresh(user)
+
+    campaign_count_result = await db.execute(select(func.count(Campaign.id)).where(Campaign.user_id == user.id))
+    campaign_count = campaign_count_result.scalar() or 0
+
+    total_raised_result = await db.execute(select(func.sum(Campaign.amount_raised)).where(Campaign.user_id == user.id))
+    total_raised = total_raised_result.scalar() or 0.0
+
+    last_activity_result = await db.execute(
+        select(Campaign.created_at).where(Campaign.user_id == user.id).order_by(Campaign.created_at.desc()).limit(1)
+    )
+    last_activity = last_activity_result.scalars().first()
+
+    await _log_audit_action(
+        db=db,
+        action_type=AuditActionType.USER_ENABLED if user.is_active else AuditActionType.USER_DISABLED,
+        performed_by_admin_id=admin_user.id,
+        target_entity_type="User",
+        target_entity_id=user.id,
+        target_user_id=user.id,
+        description=f"User '{user.full_name}' account status changed from {old_status} to {status}",
+        old_value=old_status,
+        new_value=status,
+    )
+
+    return UserOverviewItem(
+        id=user.id,
+        full_name=user.full_name,
+        email=user.email,
+        wave_number=user.wave_number,
+        role=user.role,
+        is_active=user.is_active,
+        kyc_status=user.kyc_status,
+        created_at=user.created_at,
+        campaign_count=campaign_count,
+        total_raised=total_raised,
+        last_activity=last_activity,
+    )
 
 
 @router.get("/payouts/overview", response_model=List[PayoutOverviewItem])
@@ -624,4 +755,170 @@ async def get_system_stats(
         active_campaigns=active_count,
         suspended_campaigns=suspended_count,
         last_audit_entry_date=last_audit_date,
+    )
+
+
+# ===== Commissions & Revenue Management =====
+
+@router.get("/commissions", response_model=CommissionSummary)
+async def get_commissions_summary(
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Get platform commissions summary and breakdown by source."""
+    # Get all payouts with platform commissions
+    payouts_result = await db.execute(
+        select(Payout).where(Payout.platform_commission > 0).order_by(Payout.created_at.desc())
+    )
+    payouts = payouts_result.scalars().all()
+    
+    total_commissions = sum(p.platform_commission for p in payouts)
+    
+    # Get already withdrawn commissions (payouts with SUCCEEDED status)
+    withdrawn_result = await db.execute(
+        select(func.sum(Payout.platform_commission)).where(
+            and_(
+                Payout.platform_commission > 0,
+                cast(Payout.status, String) == "SUCCEEDED"
+            )
+        )
+    )
+    withdrawn_commissions = withdrawn_result.scalar() or 0.0
+    
+    # Get pending commissions (PENDING status)
+    pending_result = await db.execute(
+        select(func.sum(Payout.platform_commission)).where(
+            and_(
+                Payout.platform_commission > 0,
+                cast(Payout.status, String) == "PENDING"
+            )
+        )
+    )
+    pending_commissions = pending_result.scalar() or 0.0
+    
+    available_commissions = total_commissions - withdrawn_commissions - pending_commissions
+    commission_count = len(payouts)
+    
+    await db.commit()
+    
+    await _log_audit_action(
+        db=db,
+        action_type="COMMISSIONS_VIEWED",
+        performed_by_admin_id=_admin_user.id,
+        target_entity_type="COMMISSIONS",
+        target_entity_id=0,
+        description=f"Admin viewed commissions summary. Available: {available_commissions}"
+    )
+    
+    return CommissionSummary(
+        total_commissions=total_commissions,
+        withdrawn_commissions=withdrawn_commissions,
+        pending_commissions=pending_commissions,
+        available_commissions=available_commissions,
+        commission_count=commission_count,
+        last_updated=datetime.now(UTC)
+    )
+
+
+@router.get("/commissions/sources", response_model=List[CommissionSourceItem])
+async def get_commission_sources(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Get detailed breakdown of commissions by payout source."""
+    payouts_result = await db.execute(
+        select(Payout).where(Payout.platform_commission > 0).order_by(Payout.created_at.desc()).offset(skip).limit(limit)
+    )
+    payouts = payouts_result.scalars().all()
+    
+    sources = []
+    for payout in payouts:
+        campaign_result = await db.execute(
+            select(Campaign).where(Campaign.id == payout.campaign_id)
+        )
+        campaign = campaign_result.scalars().first()
+        
+        user_result = await db.execute(
+            select(User).where(User.id == campaign.user_id)
+        )
+        user = user_result.scalars().first()
+        
+        sources.append(CommissionSourceItem(
+            payout_id=payout.id,
+            campaign_id=campaign.id,
+            campaign_title=campaign.title,
+            user_id=user.id if user else 0,
+            user_name=user.full_name if user else "Unknown",
+            gross_amount=payout.gross_amount or 0.0,
+            platform_commission=payout.platform_commission or 0.0,
+            status=payout.status,
+            created_at=payout.created_at,
+        ))
+    
+    return sources
+
+
+@router.post("/commissions/withdraw", response_model=AdminCommissionWithdrawalResponse)
+async def withdraw_commissions(
+    request: AdminCommissionWithdrawalRequest,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(get_admin_user),
+):
+    """Initiate a commission withdrawal request."""
+    from app.core.config import get_settings
+    
+    settings = get_settings()
+    
+    # Validate amount
+    if request.amount <= 0:
+        raise HTTPException(status_code=400, detail="Withdrawal amount must be positive")
+    
+    # Get current available commissions
+    commissions = await get_commissions_summary(db=db, _admin_user=admin_user)
+    if request.amount > commissions.available_commissions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Insufficient available commissions. Available: {commissions.available_commissions}"
+        )
+    
+    # Create a payout record for the admin commission withdrawal
+    # Use a special reference prefix to identify admin withdrawals
+    import uuid
+    withdrawal_ref = f"ADMIN-COMM-{uuid.uuid4().hex[:12].upper()}"
+    
+    # Create payout record with campaign_id = NULL to indicate admin withdrawal
+    commission_payout = Payout(
+        campaign_id=None,  # Indicates admin withdrawal
+        client_reference=withdrawal_ref,
+        gross_amount=request.amount,
+        hexai_fee=0.0,  # No HexAI fee for admin withdrawals
+        platform_commission=request.amount,
+        net_amount=request.amount,
+        status="PENDING",
+    )
+    db.add(commission_payout)
+    await db.flush()
+    
+    # Log the audit action
+    await _log_audit_action(
+        db=db,
+        action_type="COMMISSION_WITHDRAWAL_INITIATED",
+        performed_by_admin_id=admin_user.id,
+        target_entity_type="COMMISSION_WITHDRAWAL",
+        target_entity_id=commission_payout.id,
+        description=f"Admin initiated commission withdrawal of {request.amount}",
+        details=request.reason or "No reason provided",
+        new_value=withdrawal_ref
+    )
+    
+    await db.commit()
+    
+    return AdminCommissionWithdrawalResponse(
+        withdrawal_id=withdrawal_ref,
+        amount=request.amount,
+        status="PENDING",
+        created_at=datetime.now(UTC),
+        message=f"Commission withdrawal request created. Reference: {withdrawal_ref}"
     )

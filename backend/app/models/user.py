@@ -15,6 +15,7 @@ class User(Base):
     email_verification_code_hash = Column(String, nullable=True)
     email_verification_expires_at = Column(DateTime(timezone=True), nullable=True)
     role = Column(String, default="USER") # USER or ADMIN
+    is_active = Column(Boolean, default=True, nullable=False)
     
     # KYC fields for withdrawal eligibility
     kyc_status = Column(String, default="NOT_SUBMITTED", index=True)  # NOT_SUBMITTED, SUBMITTED, REVIEWING, APPROVED, REJECTED

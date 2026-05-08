@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     RESEND_FROM_EMAIL: str = os.getenv("RESEND_FROM_EMAIL", "Kambeng <onboarding@resend.dev>")
     
     # HexAI Gateway
-    HEXAI_BASE_URL: str = "https://hpg.hexai.gm/api/v1"
+    HEXAI_BASE_URL: str = "https://api.hpg.hexai.gm/api/v1"
     HEXAI_API_KEY: str = os.getenv("HEXAI_API_KEY", "")
     HEXAI_WEBHOOK_SECRET: str = os.getenv("HEXAI_WEBHOOK_SECRET", "")
     

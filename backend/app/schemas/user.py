@@ -29,6 +29,7 @@ class UserRead(UserBase):
     email: str
     is_email_verified: bool
     role: str
+    is_active: bool
     created_at: datetime
 
     # This tells Pydantic to read data from SQLAlchemy models

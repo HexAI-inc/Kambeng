@@ -1,8 +1,9 @@
-import httpx, time
+import httpx
 from app.core.config import settings
 
 class HexAIPaymentService:
     def __init__(self):
+        self.base_url = settings.HEXAI_BASE_URL.rstrip("/")
         self.headers = {
             "Authorization": f"Bearer {settings.HEXAI_API_KEY}",
             "x-hexai-key": settings.HEXAI_API_KEY, # Required by HexAI
@@ -21,7 +22,7 @@ class HexAIPaymentService:
         
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{settings.HEXAI_BASE_URL}/collections/initiate",
+                f"{self.base_url}/collections/initiate",
                 json=payload,
                 headers=self.headers
             )
@@ -49,7 +50,7 @@ class HexAIPaymentService:
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{settings.HEXAI_BASE_URL}/payouts/send",
+                f"{self.base_url}/payouts/send",
                 json=payload,
                 headers=self.headers
             )

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 
 class CampaignImageRead(BaseModel):
@@ -12,3 +12,17 @@ class CampaignImageRead(BaseModel):
 
 class CampaignImageUploadResponse(BaseModel):
     uploaded: List[CampaignImageRead]
+
+
+class CampaignImagePresignRequest(BaseModel):
+    filename: str
+    content_type: str
+
+
+class CampaignPresignResponse(BaseModel):
+    url: str
+    fields: Dict[str, str]
+    file_name: str
+    key: str
+    public_url: str
+    expires_in: int

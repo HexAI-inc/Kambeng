@@ -40,3 +40,10 @@ class KYCStatusResponse(BaseModel):
     rejection_reason: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class KYCRejectRequest(BaseModel):
+    """Payload for admin rejecting a KYC submission."""
+    rejection_reason: str
+
+    model_config = ConfigDict(from_attributes=True)

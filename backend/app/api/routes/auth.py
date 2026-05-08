@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import jwt
@@ -52,6 +52,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     user = result.scalars().first()
     if user is None:
         raise credentials_exception
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is suspended")
     return user
 
 
@@ -71,7 +73,10 @@ async def get_current_user_optional(
         return None
 
     result = await db.execute(select(User).where(User.wave_number == wave_number))
-    return result.scalars().first()
+    user = result.scalars().first()
+    if user is None or not user.is_active:
+        return None
+    return user
 
 async def get_admin_user(current_user: User = Depends(get_current_user)):
     """Dependency that only allows admin users"""
@@ -109,20 +114,54 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     )
     return new_user
 
+async def _extract_login_credentials(request: Request) -> tuple[str, str]:
+    content_type = request.headers.get("content-type") or ""
+
+    if "application/json" in content_type:
+        payload = await request.json()
+        return str(payload.get("username", "")).strip(), str(payload.get("password", ""))
+
+    form = await request.form()
+    return str(form.get("username", "")).strip(), str(form.get("password", ""))
+
+
 @router.post("/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+async def login(request: Request, db: AsyncSession = Depends(get_db)):
     """Login to get JWT tokens. Supports wave number or email in the username field."""
+    username, password = await _extract_login_credentials(request)
+
+    if not username or not password:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="username and password are required",
+        )
+
+    # Normalize username: form-encoded '+' may become a space. If the stripped
+    # username is digits starting with the country code 220, restore the '+' so
+    # lookups against `wave_number` succeed.
+    orig_username = username
+    if not username.startswith("+"):
+        stripped = username.strip()
+        if stripped.isdigit() and stripped.startswith("220"):
+            username = f"+{stripped}"
+            logger.info(
+                "Normalized username",
+                extra={"action": "login_normalize", "original": orig_username, "normalized": username},
+            )
+
     result = await db.execute(
-        select(User).where((User.wave_number == form_data.username) | (User.email == form_data.username))
+        select(User).where((User.wave_number == username) | (User.email == username))
     )
     user = result.scalars().first()
-    if not user or not verify_password(form_data.password, user.password_hash):
-        logger.info("Failed login attempt", extra={"action": "login", "username": form_data.username})
+    if not user or not verify_password(password, user.password_hash):
+        logger.info("Failed login attempt", extra={"action": "login", "username": username})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect Wave number or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is suspended")
     # Generate Token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(

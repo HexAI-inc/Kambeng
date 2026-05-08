@@ -67,7 +67,15 @@ class DOSpacesStrategy(StorageStrategy):
                 Body=content,
                 ContentType=content_type,
             )
-            url = f"{settings.DO_SPACES_ENDPOINT.rstrip('/')}/{self.bucket}/{key}"
+
+            # Build public URL. Support two common endpoint styles:
+            # 1) Region endpoint (e.g. https://lon1.digitaloceanspaces.com) -> use path-style: /{bucket}/{key}
+            # 2) Bucket subdomain endpoint (e.g. https://my-bucket.lon1.digitaloceanspaces.com) -> use subdomain-style: /{key}
+            endpoint = settings.DO_SPACES_ENDPOINT.rstrip("/")
+            if endpoint.startswith(f"https://{self.bucket}.") or endpoint.startswith(f"http://{self.bucket}."):
+                url = f"{endpoint}/{key}"
+            else:
+                url = f"{endpoint}/{self.bucket}/{key}"
             return {
                 "file_name": file_name,
                 "original_name": original_filename,
@@ -96,7 +104,12 @@ class DOSpacesStrategy(StorageStrategy):
             for obj in objects:
                 key = obj["Key"]
                 file_name = key.split("/")[-1]
-                url = f"{settings.DO_SPACES_ENDPOINT.rstrip('/')}/{self.bucket}/{key}"
+
+                endpoint = settings.DO_SPACES_ENDPOINT.rstrip("/")
+                if endpoint.startswith(f"https://{self.bucket}.") or endpoint.startswith(f"http://{self.bucket}."):
+                    url = f"{endpoint}/{key}"
+                else:
+                    url = f"{endpoint}/{self.bucket}/{key}"
                 images.append(
                     {
                         "file_name": file_name,

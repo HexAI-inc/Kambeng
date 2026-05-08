@@ -27,6 +27,7 @@ class UserOverviewItem(BaseModel):
     email: str
     wave_number: str
     role: str
+    is_active: bool
     kyc_status: str
     created_at: datetime
     campaign_count: int

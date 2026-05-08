@@ -29,6 +29,26 @@ def test_auth_register_login_me_flow(client):
 
 
 @pytest.mark.integration
+def test_auth_login_accepts_json_payload(client):
+    payload = {
+        "full_name": "JSON Login User",
+        "email": "json-login-user@example.com",
+        "wave_number": "+2207000099",
+        "password": "StrongPass123!",
+    }
+
+    register_response = client.post("/api/auth/register", json=payload)
+    assert register_response.status_code == 201
+
+    login_response = client.post(
+        "/api/auth/login",
+        json={"username": payload["email"], "password": payload["password"]},
+    )
+    assert login_response.status_code == 200
+    assert login_response.json()["data"]["user"]["email"] == payload["email"]
+
+
+@pytest.mark.integration
 def test_email_verification_flow_uses_sent_code(client, monkeypatch):
     sent = {}
 

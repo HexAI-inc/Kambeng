@@ -1,4 +1,6 @@
 from typing import List
+import uuid
+from botocore.exceptions import ClientError
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,7 +15,12 @@ from app.models.proof import Proof
 from app.models.user import User
 from app.models.donation import Donation
 from app.core.config import settings
-from app.schemas.media import CampaignImageRead, CampaignImageUploadResponse
+from app.schemas.media import (
+    CampaignImageRead,
+    CampaignImageUploadResponse,
+    CampaignImagePresignRequest,
+    CampaignPresignResponse,
+)
 from app.schemas.proof import ProofRead
 from app.services.storage_strategy import get_storage_strategy
 from app.services.storage_service import StorageService
@@ -30,6 +37,18 @@ ALLOWED_PROOF_TYPES = {
     "image/jpeg": ".jpg",
     "application/pdf": ".pdf",
 }
+
+
+def _to_public_media_url(path_or_url: str | None) -> str | None:
+    if not path_or_url:
+        return None
+    if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
+        return path_or_url
+
+    base = settings.BACKEND_PUBLIC_URL.rstrip("/")
+    if path_or_url.startswith("/"):
+        return f"{base}{path_or_url}"
+    return f"{base}/{path_or_url}"
 
 
 def _validate_proof_signature(content: bytes, content_type: str) -> bool:
@@ -174,6 +193,72 @@ async def list_campaign_proofs(
         # ADMIN_ONLY proofs are not shown to non-admin/non-owner viewers
 
     return filtered_proofs
+@router.post("/campaigns/{slug}/images/presign", response_model=CampaignPresignResponse)
+async def presign_campaign_image(
+    slug: str,
+    body: CampaignImagePresignRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    campaign_result = await db.execute(select(Campaign).where(Campaign.slug == slug))
+    campaign = campaign_result.scalars().first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Not authorized to presign uploads for this campaign")
+
+    if settings.STORAGE_STRATEGY != "do_spaces":
+        raise HTTPException(status_code=400, detail="Presigned uploads are supported only when STORAGE_STRATEGY=do_spaces")
+
+    if not hasattr(storage_strategy, "s3_client"):
+        raise HTTPException(status_code=500, detail="Storage backend does not support presigned uploads")
+
+    s3 = storage_strategy.s3_client
+
+    # Resolve extension from filename or content type
+    extension = ""
+    if body.filename and "." in body.filename:
+        extension = f".{body.filename.split('.')[-1]}"
+    else:
+        mapping = {
+            "image/png": ".png",
+            "image/jpeg": ".jpg",
+            "image/webp": ".webp",
+            "image/gif": ".gif",
+        }
+        extension = mapping.get(body.content_type, "")
+
+    file_name = f"{uuid.uuid4().hex}{extension}"
+    key = f"campaigns/{campaign.id}/{file_name}"
+
+    try:
+        post = s3.generate_presigned_post(
+            Bucket=settings.DO_SPACES_BUCKET,
+            Key=key,
+            Fields={"Content-Type": body.content_type},
+            Conditions=[["starts-with", "$Content-Type", "image/"], ["content-length-range", 1, settings.MAX_CAMPAIGN_IMAGE_SIZE_MB * 1024 * 1024]],
+            ExpiresIn=3600,
+        )
+    except ClientError as e:
+        logger.error(f"Failed to generate presigned post: {e}")
+        raise HTTPException(status_code=500, detail="Unable to generate presigned upload")
+
+    endpoint = settings.DO_SPACES_ENDPOINT.rstrip("/")
+    if endpoint.startswith(f"https://{settings.DO_SPACES_BUCKET}.") or endpoint.startswith(f"http://{settings.DO_SPACES_BUCKET}."):
+        public_url = f"{endpoint}/{key}"
+    else:
+        public_url = f"{endpoint}/{settings.DO_SPACES_BUCKET}/{key}"
+
+    return CampaignPresignResponse(
+        url=post["url"],
+        fields=post["fields"],
+        file_name=file_name,
+        key=key,
+        public_url=public_url,
+        expires_in=3600,
+    )
+
 
 
 @router.post("/campaigns/{slug}/images", response_model=CampaignImageUploadResponse, status_code=status.HTTP_201_CREATED)
@@ -183,6 +268,9 @@ async def upload_campaign_images(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # (existing upload implementation continues below)
+
+
     campaign_result = await db.execute(select(Campaign).where(Campaign.slug == slug))
     campaign = campaign_result.scalars().first()
     if not campaign:
@@ -262,7 +350,7 @@ async def list_campaign_images(slug: str, db: AsyncSession = Depends(get_db)):
     return [
         CampaignImageRead(
             file_name=item["file_name"],
-            url=item["url"],
+            url=_to_public_media_url(str(item["url"])),
             size=item["size"],
         )
         for item in images

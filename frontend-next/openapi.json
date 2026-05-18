@@ -1,0 +1,3266 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kambeng - GambiaGive API",
+    "description": "The backend engine for Kambeng Crowdfunding Platform",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register",
+        "description": "Register a new Campaigner",
+        "operationId": "register_api_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserCreate" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserRead" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login",
+        "description": "Login to get JWT tokens. Supports wave number or email in the username field.",
+        "operationId": "login_api_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_api_auth_login_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Refresh Access Token",
+        "description": "Exchange a refresh token for a new access token.",
+        "operationId": "refresh_access_token_api_auth_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "title": "Payload" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get My Profile",
+        "description": "Get the currently logged-in user's details",
+        "operationId": "get_my_profile_api_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserRead" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/auth/request-password-reset": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Request Password Reset",
+        "operationId": "request_password_reset_api_auth_request_password_reset_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PasswordResetRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Reset Password",
+        "operationId": "reset_password_api_auth_reset_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PasswordResetConfirm" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/request-email-verification": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Request Email Verification",
+        "operationId": "request_email_verification_api_auth_request_email_verification_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/auth/verify-email": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Verify Email",
+        "operationId": "verify_email_api_auth_verify_email_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EmailVerifyRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/campaigns/": {
+      "post": {
+        "tags": ["Campaigns"],
+        "summary": "Create Campaign",
+        "operationId": "create_campaign_api_campaigns__post",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CampaignCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CampaignRead" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Campaigns"],
+        "summary": "List Active Campaigns",
+        "description": "Get all active campaigns for the home page (paginated)",
+        "operationId": "list_active_campaigns_api_campaigns__get",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CampaignRead" },
+                  "title": "Response List Active Campaigns Api Campaigns  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/campaigns/me": {
+      "get": {
+        "tags": ["Campaigns"],
+        "summary": "Get My Campaigns",
+        "description": "Get all campaigns created by the current logged-in user",
+        "operationId": "get_my_campaigns_api_campaigns_me_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CampaignRead" },
+                  "title": "Response Get My Campaigns Api Campaigns Me Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/campaigns/{slug}": {
+      "get": {
+        "tags": ["Campaigns"],
+        "summary": "Get Campaign By Slug",
+        "description": "Get a specific campaign using its URL slug",
+        "operationId": "get_campaign_by_slug_api_campaigns__slug__get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CampaignRead" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Campaigns"],
+        "summary": "Update Campaign",
+        "description": "Update a campaign's core details",
+        "operationId": "update_campaign_api_campaigns__slug__put",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CampaignCreate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CampaignRead" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/campaigns/{slug}/status": {
+      "patch": {
+        "tags": ["Campaigns"],
+        "summary": "Update Campaign Status",
+        "description": "Suspend or change campaign status",
+        "operationId": "update_campaign_status_api_campaigns__slug__status_patch",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "title": "Status" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/campaigns/{slug}/donations": {
+      "get": {
+        "tags": ["Campaigns"],
+        "summary": "Get Campaign Donations",
+        "description": "Get successful donations for a specific campaign",
+        "operationId": "get_campaign_donations_api_campaigns__slug__donations_get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/DonationRead" },
+                  "title": "Response Get Campaign Donations Api Campaigns  Slug  Donations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/donate": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Initiate Donation",
+        "description": "Initiates a Wave payment for a specific campaign",
+        "operationId": "initiate_donation_api_payments_donate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DonationCreate" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/withdraw": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Withdraw Funds",
+        "description": "Campaigners use this to withdraw funds to their Wave account",
+        "operationId": "withdraw_funds_api_payments_withdraw_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PayoutRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/webhooks/hexai": {
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Hexai Webhook",
+        "operationId": "hexai_webhook_api_webhooks_hexai_post",
+        "parameters": [
+          {
+            "name": "wave-signature",
+            "in": "header",
+            "required": false,
+            "schema": { "type": "string", "title": "Wave-Signature" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/WebhookPayload" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/uploads/proofs/{slug}": {
+      "post": {
+        "tags": ["Uploads"],
+        "summary": "Upload Campaign Proof",
+        "operationId": "upload_campaign_proof_api_uploads_proofs__slug__post",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_campaign_proof_api_uploads_proofs__slug__post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProofRead" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Uploads"],
+        "summary": "List Campaign Proofs",
+        "operationId": "list_campaign_proofs_api_uploads_proofs__slug__get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ProofRead" },
+                  "title": "Response List Campaign Proofs Api Uploads Proofs  Slug  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/uploads/campaigns/{slug}/images": {
+      "post": {
+        "tags": ["Uploads"],
+        "summary": "Upload Campaign Images",
+        "operationId": "upload_campaign_images_api_uploads_campaigns__slug__images_post",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_campaign_images_api_uploads_campaigns__slug__images_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignImageUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Uploads"],
+        "summary": "List Campaign Images",
+        "operationId": "list_campaign_images_api_uploads_campaigns__slug__images_get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CampaignImageRead" },
+                  "title": "Response List Campaign Images Api Uploads Campaigns  Slug  Images Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/uploads/campaigns/{slug}/images/{file_name}": {
+      "delete": {
+        "tags": ["Uploads"],
+        "summary": "Delete Campaign Image",
+        "operationId": "delete_campaign_image_api_uploads_campaigns__slug__images__file_name__delete",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          },
+          {
+            "name": "file_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "File Name" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Successful Response" },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reviews/campaigns/{slug}": {
+      "post": {
+        "tags": ["Reviews"],
+        "summary": "Create Review",
+        "operationId": "create_review_api_reviews_campaigns__slug__post",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReviewBase" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReviewRead" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Reviews"],
+        "summary": "List Campaign Reviews",
+        "operationId": "list_campaign_reviews_api_reviews_campaigns__slug__get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ReviewRead" },
+                  "title": "Response List Campaign Reviews Api Reviews Campaigns  Slug  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reviews/{review_id}": {
+      "delete": {
+        "tags": ["Reviews"],
+        "summary": "Delete Review",
+        "operationId": "delete_review_api_reviews__review_id__delete",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Review Id" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Successful Response" },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reviews/admin/{review_id}": {
+      "delete": {
+        "tags": ["Reviews"],
+        "summary": "Admin Delete Review",
+        "operationId": "admin_delete_review_api_reviews_admin__review_id__delete",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Review Id" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Successful Response" },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/kyc/submit": {
+      "post": {
+        "tags": ["KYC"],
+        "summary": "Submit Kyc",
+        "description": "Submit KYC documents for identity verification.\n\nOnly one active submission per user allowed at a time. Resubmission requires previous submission to be reviewed.",
+        "operationId": "submit_kyc_api_kyc_submit_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_submit_kyc_api_kyc_submit_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/KYCRead" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/kyc/status": {
+      "get": {
+        "tags": ["KYC"],
+        "summary": "Get Kyc Status",
+        "description": "Get current user's KYC verification status.",
+        "operationId": "get_kyc_status_api_kyc_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/KYCStatusResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/aliases/campaigns/{campaign_id}": {
+      "post": {
+        "tags": ["Aliases"],
+        "summary": "Create Campaign Alias",
+        "description": "Create a short-link alias for a campaign. Owner or admin only.",
+        "operationId": "create_campaign_alias_api_aliases_campaigns__campaign_id__post",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Campaign Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CampaignAliasCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CampaignAliasRead" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Aliases"],
+        "summary": "List Campaign Aliases",
+        "description": "List all aliases for a campaign. Owner or admin only.",
+        "operationId": "list_campaign_aliases_api_aliases_campaigns__campaign_id__get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Campaign Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CampaignAliasRead" },
+                  "title": "Response List Campaign Aliases Api Aliases Campaigns  Campaign Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/aliases/campaigns/{campaign_id}/{alias_id}": {
+      "delete": {
+        "tags": ["Aliases"],
+        "summary": "Delete Campaign Alias",
+        "description": "Delete an alias. Owner or admin only.",
+        "operationId": "delete_campaign_alias_api_aliases_campaigns__campaign_id___alias_id__delete",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Campaign Id" }
+          },
+          {
+            "name": "alias_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Alias Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/aliases/redirect/{short_code}": {
+      "get": {
+        "tags": ["Aliases"],
+        "summary": "Redirect Alias",
+        "description": "Redirect from short alias to campaign slug. Public endpoint.",
+        "operationId": "redirect_alias_api_aliases_redirect__short_code__get",
+        "parameters": [
+          {
+            "name": "short_code",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Short Code" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/campaigns": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List All Campaigns",
+        "operationId": "list_all_campaigns_api_admin_campaigns_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CampaignRead" },
+                  "title": "Response List All Campaigns Api Admin Campaigns Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/campaigns/{slug}/status": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "Moderate Campaign Status",
+        "operationId": "moderate_campaign_status_api_admin_campaigns__slug__status_patch",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Slug" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "title": "Status" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/reviews": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List All Reviews",
+        "operationId": "list_all_reviews_api_admin_reviews_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ReviewRead" },
+                  "title": "Response List All Reviews Api Admin Reviews Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/reviews/{review_id}": {
+      "delete": {
+        "tags": ["Admin"],
+        "summary": "Delete Review As Admin",
+        "operationId": "delete_review_as_admin_api_admin_reviews__review_id__delete",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Review Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/kyc/queue": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List Kyc Queue",
+        "description": "List pending KYC submissions for admin review.",
+        "operationId": "list_kyc_queue_api_admin_kyc_queue_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/KYCRead" },
+                  "title": "Response List Kyc Queue Api Admin Kyc Queue Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/kyc/{submission_id}/approve": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Approve Kyc",
+        "description": "Approve a KYC submission.",
+        "operationId": "approve_kyc_api_admin_kyc__submission_id__approve_post",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Submission Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/KYCRead" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/kyc/{submission_id}/reject": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Reject Kyc",
+        "description": "Reject a KYC submission.",
+        "operationId": "reject_kyc_api_admin_kyc__submission_id__reject_post",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Submission Id" }
+          },
+          {
+            "name": "rejection_reason",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "title": "Rejection Reason" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/reports/transactions": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List Transactions",
+        "description": "List all transactions with optional filtering.",
+        "operationId": "list_transactions_api_admin_reports_transactions_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "integer" }, { "type": "null" }],
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "name": "transaction_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Transaction Type"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/reports/summary": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get Financial Summary",
+        "description": "Get overall financial summary statistics.",
+        "operationId": "get_financial_summary_api_admin_reports_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/admin/reports/campaign/{campaign_id}": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get Campaign Report",
+        "description": "Get detailed financial report for a specific campaign.",
+        "operationId": "get_campaign_report_api_admin_reports_campaign__campaign_id__get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Campaign Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/audit-logs": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List Audit Logs",
+        "description": "List admin audit logs for tracking sensitive actions.",
+        "operationId": "list_audit_logs_api_admin_audit_logs_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "action_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Action Type"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AdminAuditLogRead" },
+                  "title": "Response List Audit Logs Api Admin Audit Logs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/overview": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List Users Overview",
+        "description": "Get user overview for admin oversight.",
+        "operationId": "list_users_overview_api_admin_users_overview_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "kyc_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Kyc Status"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/UserOverviewItem" },
+                  "title": "Response List Users Overview Api Admin Users Overview Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/payouts/overview": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List Payouts Overview",
+        "description": "Get recent payouts for oversight.",
+        "operationId": "list_payouts_overview_api_admin_payouts_overview_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PayoutOverviewItem"
+                  },
+                  "title": "Response List Payouts Overview Api Admin Payouts Overview Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/system/stats": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get System Stats",
+        "description": "Get overall system statistics.",
+        "operationId": "get_system_stats_api_admin_system_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AdminSystemStats" }
+              }
+            }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/moderation/reports": {
+      "post": {
+        "tags": ["Moderation"],
+        "summary": "Submit Report",
+        "description": "Submit a moderation report. Anonymous reports allowed.",
+        "operationId": "submit_report_api_moderation_reports_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationReportCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModerationReportRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/moderation/reports/queue": {
+      "get": {
+        "tags": ["Moderation"],
+        "summary": "Get Moderation Queue",
+        "description": "Get moderation queue for admin review.",
+        "operationId": "get_moderation_queue_api_moderation_reports_queue_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "status_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "default": "OPEN",
+              "title": "Status Filter"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModerationReportRead"
+                  },
+                  "title": "Response Get Moderation Queue Api Moderation Reports Queue Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/moderation/reports/{report_id}": {
+      "get": {
+        "tags": ["Moderation"],
+        "summary": "Get Report",
+        "description": "Get details of a specific report.",
+        "operationId": "get_report_api_moderation_reports__report_id__get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Report Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModerationReportRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/moderation/reports/{report_id}/resolve": {
+      "post": {
+        "tags": ["Moderation"],
+        "summary": "Resolve Report",
+        "description": "Resolve a moderation report with action.",
+        "operationId": "resolve_report_api_moderation_reports__report_id__resolve_post",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "title": "Report Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationReportResolve"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModerationReportRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/moderation/stats": {
+      "get": {
+        "tags": ["Moderation"],
+        "summary": "Get Moderation Stats",
+        "description": "Get overall moderation statistics.",
+        "operationId": "get_moderation_stats_api_moderation_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/search": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Global Search",
+        "operationId": "global_search_api_search_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "description": "Text query to search across models",
+              "title": "Q"
+            },
+            "description": "Text query to search across models"
+          },
+          {
+            "name": "models",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "description": "Comma-separated model list: campaigns,users,donations,reviews,payouts,kyc,moderation",
+              "title": "Models"
+            },
+            "description": "Comma-separated model list: campaigns,users,donations,reviews,payouts,kyc,moderation"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "description": "Optional status filter (case-insensitive)",
+              "title": "Status"
+            },
+            "description": "Optional status filter (case-insensitive)"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "date-time" },
+                { "type": "null" }
+              ],
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "date-time" },
+                { "type": "null" }
+              ],
+              "title": "End Date"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/utils/frontend/bootstrap": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Frontend Bootstrap",
+        "description": "Public bootstrap config for frontend apps (React, mobile, etc.).",
+        "operationId": "get_frontend_bootstrap_api_utils_frontend_bootstrap_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/api/utils/frontend/filter-options": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Filter Options",
+        "description": "Frontend UI dropdown/options payload from backend enums/constants.",
+        "operationId": "get_filter_options_api_utils_frontend_filter_options_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/api/utils/frontend/me-summary": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get My Ui Summary",
+        "description": "Utility summary for the logged-in user dashboard cards/widgets.",
+        "operationId": "get_my_ui_summary_api_utils_frontend_me_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/utils/frontend/admin-summary": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Admin Ui Summary",
+        "description": "Utility summary payload for admin React dashboard widgets.",
+        "operationId": "get_admin_ui_summary_api_utils_frontend_admin_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/utils/frontend/suggestions": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Frontend Suggestions",
+        "description": "Typeahead suggestions across campaigns and users for rich UI search bars.",
+        "operationId": "get_frontend_suggestions_api_utils_frontend_suggestions_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "minLength": 1, "title": "Q" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 8,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/utils/frontend/home-feed": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Frontend Home Feed",
+        "description": "Single endpoint for home page: featured campaigns + recent donations + top stats.",
+        "operationId": "get_frontend_home_feed_api_utils_frontend_home_feed_get",
+        "parameters": [
+          {
+            "name": "featured_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 6,
+              "title": "Featured Limit"
+            }
+          },
+          {
+            "name": "recent_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 8,
+              "title": "Recent Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/utils/frontend/counts": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Frontend Model Counts",
+        "description": "Quick per-model counters for badges/chips in admin and management UIs.",
+        "operationId": "get_frontend_model_counts_api_utils_frontend_counts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/utils/frontend/v1/contract": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Frontend V1 Contract",
+        "description": "Versioned frontend contract descriptor for React client rollout.",
+        "operationId": "get_frontend_v1_contract_api_utils_frontend_v1_contract_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/api/utils/frontend/v1/bootstrap": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Frontend Bootstrap V1",
+        "operationId": "get_frontend_bootstrap_v1_api_utils_frontend_v1_bootstrap_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/api/utils/frontend/v1/filter-options": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Filter Options V1",
+        "operationId": "get_filter_options_v1_api_utils_frontend_v1_filter_options_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/api/utils/frontend/v1/home-feed": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Frontend Home Feed V1",
+        "operationId": "get_frontend_home_feed_v1_api_utils_frontend_v1_home_feed_get",
+        "parameters": [
+          {
+            "name": "featured_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 6,
+              "title": "Featured Limit"
+            }
+          },
+          {
+            "name": "recent_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 8,
+              "title": "Recent Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/utils/frontend/v1/counts": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Frontend Model Counts V1",
+        "operationId": "get_frontend_model_counts_v1_api_utils_frontend_v1_counts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/utils/frontend/v1/me-summary": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get My Ui Summary V1",
+        "operationId": "get_my_ui_summary_v1_api_utils_frontend_v1_me_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/utils/frontend/v1/admin-summary": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Admin Ui Summary V1",
+        "operationId": "get_admin_ui_summary_v1_api_utils_frontend_v1_admin_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        },
+        "security": [{ "OAuth2PasswordBearer": [] }]
+      }
+    },
+    "/api/utils/frontend/v1/suggestions": {
+      "get": {
+        "tags": ["Utils"],
+        "summary": "Get Frontend Suggestions V1",
+        "operationId": "get_frontend_suggestions_v1_api_utils_frontend_v1_suggestions_get",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "minLength": 1, "title": "Q" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 8,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logs": {
+      "get": {
+        "tags": ["Logs"],
+        "summary": "Get Recent Logs",
+        "description": "Return most recent logs as parsed JSON objects for UI readability.",
+        "operationId": "get_recent_logs_api_logs_get",
+        "parameters": [
+          {
+            "name": "lines",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Lines" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": ["Monitoring"],
+        "summary": "Health Check",
+        "description": "Basic health check endpoint.",
+        "operationId": "health_check_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/api/monitor": {
+      "get": {
+        "tags": ["Monitoring"],
+        "summary": "System Monitor",
+        "description": "System resource usage and environment info.",
+        "operationId": "system_monitor_api_monitor_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdminAuditLogRead": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "action_type": { "type": "string", "title": "Action Type" },
+          "performed_by_admin_id": {
+            "type": "integer",
+            "title": "Performed By Admin Id"
+          },
+          "target_entity_type": {
+            "type": "string",
+            "title": "Target Entity Type"
+          },
+          "target_entity_id": {
+            "type": "integer",
+            "title": "Target Entity Id"
+          },
+          "campaign_id": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Campaign Id"
+          },
+          "target_user_id": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Target User Id"
+          },
+          "description": { "type": "string", "title": "Description" },
+          "details": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Details"
+          },
+          "old_value": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Old Value"
+          },
+          "new_value": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "New Value"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "action_type",
+          "performed_by_admin_id",
+          "target_entity_type",
+          "target_entity_id",
+          "description",
+          "created_at"
+        ],
+        "title": "AdminAuditLogRead"
+      },
+      "AdminSystemStats": {
+        "properties": {
+          "total_users": { "type": "integer", "title": "Total Users" },
+          "total_campaigns": { "type": "integer", "title": "Total Campaigns" },
+          "kyc_approved_count": {
+            "type": "integer",
+            "title": "Kyc Approved Count"
+          },
+          "kyc_pending_count": {
+            "type": "integer",
+            "title": "Kyc Pending Count"
+          },
+          "kyc_rejected_count": {
+            "type": "integer",
+            "title": "Kyc Rejected Count"
+          },
+          "total_platform_revenue": {
+            "type": "number",
+            "title": "Total Platform Revenue"
+          },
+          "active_campaigns": {
+            "type": "integer",
+            "title": "Active Campaigns"
+          },
+          "suspended_campaigns": {
+            "type": "integer",
+            "title": "Suspended Campaigns"
+          },
+          "last_audit_entry_date": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Last Audit Entry Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_users",
+          "total_campaigns",
+          "kyc_approved_count",
+          "kyc_pending_count",
+          "kyc_rejected_count",
+          "total_platform_revenue",
+          "active_campaigns",
+          "suspended_campaigns"
+        ],
+        "title": "AdminSystemStats",
+        "description": "Overall system statistics."
+      },
+      "Body_login_api_auth_login_post": {
+        "properties": {
+          "grant_type": {
+            "anyOf": [
+              { "type": "string", "pattern": "password" },
+              { "type": "null" }
+            ],
+            "title": "Grant Type"
+          },
+          "username": { "type": "string", "title": "Username" },
+          "password": { "type": "string", "title": "Password" },
+          "scope": { "type": "string", "title": "Scope", "default": "" },
+          "client_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Client Secret"
+          }
+        },
+        "type": "object",
+        "required": ["username", "password"],
+        "title": "Body_login_api_auth_login_post"
+      },
+      "Body_submit_kyc_api_kyc_submit_post": {
+        "properties": {
+          "document_type": { "type": "string", "title": "Document Type" },
+          "file": { "type": "string", "format": "binary", "title": "File" }
+        },
+        "type": "object",
+        "required": ["document_type", "file"],
+        "title": "Body_submit_kyc_api_kyc_submit_post"
+      },
+      "Body_upload_campaign_images_api_uploads_campaigns__slug__images_post": {
+        "properties": {
+          "files": {
+            "items": { "type": "string", "format": "binary" },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": ["files"],
+        "title": "Body_upload_campaign_images_api_uploads_campaigns__slug__images_post"
+      },
+      "Body_upload_campaign_proof_api_uploads_proofs__slug__post": {
+        "properties": {
+          "file": { "type": "string", "format": "binary", "title": "File" },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": ["file"],
+        "title": "Body_upload_campaign_proof_api_uploads_proofs__slug__post"
+      },
+      "CampaignAliasCreate": {
+        "properties": {
+          "short_code": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Short Code"
+          }
+        },
+        "type": "object",
+        "title": "CampaignAliasCreate"
+      },
+      "CampaignAliasRead": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "campaign_id": { "type": "integer", "title": "Campaign Id" },
+          "short_code": { "type": "string", "title": "Short Code" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "campaign_id", "short_code", "created_at"],
+        "title": "CampaignAliasRead"
+      },
+      "CampaignCreate": {
+        "properties": {
+          "title": { "type": "string", "title": "Title" },
+          "description": { "type": "string", "title": "Description" },
+          "mode": { "$ref": "#/components/schemas/CampaignMode" },
+          "target_amount": {
+            "anyOf": [{ "type": "number" }, { "type": "null" }],
+            "title": "Target Amount"
+          }
+        },
+        "type": "object",
+        "required": ["title", "description", "mode"],
+        "title": "CampaignCreate"
+      },
+      "CampaignImageRead": {
+        "properties": {
+          "file_name": { "type": "string", "title": "File Name" },
+          "url": { "type": "string", "title": "Url" },
+          "size": { "type": "integer", "title": "Size" },
+          "content_type": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Content Type"
+          },
+          "original_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Original Name"
+          }
+        },
+        "type": "object",
+        "required": ["file_name", "url", "size"],
+        "title": "CampaignImageRead"
+      },
+      "CampaignImageUploadResponse": {
+        "properties": {
+          "uploaded": {
+            "items": { "$ref": "#/components/schemas/CampaignImageRead" },
+            "type": "array",
+            "title": "Uploaded"
+          }
+        },
+        "type": "object",
+        "required": ["uploaded"],
+        "title": "CampaignImageUploadResponse"
+      },
+      "CampaignMode": {
+        "type": "string",
+        "enum": ["TARGET", "ONGOING"],
+        "title": "CampaignMode"
+      },
+      "CampaignRead": {
+        "properties": {
+          "title": { "type": "string", "title": "Title" },
+          "description": { "type": "string", "title": "Description" },
+          "mode": { "$ref": "#/components/schemas/CampaignMode" },
+          "target_amount": {
+            "anyOf": [{ "type": "number" }, { "type": "null" }],
+            "title": "Target Amount"
+          },
+          "id": { "type": "integer", "title": "Id" },
+          "user_id": { "type": "integer", "title": "User Id" },
+          "slug": { "type": "string", "title": "Slug" },
+          "amount_raised": { "type": "number", "title": "Amount Raised" },
+          "status": { "$ref": "#/components/schemas/CampaignStatus" },
+          "qr_code_page_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Qr Code Page Url"
+          },
+          "qr_code_direct_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Qr Code Direct Url"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "description",
+          "mode",
+          "id",
+          "user_id",
+          "slug",
+          "amount_raised",
+          "status",
+          "created_at"
+        ],
+        "title": "CampaignRead"
+      },
+      "CampaignStatus": {
+        "type": "string",
+        "enum": ["ACTIVE", "CLOSED", "SUSPENDED"],
+        "title": "CampaignStatus"
+      },
+      "DonationCreate": {
+        "properties": {
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount",
+            "description": "Donation amount must be greater than 0"
+          },
+          "donor_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Donor Name",
+            "default": "Anonymous"
+          },
+          "message": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Message"
+          },
+          "campaign_id": { "type": "integer", "title": "Campaign Id" }
+        },
+        "type": "object",
+        "required": ["amount", "campaign_id"],
+        "title": "DonationCreate"
+      },
+      "DonationRead": {
+        "properties": {
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount",
+            "description": "Donation amount must be greater than 0"
+          },
+          "donor_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Donor Name",
+            "default": "Anonymous"
+          },
+          "message": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Message"
+          },
+          "id": { "type": "integer", "title": "Id" },
+          "campaign_id": { "type": "integer", "title": "Campaign Id" },
+          "client_reference": { "type": "string", "title": "Client Reference" },
+          "status": { "type": "string", "title": "Status" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount",
+          "id",
+          "campaign_id",
+          "client_reference",
+          "status",
+          "created_at"
+        ],
+        "title": "DonationRead"
+      },
+      "EmailVerifyRequest": {
+        "properties": { "code": { "type": "string", "title": "Code" } },
+        "type": "object",
+        "required": ["code"],
+        "title": "EmailVerifyRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": { "$ref": "#/components/schemas/ValidationError" },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "KYCDocumentType": {
+        "type": "string",
+        "enum": ["NATIONAL_ID", "PASSPORT", "DRIVERS_LICENSE"],
+        "title": "KYCDocumentType"
+      },
+      "KYCRead": {
+        "properties": {
+          "document_type": { "$ref": "#/components/schemas/KYCDocumentType" },
+          "id": { "type": "integer", "title": "Id" },
+          "user_id": { "type": "integer", "title": "User Id" },
+          "document_file_url": {
+            "type": "string",
+            "title": "Document File Url"
+          },
+          "status": { "$ref": "#/components/schemas/KYCStatus" },
+          "reviewed_by_admin_id": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Reviewed By Admin Id"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Reviewed At"
+          },
+          "rejection_reason": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Rejection Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_type",
+          "id",
+          "user_id",
+          "document_file_url",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "KYCRead"
+      },
+      "KYCStatus": {
+        "type": "string",
+        "enum": ["SUBMITTED", "REVIEWING", "APPROVED", "REJECTED"],
+        "title": "KYCStatus"
+      },
+      "KYCStatusResponse": {
+        "properties": {
+          "status": { "type": "string", "title": "Status" },
+          "last_submission_id": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Last Submission Id"
+          },
+          "last_submission_date": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Last Submission Date"
+          },
+          "rejection_reason": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Rejection Reason"
+          }
+        },
+        "type": "object",
+        "required": ["status"],
+        "title": "KYCStatusResponse",
+        "description": "User's current KYC status."
+      },
+      "ModerationReportCreate": {
+        "properties": {
+          "reported_entity_type": {
+            "$ref": "#/components/schemas/ReportEntityType"
+          },
+          "reported_entity_id": {
+            "type": "integer",
+            "title": "Reported Entity Id"
+          },
+          "campaign_id": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Campaign Id"
+          },
+          "reason": { "$ref": "#/components/schemas/ReportReason" },
+          "description": { "type": "string", "title": "Description" }
+        },
+        "type": "object",
+        "required": [
+          "reported_entity_type",
+          "reported_entity_id",
+          "reason",
+          "description"
+        ],
+        "title": "ModerationReportCreate"
+      },
+      "ModerationReportRead": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "reported_entity_type": {
+            "$ref": "#/components/schemas/ReportEntityType"
+          },
+          "reported_entity_id": {
+            "type": "integer",
+            "title": "Reported Entity Id"
+          },
+          "campaign_id": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Campaign Id"
+          },
+          "reported_by_user_id": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Reported By User Id"
+          },
+          "reason": { "$ref": "#/components/schemas/ReportReason" },
+          "description": { "type": "string", "title": "Description" },
+          "status": { "$ref": "#/components/schemas/ReportStatus" },
+          "moderation_note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Moderation Note"
+          },
+          "resolved_by_admin_id": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Resolved By Admin Id"
+          },
+          "resolved_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Resolved At"
+          },
+          "action_taken": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Action Taken"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "reported_entity_type",
+          "reported_entity_id",
+          "reason",
+          "description",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ModerationReportRead"
+      },
+      "ModerationReportResolve": {
+        "properties": {
+          "status": { "$ref": "#/components/schemas/ReportStatus" },
+          "action_taken": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Action Taken"
+          },
+          "moderation_note": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Moderation Note"
+          }
+        },
+        "type": "object",
+        "required": ["status"],
+        "title": "ModerationReportResolve"
+      },
+      "PasswordResetConfirm": {
+        "properties": {
+          "token": { "type": "string", "title": "Token" },
+          "new_password": { "type": "string", "title": "New Password" }
+        },
+        "type": "object",
+        "required": ["token", "new_password"],
+        "title": "PasswordResetConfirm"
+      },
+      "PasswordResetRequest": {
+        "properties": {
+          "email": { "type": "string", "format": "email", "title": "Email" }
+        },
+        "type": "object",
+        "required": ["email"],
+        "title": "PasswordResetRequest"
+      },
+      "PayoutOverviewItem": {
+        "properties": {
+          "payout_id": { "type": "integer", "title": "Payout Id" },
+          "campaign_id": { "type": "integer", "title": "Campaign Id" },
+          "campaign_title": { "type": "string", "title": "Campaign Title" },
+          "user_id": { "type": "integer", "title": "User Id" },
+          "user_name": { "type": "string", "title": "User Name" },
+          "gross_amount": { "type": "number", "title": "Gross Amount" },
+          "hexai_fee": { "type": "number", "title": "Hexai Fee" },
+          "platform_commission": {
+            "type": "number",
+            "title": "Platform Commission"
+          },
+          "net_amount": { "type": "number", "title": "Net Amount" },
+          "status": { "type": "string", "title": "Status" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payout_id",
+          "campaign_id",
+          "campaign_title",
+          "user_id",
+          "user_name",
+          "gross_amount",
+          "hexai_fee",
+          "platform_commission",
+          "net_amount",
+          "status",
+          "created_at"
+        ],
+        "title": "PayoutOverviewItem",
+        "description": "Summary of recent payouts for oversight."
+      },
+      "PayoutRequest": {
+        "properties": {
+          "campaign_id": { "type": "integer", "title": "Campaign Id" },
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount",
+            "description": "The amount you want to withdraw"
+          }
+        },
+        "type": "object",
+        "required": ["campaign_id", "amount"],
+        "title": "PayoutRequest"
+      },
+      "ProofRead": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "campaign_id": { "type": "integer", "title": "Campaign Id" },
+          "file_url": { "type": "string", "title": "File Url" },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "uploaded_by_user_id": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Uploaded By User Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["id", "campaign_id", "file_url", "created_at"],
+        "title": "ProofRead"
+      },
+      "ReportEntityType": {
+        "type": "string",
+        "enum": ["CAMPAIGN", "REVIEW", "USER"],
+        "title": "ReportEntityType",
+        "description": "Types of entities that can be reported."
+      },
+      "ReportReason": {
+        "type": "string",
+        "enum": [
+          "SCAM",
+          "INAPPROPRIATE_CONTENT",
+          "HATE_SPEECH",
+          "FALSE_INFORMATION",
+          "HARASSMENT",
+          "SPAM",
+          "OTHER"
+        ],
+        "title": "ReportReason",
+        "description": "Common reasons for reporting."
+      },
+      "ReportStatus": {
+        "type": "string",
+        "enum": ["OPEN", "REVIEWING", "RESOLVED", "DISMISSED"],
+        "title": "ReportStatus",
+        "description": "Status of a moderation report."
+      },
+      "ReviewBase": {
+        "properties": {
+          "donor_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Donor Name",
+            "default": "Anonymous"
+          },
+          "comment": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Comment",
+            "description": "The review text"
+          },
+          "rating": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Rating",
+            "description": "Rating from 1 to 5",
+            "default": 5
+          }
+        },
+        "type": "object",
+        "required": ["comment"],
+        "title": "ReviewBase"
+      },
+      "ReviewRead": {
+        "properties": {
+          "donor_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Donor Name",
+            "default": "Anonymous"
+          },
+          "comment": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Comment",
+            "description": "The review text"
+          },
+          "rating": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Rating",
+            "description": "Rating from 1 to 5",
+            "default": 5
+          },
+          "id": { "type": "integer", "title": "Id" },
+          "campaign_id": { "type": "integer", "title": "Campaign Id" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["comment", "id", "campaign_id", "created_at"],
+        "title": "ReviewRead"
+      },
+      "UserCreate": {
+        "properties": {
+          "full_name": { "type": "string", "title": "Full Name" },
+          "email": { "type": "string", "format": "email", "title": "Email" },
+          "wave_number": {
+            "type": "string",
+            "title": "Wave Number",
+            "description": "Gambian Wave number, e.g., +2201234567"
+          },
+          "password": { "type": "string", "title": "Password" }
+        },
+        "type": "object",
+        "required": ["full_name", "email", "wave_number", "password"],
+        "title": "UserCreate"
+      },
+      "UserOverviewItem": {
+        "properties": {
+          "id": { "type": "integer", "title": "Id" },
+          "full_name": { "type": "string", "title": "Full Name" },
+          "email": { "type": "string", "title": "Email" },
+          "wave_number": { "type": "string", "title": "Wave Number" },
+          "role": { "type": "string", "title": "Role" },
+          "kyc_status": { "type": "string", "title": "Kyc Status" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "campaign_count": { "type": "integer", "title": "Campaign Count" },
+          "total_raised": { "type": "number", "title": "Total Raised" },
+          "last_activity": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Last Activity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "full_name",
+          "email",
+          "wave_number",
+          "role",
+          "kyc_status",
+          "created_at",
+          "campaign_count",
+          "total_raised"
+        ],
+        "title": "UserOverviewItem",
+        "description": "Quick summary of a user for admin oversight."
+      },
+      "UserRead": {
+        "properties": {
+          "full_name": { "type": "string", "title": "Full Name" },
+          "email": { "type": "string", "title": "Email" },
+          "wave_number": {
+            "type": "string",
+            "title": "Wave Number",
+            "description": "Gambian Wave number, e.g., +2201234567"
+          },
+          "id": { "type": "integer", "title": "Id" },
+          "is_email_verified": {
+            "type": "boolean",
+            "title": "Is Email Verified"
+          },
+          "role": { "type": "string", "title": "Role" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "full_name",
+          "email",
+          "wave_number",
+          "id",
+          "is_email_verified",
+          "role",
+          "created_at"
+        ],
+        "title": "UserRead"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": { "type": "string", "title": "Message" },
+          "type": { "type": "string", "title": "Error Type" }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      },
+      "WebhookPayload": {
+        "properties": {
+          "event": { "type": "string", "title": "Event" },
+          "transaction": { "type": "object", "title": "Transaction" }
+        },
+        "type": "object",
+        "required": ["event", "transaction"],
+        "title": "WebhookPayload"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": { "password": { "scopes": {}, "tokenUrl": "/api/auth/login" } }
+      }
+    }
+  }
+}

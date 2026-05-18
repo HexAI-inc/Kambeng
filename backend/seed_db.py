@@ -12,6 +12,7 @@ from app.models.alias import CampaignAlias  # noqa: F401
 from app.models.moderation import ModerationReport  # noqa: F401
 from app.models.user import User
 from app.models.campaign import Campaign, CampaignMode, CampaignStatus
+from app.models.recurring_donation import RecurringDonation  # noqa: F401
 
 
 def _seed_users() -> list[dict]:

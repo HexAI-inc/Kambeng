@@ -45,16 +45,19 @@ media_root = Path(settings.MEDIA_ROOT)
 media_root.mkdir(parents=True, exist_ok=True)
 app.mount(settings.MEDIA_URL_PREFIX, StaticFiles(directory=str(media_root)), name="media")
 
+allowed_origins = {
+    settings.FRONTEND_URL,
+    "http://localhost:4200",
+    "http://localhost:4201",
+    "http://localhost:4202",
+    "http://localhost:4203",
+    "http://localhost:4204",
+    "http://localhost:4205",
+}
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:4200",
-        "http://localhost:4201",
-        "http://localhost:4202",
-        "http://localhost:4203",
-        "http://localhost:4204",
-        "http://localhost:4205"
-    ],
+    allow_origins=sorted(origin for origin in allowed_origins if origin),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

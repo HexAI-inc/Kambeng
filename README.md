@@ -365,35 +365,56 @@ The script:
 
 ## 🚀 Deployment
 
-### Docker Deployment (Backend + Database)
+### VPS Deployment
+
+For the VPS at `139.59.170.49`, the simplest setup is:
+
+1. Run the backend and PostgreSQL with Docker Compose.
+2. Run the frontend as a production Next.js process.
+3. Point both apps at the VPS public URLs so generated links and image URLs resolve correctly.
+
+Backend environment values to set on the VPS:
+
+```env
+ENVIRONMENT=prod
+FRONTEND_URL=http://kambeng.cjalloh.com
+BACKEND_PUBLIC_URL=http://api.kambeng.cjalloh.com
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/kambeng
+SECRET_KEY=replace-with-a-long-random-secret
+HEXAI_WEBHOOK_SECRET=replace-with-your-webhook-secret
+HEXAI_API_KEY=replace-with-your-hexai-key
+RESEND_API_KEY=replace-with-your-resend-key
+FIELD_ENCRYPTION_KEY=replace-with-a-fernet-key
+DO_SPACES_KEY=replace-with-your-spaces-key
+DO_SPACES_SECRET=replace-with-your-spaces-secret
+```
+
+Backend start-up:
 
 ```bash
 cd backend
-docker-compose up -d
+cp .env.example .env
+docker compose up -d --build
 ```
 
-Services:
-- **API**: `http://localhost:8001`
-- **PostgreSQL**: `localhost:5432`
-- **Docs**: `http://localhost:8001/docs`
+Frontend environment values to set before build:
 
-### Frontend Deployment
+```env
+NEXT_PUBLIC_API_BASE_URL=/api/backend
+BACKEND_API_BASE_URL=http://127.0.0.1:8001/api
+BACKEND_PUBLIC_URL=http://api.kambeng.cjalloh.com
+```
 
-**Build:**
+Frontend start-up:
+
 ```bash
 cd frontend-next
+npm ci
 npm run build
+npm run start
 ```
 
-**Deploy to Vercel:**
-```bash
-vercel deploy --prod
-```
-
-Or deploy to your own server:
-```bash
-npm run build && npm start
-```
+If you want a split public setup, put Nginx in front with `kambeng.cjalloh.com` proxying `/` to the frontend and `api.kambeng.cjalloh.com` proxying `/api` and `/uploads` to the backend. The frontend should listen on `127.0.0.1:3000` and the backend API on `127.0.0.1:8001`.
 
 ---
 

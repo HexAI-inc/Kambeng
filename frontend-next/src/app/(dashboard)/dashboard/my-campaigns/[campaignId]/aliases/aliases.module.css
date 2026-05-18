@@ -1,0 +1,191 @@
+.container {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+
+.createHint {
+  color: #999;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.createForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.inputGroup {
+  flex: 1;
+  min-width: 250px;
+}
+
+.label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #262626;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
+
+  &:focus-within {
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    padding: 0.5rem 0.75rem;
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+.prefix {
+  padding: 0.5rem 0.75rem;
+  background: #f5f5f5;
+  color: #666;
+  font-size: 0.9rem;
+  border-right: 1px solid #d9d9d9;
+  font-weight: 500;
+}
+
+.inputHint {
+  font-size: 0.8rem;
+  color: #999;
+  margin-top: 0.25rem;
+}
+
+.aliasesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.aliasItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #fafafa;
+  border-radius: 8px;
+  border-left: 4px solid #1890ff;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #f5f5f5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.aliasInfo {
+  flex: 1;
+}
+
+.aliasCode {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 0.5rem;
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.code {
+  color: #1890ff;
+  background: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.aliasUrl {
+  font-size: 0.85rem;
+  color: #999;
+  margin: 0.25rem 0;
+  word-break: break-all;
+}
+
+.created {
+  font-size: 0.75rem;
+  color: #bfbfbf;
+  margin: 0;
+}
+
+.aliasActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.emptyContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #999;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+}
+
+.emptyContent h3 {
+  margin: 0;
+  color: #262626;
+  font-size: 1.1rem;
+}
+
+.emptyContent p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.infoCard {
+  border-left: 4px solid #faad14;
+  background: #fffbe6;
+
+  h4 {
+    margin: 0 0 0.75rem 0;
+    color: #262626;
+  }
+}
+
+.infoList {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #666;
+  font-size: 0.9rem;
+
+  li {
+    margin-bottom: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}

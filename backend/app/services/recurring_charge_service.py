@@ -12,7 +12,7 @@ from app.models.ledger import TransactionLedger, TransactionType, TransactionSta
 from app.services.hexai_service import HexAIPaymentService
 from app.services.email_service import send_email, render_recurring_donation_reminder
 from app.core.config import settings
-from app.db.database import async_engine
+from app.db.database import engine as async_engine
 import uuid
 import time
 

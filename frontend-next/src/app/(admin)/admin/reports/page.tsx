@@ -97,29 +97,29 @@ export default function AdminReportsPage() {
 
         {/* KPI grid */}
         <motion.div {...fadeUp(0.06)}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden", marginBottom: 2 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden", marginBottom: 2 }}>
             {[
-              { label: "Transactions",      value: String(summary?.transaction_count ?? 0),                              color: "#f0f6ff" },
-              { label: "Total Donations",   value: `${(summary?.total_donations ?? 0).toFixed(2)} GMD`,                  color: GREEN },
-              { label: "Total Withdrawals", value: `${(summary?.total_withdrawals ?? 0).toFixed(2)} GMD`,                color: BLUE },
-              { label: "Platform Revenue",  value: `${(systemStats?.total_platform_revenue ?? 0).toFixed(2)} GMD`,       color: "#f97316" },
-            ].map(({ label, value, color }, i, arr) => (
-              <div key={label} style={{ padding: "14px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+              { label: "Transactions",      value: String(summary?.transaction_count ?? 0),                        color: "#f0f6ff" },
+              { label: "Total Donations",   value: `${(summary?.total_donations ?? 0).toFixed(2)} GMD`,            color: GREEN },
+              { label: "Total Withdrawals", value: `${(summary?.total_withdrawals ?? 0).toFixed(2)} GMD`,          color: BLUE },
+              { label: "Platform Revenue",  value: `${(systemStats?.total_platform_revenue ?? 0).toFixed(2)} GMD`, color: "#f97316" },
+            ].map(({ label, value, color }, i) => (
+              <div key={label} style={{ padding: "14px 16px", borderRight: i % 2 === 0 ? "1px solid rgba(255,255,255,0.05)" : "none", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
                 <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color }}>{value}</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color }}>{value}</div>
               </div>
             ))}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
-              { label: "Users",          value: String(systemStats?.total_users ?? 0),          color: "#f0f6ff" },
-              { label: "Active Campaigns",value: String(systemStats?.active_campaigns ?? 0),    color: GREEN },
-              { label: "KYC Pending",    value: String(systemStats?.kyc_pending_count ?? 0),    color: "#f97316" },
-              { label: "KYC Approved",   value: String(systemStats?.kyc_approved_count ?? 0),   color: GREEN },
-            ].map(({ label, value, color }, i, arr) => (
-              <div key={label} style={{ padding: "14px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+              { label: "Users",           value: String(systemStats?.total_users ?? 0),        color: "#f0f6ff" },
+              { label: "Active Campaigns",value: String(systemStats?.active_campaigns ?? 0),   color: GREEN },
+              { label: "KYC Pending",     value: String(systemStats?.kyc_pending_count ?? 0),  color: "#f97316" },
+              { label: "KYC Approved",    value: String(systemStats?.kyc_approved_count ?? 0), color: GREEN },
+            ].map(({ label, value, color }, i) => (
+              <div key={label} style={{ padding: "14px 16px", borderRight: i % 2 === 0 ? "1px solid rgba(255,255,255,0.05)" : "none", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
                 <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color }}>{value}</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color }}>{value}</div>
               </div>
             ))}
           </div>
@@ -147,109 +147,111 @@ export default function AdminReportsPage() {
           </div>
         </motion.div>
 
-        {/* Transactions table */}
-        <AdminTable
-          title="Transactions"
-          headers={["ID", "Campaign", "Type", "Status", "Gross", "Net", "Reference", "Date"]}
-          cols="52px 80px 120px 110px 100px 100px 140px 90px"
-          rows={txRows}
-          renderRow={(t: AdminTransaction) => [
-            <span style={{ fontSize: 12, color: "#4a5568" }}>#{t.id}</span>,
-            <Link href={`/admin/reports/campaign/${t.campaign_id}`} style={{ color: BLUE, fontSize: 12, fontWeight: 600, textDecoration: "none" }}>#{t.campaign_id}</Link>,
-            <TypeChip type={String(t.transaction_type)} />,
-            <StatusChip status={String(t.status)} />,
-            <span style={{ fontSize: 13, color: "#f0f6ff" }}>{t.gross_amount}</span>,
-            <span style={{ fontSize: 13, color: GREEN }}>{t.net_amount}</span>,
-            <span style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{t.external_reference || "—"}</span>,
-            <span style={{ fontSize: 11, color: "#4a5568" }}>{new Date(t.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
-          ]}
-          page={txPage}
-          totalPages={txPages}
-          onPageChange={setTxPage}
-          emptyText="No transactions match these filters"
-        />
+        {/* Transactions */}
+        <div>
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>Transactions</div>
+            {txRows.length === 0 ? (
+              <div style={{ padding: "36px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No transactions match these filters</div>
+            ) : txRows.map((t: AdminTransaction, i) => (
+              <div key={i} style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, gap: 8 }}>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                    <TypeChip type={String(t.transaction_type)} />
+                    <Link href={`/admin/reports/campaign/${t.campaign_id}`} style={{ color: BLUE, fontSize: 12, fontWeight: 600, textDecoration: "none" }}>Campaign #{t.campaign_id}</Link>
+                  </div>
+                  <StatusChip status={String(t.status)} />
+                </div>
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Gross</div>
+                    <div style={{ fontSize: 13, color: "#f0f6ff" }}>{t.gross_amount}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Net</div>
+                    <div style={{ fontSize: 13, color: GREEN }}>{t.net_amount}</div>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#4a5568", alignSelf: "flex-end" }}>
+                    {new Date(t.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} · #{t.id}
+                  </div>
+                </div>
+                {t.external_reference && <div style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace", marginTop: 4 }}>{t.external_reference}</div>}
+              </div>
+            ))}
+          </div>
+          <PageNav page={txPage} total={txPages} onChange={setTxPage} />
+        </div>
 
-        {/* Payouts table */}
-        <AdminTable
-          title="Payouts"
-          headers={["Payout", "Campaign", "User", "Gross", "Net", "Status", "Date"]}
-          cols="80px 1fr 140px 110px 110px 110px 90px"
-          rows={payRows}
-          renderRow={(p: AdminPayoutOverview) => [
-            <span style={{ fontSize: 12, color: "#4a5568" }}>#{p.payout_id}</span>,
-            <span style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600 }}>{p.campaign_title}</span>,
-            <span style={{ fontSize: 12, color: "#8899aa" }}>{p.user_name}</span>,
-            <span style={{ fontSize: 13, color: "#f0f6ff" }}>{p.gross_amount}</span>,
-            <span style={{ fontSize: 13, color: GREEN }}>{p.net_amount}</span>,
-            <StatusChip status={String(p.status)} />,
-            <span style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
-          ]}
-          page={payPage}
-          totalPages={payPages}
-          onPageChange={setPayPage}
-          emptyText="No payouts yet"
-        />
+        {/* Payouts */}
+        <div>
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>Payouts</div>
+            {payRows.length === 0 ? (
+              <div style={{ padding: "36px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No payouts yet</div>
+            ) : payRows.map((p: AdminPayoutOverview, i) => (
+              <div key={i} style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{p.campaign_title}</div>
+                    <div style={{ fontSize: 11, color: "#8899aa" }}>{p.user_name} · {new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+                  </div>
+                  <StatusChip status={String(p.status)} />
+                </div>
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Gross</div>
+                    <div style={{ fontSize: 13, color: "#f0f6ff" }}>{p.gross_amount}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Net</div>
+                    <div style={{ fontSize: 13, color: GREEN }}>{p.net_amount}</div>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#4a5568", alignSelf: "flex-end" }}>Payout #{p.payout_id}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <PageNav page={payPage} total={payPages} onChange={setPayPage} />
+        </div>
 
-        {/* Audit logs table */}
-        <AdminTable
-          title="Audit Logs"
-          headers={["ID", "Action", "Entity", "Description", "When"]}
-          cols="52px 140px 120px 1fr 100px"
-          rows={auditRows}
-          renderRow={(a: AdminAuditLog) => [
-            <span style={{ fontSize: 12, color: "#4a5568" }}>#{a.id}</span>,
-            <span style={{ fontSize: 12, fontWeight: 700, color: BLUE }}>{a.action_type}</span>,
-            <span style={{ fontSize: 12, color: "#8899aa" }}>{a.target_entity_type}</span>,
-            <span style={{ fontSize: 12, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.description}</span>,
-            <span style={{ fontSize: 11, color: "#4a5568" }}>{new Date(a.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
-          ]}
-          page={auditPage}
-          totalPages={auditPages}
-          onPageChange={setAuditPage}
-          emptyText="No audit logs"
-        />
+        {/* Audit Logs */}
+        <div>
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>Audit Logs</div>
+            {auditRows.length === 0 ? (
+              <div style={{ padding: "36px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No audit logs</div>
+            ) : auditRows.map((a: AdminAuditLog, i) => (
+              <div key={i} style={{ padding: "12px 18px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: BLUE }}>{a.action_type}</span>
+                  <span style={{ fontSize: 11, color: "#4a5568" }}>{new Date(a.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                </div>
+                <div style={{ fontSize: 11, color: "#8899aa" }}>{a.target_entity_type} · #{a.id}</div>
+                {a.description && <div style={{ fontSize: 12, color: "#6b7a8d", marginTop: 2 }}>{a.description}</div>}
+              </div>
+            ))}
+          </div>
+          <PageNav page={auditPage} total={auditPages} onChange={setAuditPage} />
+        </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
 
-function AdminTable<T>({ title, headers, cols, rows, renderRow, page, totalPages, onPageChange, emptyText }: {
-  title: string;
-  headers: string[];
-  cols: string;
-  rows: T[];
-  renderRow: (row: T) => React.ReactNode[];
-  page: number;
-  totalPages: number;
-  onPageChange: (p: number) => void;
-  emptyText: string;
-}) {
+function PageNav({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
+  if (total <= 1) return null;
   return (
-    <div>
-      <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
-        <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{title}</div>
-        <div style={{ display: "grid", gridTemplateColumns: cols, padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-          {headers.map((h) => <div key={h}>{h}</div>)}
-        </div>
-        {rows.length === 0 ? (
-          <div style={{ padding: "36px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>{emptyText}</div>
-        ) : rows.map((row, i) => (
-          <div key={i} style={{ display: "grid", gridTemplateColumns: cols, padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s", gap: 8 }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
-          >
-            {renderRow(row).map((cell, j) => <div key={j}>{cell}</div>)}
-          </div>
-        ))}
-      </div>
-      {totalPages > 1 && (
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 10 }}>
-          <button onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page === 1} style={pageBtnStyle(false)}>←</button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => <button key={p} onClick={() => onPageChange(p)} style={pageBtnStyle(p === page)}>{p}</button>)}
-          <button onClick={() => onPageChange(Math.min(totalPages, page + 1))} disabled={page === totalPages} style={pageBtnStyle(false)}>→</button>
-        </div>
-      )}
+    <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 10 }}>
+      <button onClick={() => onChange(Math.max(1, page - 1))} disabled={page === 1} style={pageBtnStyle(false)}>←</button>
+      {Array.from({ length: total }, (_, i) => i + 1).map((p) => <button key={p} onClick={() => onChange(p)} style={pageBtnStyle(p === page)}>{p}</button>)}
+      <button onClick={() => onChange(Math.min(total, page + 1))} disabled={page === total} style={pageBtnStyle(false)}>→</button>
     </div>
   );
 }

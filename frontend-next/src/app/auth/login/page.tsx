@@ -6,7 +6,7 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string; error?: string; message?: string }>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const nextTarget = resolvedSearchParams.next || "/dashboard";
+  const nextTarget = resolvedSearchParams.next || "";
 
   return (
     <LoginFormCard

@@ -94,42 +94,12 @@ function FeaturedCampaignCard({ campaign }: {
     }}>
       {/* Cover — full bleed image OR rich gradient placeholder */}
       <div style={{ position: "relative", height: 170, flexShrink: 0, overflow: "hidden" }}>
-        {campaign.cover_image_url ? (
-          <Image src={campaign.cover_image_url} alt={campaign.title}
-            fill unoptimized sizes="400px" style={{ objectFit: "cover" }} />
-        ) : (
-          /* Gradient placeholder — visually rich, no flag */
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(135deg, #0d2340 0%, #0a3d5c 40%, #061e30 100%)",
-          }}>
-            {/* Decorative circles */}
-            <div style={{
-              position: "absolute", width: 180, height: 180, borderRadius: "50%",
-              background: "rgba(29,197,255,0.08)", top: -40, right: -40,
-            }} />
-            <div style={{
-              position: "absolute", width: 100, height: 100, borderRadius: "50%",
-              background: "rgba(29,197,255,0.05)", bottom: -20, left: 20,
-            }} />
-            {/* Campaign initial — large, elegant */}
-            <div style={{
-              position: "absolute", inset: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <div style={{
-                width: 64, height: 64, borderRadius: 18,
-                background: "rgba(29,197,255,0.12)",
-                border: "1px solid rgba(29,197,255,0.2)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 28, fontWeight: 900, color: BLUE,
-                letterSpacing: "-0.02em",
-              }}>
-                {campaign.title.charAt(0).toUpperCase()}
-              </div>
-            </div>
-          </div>
-        )}
+        <Image
+          src={campaign.cover_image_url ?? "/sample.png"}
+          alt={campaign.title}
+          fill unoptimized sizes="400px"
+          style={{ objectFit: "cover", objectPosition: "center top" }}
+        />
         {/* Gradient overlay — title reads on top of any image */}
         <div style={{
           position: "absolute", inset: 0,

@@ -4,12 +4,14 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { logoutSession } from "@/lib/api";
+import { queryClient } from "@/lib/query-client";
 
 export default function LogoutPage() {
   const router = useRouter();
 
   useEffect(() => {
     logoutSession().finally(() => {
+      queryClient.clear();
       router.replace("/auth/login");
     });
   }, [router]);

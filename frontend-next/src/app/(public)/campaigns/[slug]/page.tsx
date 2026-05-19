@@ -150,9 +150,20 @@ export default function CampaignDetailPage() {
                 <Image src={campaign.cover_image_url} alt={campaign.title} fill unoptimized
                   sizes="45vw" style={{ objectFit: "cover" }} />
               ) : (
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12 }}>
-                  <span style={{ fontSize: 64, opacity: 0.2 }}>🇬🇲</span>
-                  <span style={{ color: WAVE_BLUE, fontWeight: 700, fontSize: 13, opacity: 0.4, letterSpacing: "0.12em" }}>KAMBENG</span>
+                <div style={{
+                  position: "absolute", inset: 0,
+                  background: "linear-gradient(135deg, #0d2340 0%, #0a3d5c 50%, #061e30 100%)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <div style={{
+                    width: 80, height: 80, borderRadius: 20,
+                    background: "rgba(29,197,255,0.1)",
+                    border: "1px solid rgba(29,197,255,0.2)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 36, fontWeight: 900, color: WAVE_BLUE,
+                  }}>
+                    {campaign.title.charAt(0).toUpperCase()}
+                  </div>
                 </div>
               )}
             </div>

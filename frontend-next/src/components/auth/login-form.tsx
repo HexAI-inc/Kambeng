@@ -57,21 +57,20 @@ export function LoginFormCard({ nextTarget, errorMessage, successMessage }: Logi
   return (
     <AuthShell
       title="Sign in to Kambeng"
-      description="Manage campaigns, reviews, and payments from one place. Use your email or wave number with your password."
+      description="Manage campaigns, reviews, and payments from one place. Use your email or Wave number with your password."
       aside={
         <div
           style={{
-            padding: 18,
-            borderRadius: 0,
-            background: "linear-gradient(135deg, rgba(29,197,255,0.14), rgba(255,255,255,0.68))",
-            border: "1px solid rgba(29,197,255,0.18)",
-            backdropFilter: "blur(12px)",
+            padding: 16,
+            borderRadius: 12,
+            background: "rgba(29,197,255,0.06)",
+            border: "1px solid rgba(29,197,255,0.15)",
             maxWidth: 460,
           }}
         >
-          <AppText strong>Seeded admin account</AppText>
+          <AppText strong style={{ color: "#f0f6ff" }}>Demo admin account</AppText>
           <div style={{ marginTop: 8 }}>
-            <AppText type="secondary">Wave number: +2207000000</AppText>
+            <AppText type="secondary">Wave: +2207000000</AppText>
           </div>
           <div>
             <AppText type="secondary">Password: AdminPass123!</AppText>
@@ -110,10 +109,10 @@ export function LoginFormCard({ nextTarget, errorMessage, successMessage }: Logi
         </AppButton>
 
         <div style={{ display: "flex", gap: 8, justifyContent: "space-between", alignItems: "center" }}>
-          <Link href="/auth/forgot-password" style={{ fontSize: 13, color: "var(--wave-blue-deep)" }}>
+          <Link href="/auth/forgot-password" style={{ fontSize: 13, color: "#1dc5ff" }}>
             Forgot password?
           </Link>
-          <Link href="/auth/verify-email" style={{ fontSize: 13, color: "var(--wave-blue-deep)" }}>
+          <Link href="/auth/verify-email" style={{ fontSize: 13, color: "#1dc5ff" }}>
             Verify email
           </Link>
         </div>

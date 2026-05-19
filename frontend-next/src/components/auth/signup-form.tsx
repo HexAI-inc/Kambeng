@@ -74,17 +74,16 @@ export function SignupFormCard({ errorMessage }: SignupFormCardProps) {
       aside={
         <div
           style={{
-            padding: 18,
-            borderRadius: 0,
-            background: "linear-gradient(135deg, rgba(29,197,255,0.14), rgba(255,255,255,0.68))",
-            border: "1px solid rgba(29,197,255,0.18)",
-            backdropFilter: "blur(12px)",
+            padding: 16,
+            borderRadius: 12,
+            background: "rgba(27,191,136,0.06)",
+            border: "1px solid rgba(27,191,136,0.15)",
             maxWidth: 460,
           }}
         >
-          <AppText strong>Already have an account?</AppText>
+          <AppText strong style={{ color: "#f0f6ff" }}>Already have an account?</AppText>
           <div style={{ marginTop: 8 }}>
-            <Link href="/auth/login">Go to login</Link>
+            <Link href="/auth/login" style={{ color: "#1dc5ff", fontSize: 14 }}>Sign in instead</Link>
           </div>
         </div>
       }

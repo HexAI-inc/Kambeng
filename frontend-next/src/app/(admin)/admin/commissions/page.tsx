@@ -1,220 +1,187 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ColumnDef } from "@tanstack/react-table";
-import {
-  useAdminCommissionsSummary,
-  useAdminCommissionSources,
-  useWithdrawCommissions,
-} from "@/hooks/use-frontend-data";
+import { motion } from "framer-motion";
+import { useAdminCommissionsSummary, useAdminCommissionSources, useWithdrawCommissions } from "@/hooks/use-frontend-data";
 import type { CommissionSourceItem } from "@/types/frontend";
-import { AppDataTable } from "@/components/ui/data/data-table";
-import { AppButton } from "@/components/ui/primitives/button";
-import { AppPageHeader } from "@/components/ui/layout/page-header";
-import { AppCard, AppStatistic, AppSpace } from "@/components/ui";
-import { message, Modal, Input, Form, InputNumber } from "antd";
+
+const BLUE = "#1dc5ff";
+const GREEN = "#1bbf88";
+
+function fadeUp(delay = 0) {
+  return { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay, ease: "easeOut" as const } };
+}
+
+function StatusChip({ status }: { status: string }) {
+  const map: Record<string, { color: string; bg: string; border: string }> = {
+    PENDING:   { color: "#f97316", bg: "rgba(249,115,22,0.1)", border: "rgba(249,115,22,0.25)" },
+    SUCCEEDED: { color: GREEN,     bg: "rgba(27,191,136,0.1)", border: "rgba(27,191,136,0.25)" },
+    FAILED:    { color: "#ef4444", bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.25)" },
+  };
+  const s = map[status] ?? map.PENDING;
+  return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>{status}</span>;
+}
+
+const PAGE_SIZE = 10;
 
 export default function AdminCommissionsPage() {
   const router = useRouter();
   const { data: summary } = useAdminCommissionsSummary(true);
   const { data: sources } = useAdminCommissionSources(0, 100, true);
   const withdrawMutation = useWithdrawCommissions();
-  
-  const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
-  const [withdrawalAmount, setWithdrawalAmount] = useState<number | null>(null);
-  const [withdrawalReason, setWithdrawalReason] = useState("");
+
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawReason, setWithdrawReason] = useState("");
+  const [page, setPage] = useState(1);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+
+  const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
 
   const handleWithdraw = async () => {
-    if (!withdrawalAmount || withdrawalAmount <= 0) {
-      message.error("Please enter a valid withdrawal amount");
-      return;
-    }
-
+    const amount = parseFloat(withdrawAmount);
+    if (!amount || amount <= 0) { showToast("Enter a valid amount", false); return; }
     try {
-      await withdrawMutation.mutateAsync({
-        amount: withdrawalAmount,
-        reason: withdrawalReason || undefined,
-      });
-      message.success("Commission withdrawal request created successfully");
-      setIsWithdrawalModalOpen(false);
-      setWithdrawalAmount(null);
-      setWithdrawalReason("");
-    } catch (error) {
-      message.error("Failed to create withdrawal request");
-    }
+      await withdrawMutation.mutateAsync({ amount, reason: withdrawReason || undefined });
+      showToast("Withdrawal request created", true);
+      setShowWithdraw(false);
+      setWithdrawAmount("");
+      setWithdrawReason("");
+    } catch { showToast("Failed to create withdrawal", false); }
   };
 
-  const sourceColumns = useMemo<ColumnDef<CommissionSourceItem>[]>(
-    () => [
-      {
-        header: "Campaign",
-        cell: ({ row }) => (
-          <div>
-            <div className="font-semibold">{row.original.campaign_title}</div>
-            <div className="text-sm text-gray-500">#{row.original.campaign_id}</div>
-          </div>
-        ),
-      },
-      {
-        header: "User",
-        cell: ({ row }) => (
-          <div>
-            <div className="font-semibold">{row.original.user_name}</div>
-            <div className="text-sm text-gray-500">#{row.original.user_id}</div>
-          </div>
-        ),
-      },
-      {
-        header: "Gross Amount",
-        accessorKey: "gross_amount",
-        cell: ({ getValue }) => `${getValue<number>().toFixed(2)} GMD`,
-      },
-      {
-        header: "Commission",
-        accessorKey: "platform_commission",
-        cell: ({ getValue }) => (
-          <span className="font-semibold text-green-600">
-            +{getValue<number>().toFixed(2)} GMD
-          </span>
-        ),
-      },
-      {
-        header: "Status",
-        accessorKey: "status",
-        cell: ({ getValue }) => {
-          const status = String(getValue());
-          const colors: Record<string, string> = {
-            PENDING: "bg-yellow-100 text-yellow-800",
-            SUCCEEDED: "bg-green-100 text-green-800",
-            FAILED: "bg-red-100 text-red-800",
-          };
-          return (
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${colors[status] || "bg-gray-100 text-gray-800"}`}>
-              {status}
-            </span>
-          );
-        },
-      },
-      {
-        header: "Date",
-        accessorKey: "created_at",
-        cell: ({ getValue }) => new Date(String(getValue())).toLocaleDateString(),
-      },
-      {
-        header: "Actions",
-        cell: ({ row }) => (
-          <AppButton size="small" onClick={() => router.push(`/admin/campaigns/${row.original.campaign_id}/view`)}>
-            View Campaign
-          </AppButton>
-        ),
-      },
-    ],
-    [router]
-  );
+  const rows = sources ?? [];
+  const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const available = summary?.available_commissions ?? 0;
 
   return (
-    <div className="space-y-6">
-      <AppPageHeader 
-        title="Commissions & Revenue" 
-        description="Manage platform commissions and withdraw your revenue"
-      />
+    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <AppCard>
-          <AppStatistic 
-            title="Total Commissions" 
-            value={summary?.total_commissions ?? 0}
-            suffix=" GMD"
-            precision={2}
-          />
-        </AppCard>
-        <AppCard>
-          <AppStatistic 
-            title="Available" 
-            value={summary?.available_commissions ?? 0}
-            suffix=" GMD"
-            precision={2}
-            valueStyle={{ color: '#52c41a' }}
-          />
-        </AppCard>
-        <AppCard>
-          <AppStatistic 
-            title="Withdrawn" 
-            value={summary?.withdrawn_commissions ?? 0}
-            suffix=" GMD"
-            precision={2}
-            valueStyle={{ color: '#1890ff' }}
-          />
-        </AppCard>
-        <AppCard>
-          <AppStatistic 
-            title="Pending" 
-            value={summary?.pending_commissions ?? 0}
-            suffix=" GMD"
-            precision={2}
-            valueStyle={{ color: '#faad14' }}
-          />
-        </AppCard>
+        {toast && (
+          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : "#ef4444", fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>{toast.msg}</div>
+        )}
+
+        {/* Header */}
+        <motion.div {...fadeUp(0)}>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Commissions & Revenue</div>
+          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Platform fee earnings and withdrawal management</div>
+        </motion.div>
+
+        {/* KPI strip */}
+        <motion.div {...fadeUp(0.06)}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
+            {[
+              { label: "Total earned", value: `${(summary?.total_commissions ?? 0).toFixed(2)} GMD`, color: "#f0f6ff" },
+              { label: "Available", value: `${available.toFixed(2)} GMD`, color: GREEN },
+              { label: "Withdrawn", value: `${(summary?.withdrawn_commissions ?? 0).toFixed(2)} GMD`, color: BLUE },
+              { label: "Pending", value: `${(summary?.pending_commissions ?? 0).toFixed(2)} GMD`, color: "#f97316" },
+            ].map(({ label, value, color }, i, arr) => (
+              <div key={label} style={{ padding: "16px 20px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color, letterSpacing: "-0.02em" }}>{value}</div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Withdraw button */}
+        <motion.div {...fadeUp(0.1)}>
+          <button
+            onClick={() => setShowWithdraw(true)}
+            disabled={available <= 0 || withdrawMutation.isPending}
+            style={{
+              padding: "11px 24px", borderRadius: 10, border: "none",
+              background: available > 0 ? `linear-gradient(135deg, ${BLUE}, #079bd4)` : "rgba(255,255,255,0.06)",
+              color: available > 0 ? "#fff" : "#4a5568",
+              fontSize: 13, fontWeight: 700, cursor: available > 0 ? "pointer" : "not-allowed",
+              boxShadow: available > 0 ? "0 4px 16px rgba(29,197,255,0.3)" : "none",
+            }}
+          >
+            {withdrawMutation.isPending ? "Processing…" : "Withdraw Available Commissions"}
+          </button>
+        </motion.div>
+
+        {/* Withdraw modal */}
+        {showWithdraw && (
+          <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ background: "#0d1120", border: "1px solid rgba(29,197,255,0.2)", borderRadius: 14, padding: "22px 24px" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Withdraw Commissions</div>
+            <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 18 }}>Available: <span style={{ color: GREEN, fontWeight: 700 }}>{available.toFixed(2)} GMD</span></div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", display: "block", marginBottom: 6 }}>Amount (GMD)</label>
+                <input
+                  type="number" value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)}
+                  placeholder={`Max: ${available.toFixed(2)}`}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f0f6ff", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", display: "block", marginBottom: 6 }}>Reason (optional)</label>
+                <input
+                  value={withdrawReason} onChange={(e) => setWithdrawReason(e.target.value)}
+                  placeholder="Why are you withdrawing?"
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f0f6ff", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+              <button onClick={() => void handleWithdraw()} disabled={withdrawMutation.isPending} style={{ padding: "9px 22px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                {withdrawMutation.isPending ? "Processing…" : "Confirm Withdrawal"}
+              </button>
+              <button onClick={() => setShowWithdraw(false)} style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Sources table */}
+        <motion.div {...fadeUp(0.14)}>
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>Commission Sources</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 130px 130px 110px 100px 110px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+              <div>Campaign</div><div>User</div><div>Gross</div><div>Commission</div><div>Status</div><div>Date</div><div>Actions</div>
+            </div>
+
+            {rows.length === 0 ? (
+              <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No commission sources yet</div>
+            ) : pageRows.map((s: CommissionSourceItem, i: number) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 130px 130px 110px 100px 110px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
+              >
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{s.campaign_title}</div>
+                  <div style={{ fontSize: 11, color: "#4a5568" }}>#{s.campaign_id}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, color: "#8899aa" }}>{s.user_name}</div>
+                  <div style={{ fontSize: 11, color: "#4a5568" }}>#{s.user_id}</div>
+                </div>
+                <div style={{ fontSize: 13, color: "#8899aa" }}>{s.gross_amount.toFixed(2)} GMD</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>+{s.platform_commission.toFixed(2)} GMD</div>
+                <div><StatusChip status={s.status} /></div>
+                <div style={{ fontSize: 12, color: "#4a5568" }}>{new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+                <button onClick={() => router.push(`/admin/campaigns/${s.campaign_id}/view`)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}>View</button>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {totalPages > 1 && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={pageBtnStyle(false)}>←</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => <button key={p} onClick={() => setPage(p)} style={pageBtnStyle(p === page)}>{p}</button>)}
+            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={pageBtnStyle(false)}>→</button>
+          </div>
+        )}
       </div>
-
-      {/* Withdrawal Actions */}
-      <div className="flex gap-4">
-        <AppButton
-          type="primary"
-          onClick={() => setIsWithdrawalModalOpen(true)}
-          disabled={(summary?.available_commissions ?? 0) <= 0}
-          loading={withdrawMutation.isPending}
-        >
-          Withdraw Available Commissions
-        </AppButton>
-      </div>
-
-      {/* Commission Sources Table */}
-      <AppDataTable<CommissionSourceItem>
-        title="Commission Sources"
-        columns={sourceColumns}
-        data={sources ?? []}
-        pageSize={20}
-        emptyText="No commission sources yet. Open a campaign detail page to review campaign activity."
-      />
-
-      {/* Withdrawal Modal */}
-      <Modal
-        title="Withdraw Commissions"
-        open={isWithdrawalModalOpen}
-        onOk={handleWithdraw}
-        onCancel={() => {
-          setIsWithdrawalModalOpen(false);
-          setWithdrawalAmount(null);
-          setWithdrawalReason("");
-        }}
-        confirmLoading={withdrawMutation.isPending}
-      >
-        <Form layout="vertical" className="mt-4">
-          <Form.Item label="Amount (GMD)">
-            <InputNumber
-              min={0}
-              max={summary?.available_commissions ?? 0}
-              step={0.01}
-              precision={2}
-              value={withdrawalAmount}
-              onChange={setWithdrawalAmount}
-              placeholder={`Max: ${(summary?.available_commissions ?? 0).toFixed(2)} GMD`}
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-          <Form.Item label="Reason (Optional)">
-            <Input.TextArea
-              value={withdrawalReason}
-              onChange={(e) => setWithdrawalReason(e.target.value)}
-              placeholder="Why are you withdrawing these commissions?"
-              rows={3}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
+}
+
+function pageBtnStyle(active: boolean): React.CSSProperties {
+  return { width: 32, height: 32, borderRadius: 8, fontSize: 13, fontWeight: 700, border: `1px solid ${active ? "rgba(29,197,255,0.4)" : "rgba(255,255,255,0.1)"}`, background: active ? "rgba(29,197,255,0.12)" : "rgba(255,255,255,0.03)", color: active ? "#1dc5ff" : "#8899aa", cursor: "pointer" };
 }

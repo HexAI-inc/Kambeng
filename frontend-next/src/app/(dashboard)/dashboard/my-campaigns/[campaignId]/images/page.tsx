@@ -2,6 +2,7 @@
 
 import { useState, useRef, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import {
   useCampaignImages,
@@ -9,294 +10,280 @@ import {
   useDeleteCampaignImage,
   useMyCampaigns,
 } from "@/hooks/use-frontend-data";
-import { AppButton, AppCard, AppSpace, useAppFeedback } from "@/components/ui";
 import { ProofUploadForm } from "@/components/ProofUploadForm";
-import Image from "next/image";
-import styles from "./images.module.css";
+import { useAppFeedback } from "@/components/ui";
+import { motion } from "framer-motion";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const BLUE = "#1dc5ff";
+const GREEN = "#1bbf88";
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+function fadeUp(delay = 0) {
+  return {
+    initial: { opacity: 0, y: 14 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.38, delay, ease: "easeOut" as const },
+  };
+}
 
 export default function CampaignImagesPage() {
   const params = useParams();
   const campaignId = typeof params.campaignId === "string" ? params.campaignId : null;
-  
+
   const { data: myCampaigns, isLoading: campaignsLoading } = useMyCampaigns(Boolean(campaignId));
   const uploadImage = useUploadCampaignImage();
   const deleteImage = useDeleteCampaignImage();
   const { message } = useAppFeedback();
 
-  const campaignSlug = useMemo(() => {
-    if (!campaignId || !myCampaigns) {
-      return null;
-    }
-
-    const campaign = myCampaigns.find((item) => item.id === Number(campaignId));
-    return campaign?.slug ?? null;
+  const campaign = useMemo(() => {
+    if (!campaignId || !myCampaigns) return null;
+    return myCampaigns.find((c) => c.id === Number(campaignId)) ?? null;
   }, [campaignId, myCampaigns]);
 
-  const { data: images, isLoading } = useCampaignImages(campaignSlug ?? undefined, Boolean(campaignSlug));
-
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const campaignSlug = campaign?.slug ?? null;
+  const { data: images, isLoading: imagesLoading } = useCampaignImages(campaignSlug ?? undefined, Boolean(campaignSlug));
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [activeTab, setActiveTab] = useState<"images" | "proof">("images");
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    if (!campaignSlug) {
-      message.error("Campaign is still loading. Please try again in a moment.");
-      return;
-    }
-
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || !campaignSlug) return;
     for (const file of Array.from(files)) {
-      // Validate file type
       if (!ALLOWED_TYPES.includes(file.type)) {
-        message.error(`Invalid file type: ${file.type}. Only PNG, JPEG, and WebP are allowed.`);
+        message.error(`${file.name}: only PNG, JPEG, WebP allowed.`);
         continue;
       }
-
-      // Validate file size
       if (file.size > MAX_FILE_SIZE) {
-        message.error(
-          `File "${file.name}" is too large. Maximum size is 10MB.`,
-        );
+        message.error(`${file.name}: max 10MB.`);
         continue;
       }
-
-      // Upload the file
+      setUploading((p) => [...p, file.name]);
       try {
-        const formData = new FormData();
-        formData.append("files", file);
-
-        setUploadProgress((prev) => ({
-          ...prev,
-          [file.name]: 0,
-        }));
-
-        await uploadImage.mutateAsync({
-          slug: campaignSlug,
-          formData,
-        });
-
-        message.success(`Image "${file.name}" uploaded successfully`);
-
-        setUploadProgress((prev) => {
-          const newProgress = { ...prev };
-          delete newProgress[file.name];
-          return newProgress;
-        });
+        const fd = new FormData();
+        fd.append("files", file);
+        await uploadImage.mutateAsync({ slug: campaignSlug, formData: fd });
+        message.success(`${file.name} uploaded`);
       } catch {
-        message.error(`Failed to upload "${file.name}"`);
-        setUploadProgress((prev) => {
-          const newProgress = { ...prev };
-          delete newProgress[file.name];
-          return newProgress;
-        });
+        message.error(`Failed to upload ${file.name}`);
+      } finally {
+        setUploading((p) => p.filter((n) => n !== file.name));
       }
     }
-
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleDelete = async (fileName: string) => {
-    if (!campaignSlug) {
-      message.error("Campaign is still loading. Please try again in a moment.");
-      return;
-    }
-
-    if (window.confirm(`Delete image "${fileName}"?`)) {
-      try {
-        await deleteImage.mutateAsync({
-          slug: campaignSlug,
-          fileName,
-        });
-        message.success("Image deleted successfully");
-      } catch {
-        message.error("Failed to delete image");
-      }
+    if (!campaignSlug) return;
+    if (!window.confirm(`Delete "${fileName}"?`)) return;
+    try {
+      await deleteImage.mutateAsync({ slug: campaignSlug, fileName });
+      message.success("Image deleted");
+    } catch {
+      message.error("Failed to delete image");
     }
   };
 
-  if (!campaignId) {
-    return <div>Invalid campaign ID</div>;
-  }
-
-  if (campaignsLoading && !campaignSlug) {
-    return (
-      <AppCard>
-        <p>Loading campaign...</p>
-      </AppCard>
-    );
-  }
+  if (!campaignId) return <div style={{ color: "#f0f6ff", padding: 32 }}>Invalid campaign ID</div>;
 
   return (
-    <AppSpace direction="vertical" size="large" className={styles.container}>
-      <div>
-        <h1>Campaign Images</h1>
-        <p className={styles.subtitle}>
-          Upload and manage images for your campaign
-        </p>
+    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+
+        {/* Header */}
+        <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+              <Link href="/dashboard/my-campaigns" style={{ fontSize: 12, color: "#4a5568", fontWeight: 500 }}>
+                ← My Campaigns
+              </Link>
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 4 }}>
+              {campaignsLoading ? "Loading…" : campaign?.title ?? "Campaign"}
+            </div>
+            <div style={{ fontSize: 13, color: "#6b7a8d" }}>Manage campaign images and proof uploads</div>
+          </div>
+
+          {campaignSlug && (
+            <div style={{ display: "flex", gap: 8 }}>
+              <Link href={`/campaigns/${campaignSlug}`}>
+                <button style={{
+                  padding: "9px 16px", borderRadius: 9,
+                  border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
+                  color: "#8899aa", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                }}>Public page ↗</button>
+              </Link>
+              <Link href="/dashboard/kyc">
+                <button style={{
+                  padding: "9px 16px", borderRadius: 9,
+                  border: "1px solid rgba(27,191,136,0.3)", background: "rgba(27,191,136,0.07)",
+                  color: GREEN, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                }}>KYC docs</button>
+              </Link>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Tabs */}
+        <motion.div {...fadeUp(0.05)} style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: 3, width: "fit-content" }}>
+          {(["images", "proof"] as const).map((tab) => (
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{
+              padding: "8px 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
+              background: activeTab === tab ? `linear-gradient(135deg, ${BLUE}, #079bd4)` : "transparent",
+              color: activeTab === tab ? "#fff" : "#6b7a8d",
+              boxShadow: activeTab === tab ? "0 2px 10px rgba(29,197,255,0.25)" : "none",
+              transition: "all 0.2s",
+            }}>
+              {tab === "images" ? "Campaign Images" : "Proof & Evidence"}
+            </button>
+          ))}
+        </motion.div>
+
+        {activeTab === "images" ? (
+          <>
+            {/* Upload zone */}
+            <motion.div {...fadeUp(0.08)}>
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                onDragEnter={() => setDragging(true)}
+                onDragLeave={() => setDragging(false)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => { e.preventDefault(); setDragging(false); void handleFiles(e.dataTransfer.files); }}
+                style={{
+                  padding: "36px 24px", borderRadius: 14, textAlign: "center", cursor: "pointer",
+                  border: `2px dashed ${dragging ? BLUE : "rgba(255,255,255,0.1)"}`,
+                  background: dragging ? "rgba(29,197,255,0.05)" : "rgba(255,255,255,0.02)",
+                  transition: "all 0.2s",
+                }}
+              >
+                <input ref={fileInputRef} type="file" multiple accept="image/png,image/jpeg,image/webp" onChange={(e) => void handleFiles(e.target.files)} style={{ display: "none" }} />
+                <div style={{
+                  width: 52, height: 52, borderRadius: 12,
+                  background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.15)",
+                  display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
+                }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke={BLUE} strokeWidth="1.8" strokeLinecap="round"/>
+                    <polyline points="17 8 12 3 7 8" stroke={BLUE} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="12" y1="3" x2="12" y2="15" stroke={BLUE} strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>
+                  {dragging ? "Drop to upload" : "Click to upload or drag & drop"}
+                </div>
+                <div style={{ fontSize: 12, color: "#6b7a8d" }}>PNG, JPEG, WebP · max 10MB each</div>
+              </div>
+
+              {/* Uploading indicators */}
+              {uploading.length > 0 && (
+                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                  {uploading.map((name) => (
+                    <div key={name} style={{
+                      display: "flex", alignItems: "center", gap: 10, padding: "8px 14px",
+                      background: "rgba(29,197,255,0.06)", border: "1px solid rgba(29,197,255,0.15)",
+                      borderRadius: 8,
+                    }}>
+                      <div style={{ width: 14, height: 14, borderRadius: "50%", border: `2px solid ${BLUE}`, borderTopColor: "transparent", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />
+                      <span style={{ fontSize: 12, color: BLUE, fontWeight: 500 }}>Uploading {name}…</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+
+            {/* Images grid */}
+            <motion.div {...fadeUp(0.12)}>
+              {imagesLoading ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
+                  {[1,2,3,4].map((i) => <div key={i} style={{ aspectRatio: "1", borderRadius: 10, background: "rgba(255,255,255,0.05)" }} />)}
+                </div>
+              ) : images && images.length > 0 ? (
+                <>
+                  <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 12 }}>
+                    {images.length} image{images.length !== 1 ? "s" : ""} uploaded
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
+                    {images.map((img) => (
+                      <div key={img.file_name} style={{
+                        borderRadius: 10, overflow: "hidden",
+                        background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+                        position: "relative", aspectRatio: "1",
+                      }}>
+                        <Image src={img.url} alt={img.original_name ?? img.file_name} fill unoptimized sizes="180px" style={{ objectFit: "cover" }} />
+                        {/* Hover overlay */}
+                        <div className="img-overlay" style={{
+                          position: "absolute", inset: 0,
+                          background: "rgba(0,0,0,0.7)",
+                          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                          gap: 8, opacity: 0, transition: "opacity 0.2s",
+                        }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = "1"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = "0"; }}
+                        >
+                          <button onClick={() => window.open(img.url, "_blank")} style={{
+                            padding: "6px 14px", borderRadius: 7, border: "none",
+                            background: "rgba(255,255,255,0.15)", color: "#fff",
+                            fontSize: 11, fontWeight: 600, cursor: "pointer",
+                          }}>View</button>
+                          <button onClick={() => void handleDelete(img.file_name)} style={{
+                            padding: "6px 14px", borderRadius: 7, border: "none",
+                            background: "rgba(239,68,68,0.3)", color: "#fca5a5",
+                            fontSize: 11, fontWeight: 600, cursor: "pointer",
+                          }}>Delete</button>
+                        </div>
+                        {/* File info */}
+                        <div style={{
+                          position: "absolute", bottom: 0, left: 0, right: 0,
+                          padding: "20px 8px 6px",
+                          background: "linear-gradient(transparent, rgba(0,0,0,0.8))",
+                          pointerEvents: "none",
+                        }}>
+                          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {img.original_name ?? img.file_name}
+                          </div>
+                          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>{(img.size / 1024).toFixed(0)} KB</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div style={{
+                  padding: "40px 24px", textAlign: "center",
+                  background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.08)",
+                  borderRadius: 14,
+                }}>
+                  <div style={{ fontSize: 13, color: "#4a5568" }}>No images yet — upload your first one above</div>
+                </div>
+              )}
+            </motion.div>
+          </>
+        ) : (
+          /* Proof tab */
+          <motion.div {...fadeUp(0.08)}>
+            {campaignSlug ? (
+              <div style={{
+                background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: 14, padding: "24px",
+              }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Upload Proof & Evidence</div>
+                <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 20 }}>
+                  Add receipts, photos, ID screenshots, or documents that show donors how funds were used.
+                </div>
+                <ProofUploadForm slug={campaignSlug} />
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, color: "#4a5568", padding: 24 }}>Loading campaign…</div>
+            )}
+          </motion.div>
+        )}
       </div>
 
-      <AppCard>
-        <AppSpace direction="vertical" size="small">
-          <h3>Upload shortcuts</h3>
-          <AppSpace wrap size={10}>
-            <Link href="/dashboard/kyc">
-              <AppButton>Upload KYC documents</AppButton>
-            </Link>
-            {campaignSlug ? (
-              <Link href={`/campaigns/${campaignSlug}`}>
-                <AppButton type="default">View public campaign page</AppButton>
-              </Link>
-            ) : null}
-          </AppSpace>
-        </AppSpace>
-      </AppCard>
-
-      {/* Upload Section */}
-      <AppCard>
-        <AppSpace direction="vertical" size="large">
-          <div>
-            <h3>Upload New Image</h3>
-            <p className={styles.uploadHint}>
-              Supported formats: PNG, JPEG, WebP (Max 10MB per image)
-            </p>
-          </div>
-
-          <div
-            className={styles.uploadBox}
-            onClick={() => fileInputRef.current?.click()}
-            onDrop={(e) => {
-              e.preventDefault();
-              if (fileInputRef.current) {
-                fileInputRef.current.files = e.dataTransfer.files;
-                handleFileSelect({
-                  target: fileInputRef.current,
-                } as React.ChangeEvent<HTMLInputElement>);
-              }
-            }}
-            onDragOver={(e) => e.preventDefault()}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/png,image/jpeg,image/webp"
-              onChange={handleFileSelect}
-              style={{ display: "none" }}
-            />
-
-            <div className={styles.uploadContent}>
-              <div className={styles.uploadIcon}>📸</div>
-              <p className={styles.uploadLabel}>
-                Click to upload or drag & drop
-              </p>
-              <p className={styles.uploadDescription}>
-                PNG, JPEG, or WebP (up to 10MB)
-              </p>
-            </div>
-          </div>
-
-          {/* Upload Progress */}
-          {Object.entries(uploadProgress).map(([filename, progress]) => (
-            <div key={filename} className={styles.progressItem}>
-              <span>{filename}</span>
-              <div className={styles.progressBar}>
-                <div
-                  className={styles.progressFill}
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <span>{progress}%</span>
-            </div>
-          ))}
-        </AppSpace>
-      </AppCard>
-
-      {campaignSlug && (
-        <AppCard>
-          <AppSpace direction="vertical" size="large">
-            <div>
-              <h3>Upload Proof & Evidence</h3>
-              <p className={styles.uploadHint}>
-                Add student ID, UTG portal screenshots, transcripts, or receipts. Choose who can see each proof.
-              </p>
-            </div>
-
-            <ProofUploadForm slug={campaignSlug} />
-          </AppSpace>
-        </AppCard>
-      )}
-
-      {/* Images Grid */}
-      {isLoading ? (
-        <AppCard>
-          <p>Loading images...</p>
-        </AppCard>
-      ) : images && images.length > 0 ? (
-        <AppCard>
-          <AppSpace direction="vertical" size="medium">
-            <h3>Uploaded Images ({images.length})</h3>
-
-            <div className={styles.imagesGrid}>
-              {images.map((image) => (
-                  <div key={image.file_name} className={styles.imageCard}>
-                  <div className={styles.imageContainer}>
-                    <Image
-                        src={image.url}
-                        alt={image.original_name ?? image.file_name}
-                      fill
-                        unoptimized
-                      className={styles.image}
-                      sizes="200px"
-                    />
-                  </div>
-
-                  <div className={styles.imageInfo}>
-                      <p className={styles.fileName}>{image.original_name ?? image.file_name}</p>
-                      <p className={styles.uploadDate}>
-                        {(image.size / 1024).toFixed(1)} KB
-                      </p>
-                  </div>
-
-                  <div className={styles.imageActions}>
-                    <AppButton
-                      size="small"
-                      type="text"
-                      onClick={() =>
-                          window.open(image.url, "_blank")
-                      }
-                    >
-                      View
-                    </AppButton>
-                    <AppButton
-                      size="small"
-                      danger
-                      onClick={() => handleDelete(image.file_name)}
-                      loading={deleteImage.isPending}
-                    >
-                      Delete
-                    </AppButton>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </AppSpace>
-        </AppCard>
-      ) : (
-        <AppCard className={styles.emptyState}>
-          <div className={styles.emptyContent}>
-            <div className={styles.emptyIcon}>🖼️</div>
-            <h3>No images uploaded</h3>
-            <p>Upload your first campaign image using the upload box above</p>
-          </div>
-        </AppCard>
-      )}
-    </AppSpace>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .img-overlay:hover { opacity: 1 !important; }
+      `}</style>
+    </div>
   );
 }

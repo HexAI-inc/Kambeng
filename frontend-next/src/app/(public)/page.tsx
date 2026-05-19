@@ -40,10 +40,10 @@ function TrustPill({ icon, label }: { icon: React.ReactNode; label: string }) {
 function StatPill({ value, label }: { value: string; label: string }) {
   return (
     <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: "clamp(20px, 3vw, 28px)", fontWeight: 800, color: "#f0f6ff", lineHeight: 1, letterSpacing: "-0.03em" }}>
+      <div style={{ fontSize: "clamp(16px, 2vw, 22px)", fontWeight: 800, color: "#f0f6ff", lineHeight: 1, letterSpacing: "-0.03em" }}>
         {value}
       </div>
-      <div style={{ fontSize: 12, color: "#8899aa", marginTop: 4, fontWeight: 500 }}>{label}</div>
+      <div style={{ fontSize: 11, color: "#8899aa", marginTop: 3, fontWeight: 500 }}>{label}</div>
     </div>
   );
 }
@@ -83,140 +83,115 @@ function FeaturedCampaignCard({ campaign }: {
   const hasTarget = campaign.target_amount && campaign.target_amount > 0;
 
   return (
-    <motion.div
-      {...fadeUp(0.2)}
-      style={{
-        background: "#111827",
-        borderRadius: 20,
-        overflow: "hidden",
-        border: "1px solid rgba(255,255,255,0.09)",
-        boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
-        maxWidth: 400,
-        width: "100%",
-      }}
-    >
-      {/* Cover image — tall, no badge clutter */}
-      <div style={{ position: "relative", height: 220, background: "#0d1829" }}>
-        {campaign.cover_image_url ? (
+    <motion.div {...fadeUp(0.2)} style={{
+      background: "#111827",
+      borderRadius: 20,
+      overflow: "hidden",
+      border: "1px solid rgba(255,255,255,0.09)",
+      boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+      maxWidth: 400,
+      width: "100%",
+    }}>
+      {/* Cover — shorter, only shows when there's a real image */}
+      {campaign.cover_image_url && (
+        <div style={{ position: "relative", height: 150, background: "#0d1829", flexShrink: 0 }}>
           <Image src={campaign.cover_image_url} alt={campaign.title}
             fill unoptimized sizes="400px" style={{ objectFit: "cover" }} />
-        ) : (
           <div style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(160deg, #0d1f38 0%, #111827 100%)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <span style={{ fontSize: 64, opacity: 0.12 }}>🇬🇲</span>
-          </div>
-        )}
-        {/* Subtle bottom fade so body blends */}
-        <div style={{
-          position: "absolute", bottom: 0, left: 0, right: 0, height: 60,
-          background: "linear-gradient(to bottom, transparent, #111827)",
-        }} />
-        {/* Single LIVE dot — minimal */}
-        <div style={{
-          position: "absolute", top: 14, left: 14,
-          display: "flex", alignItems: "center", gap: 6,
-          padding: "5px 10px", borderRadius: 20,
-          background: "rgba(10,15,26,0.7)", backdropFilter: "blur(12px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-        }}>
-          <span style={{
-            width: 6, height: 6, borderRadius: "50%",
-            background: "#1bbf88",
-            boxShadow: "0 0 6px #1bbf88",
-            display: "inline-block",
+            position: "absolute", bottom: 0, left: 0, right: 0, height: 50,
+            background: "linear-gradient(to bottom, transparent, #111827)",
           }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#f0f6ff", letterSpacing: "0.05em" }}>LIVE</span>
         </div>
-      </div>
+      )}
 
       {/* Body */}
-      <div style={{ padding: "20px 22px 24px" }}>
-        {/* Title */}
-        <h3 style={{
-          margin: "0 0 18px",
-          fontSize: 17, fontWeight: 700,
-          color: "#f0f6ff", lineHeight: 1.35,
-        }}>
-          {campaign.title}
-        </h3>
+      <div style={{ padding: "18px 20px 20px" }}>
+        {/* LIVE + title row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 5,
+            padding: "3px 9px", borderRadius: 20, flexShrink: 0,
+            background: "rgba(27,191,136,0.12)", border: "1px solid rgba(27,191,136,0.25)",
+          }}>
+            <span style={{
+              width: 5, height: 5, borderRadius: "50%",
+              background: "#1bbf88", boxShadow: "0 0 5px #1bbf88", display: "inline-block",
+            }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#1bbf88", letterSpacing: "0.06em" }}>LIVE</span>
+          </div>
+          <h3 style={{
+            margin: 0, fontSize: 15, fontWeight: 700,
+            color: "#f0f6ff", lineHeight: 1.3,
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
+            {campaign.title}
+          </h3>
+        </div>
 
-        {/* Progress area — ring + numbers side by side */}
+        {/* Ring + numbers — compact horizontal */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 18,
-          marginBottom: 20,
-          padding: "16px 18px",
+          display: "flex", alignItems: "center", gap: 16,
+          padding: "14px 16px",
           background: "rgba(255,255,255,0.03)",
           borderRadius: 14,
           border: "1px solid rgba(255,255,255,0.06)",
+          marginBottom: 14,
         }}>
-          {/* Ring */}
           <div style={{ position: "relative", flexShrink: 0 }}>
-            <RingProgress pct={pct} size={80} />
+            <RingProgress pct={pct} size={72} />
             <div style={{
               position: "absolute", inset: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13, fontWeight: 800, color: BLUE,
+              fontSize: 12, fontWeight: 800, color: BLUE,
             }}>
               {Math.round(pct)}%
             </div>
           </div>
-
-          {/* Numbers */}
           <div>
-            <div style={{ fontSize: "clamp(20px, 3vw, 26px)", fontWeight: 900, color: "#f0f6ff", lineHeight: 1, letterSpacing: "-0.03em" }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "#f0f6ff", lineHeight: 1, letterSpacing: "-0.03em" }}>
               {campaign.amount_raised.toLocaleString()}
             </div>
-            <div style={{ fontSize: 13, color: "#8899aa", marginTop: 3 }}>
-              GMD raised
-            </div>
+            <div style={{ fontSize: 12, color: "#8899aa", marginTop: 2 }}>GMD raised</div>
             {hasTarget && (
-              <div style={{ fontSize: 12, color: "#4a5568", marginTop: 6 }}>
+              <div style={{ fontSize: 11, color: "#4a5568", marginTop: 4 }}>
                 {(campaign.target_amount ?? 0).toLocaleString()} GMD goal
               </div>
             )}
           </div>
         </div>
 
-        {/* Trust row — one line, small */}
+        {/* Trust — one compact line */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 12,
-          marginBottom: 18,
-          fontSize: 12, color: "#8899aa",
+          display: "flex", alignItems: "center", gap: 10,
+          fontSize: 11, color: "#8899aa", marginBottom: 14,
         }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#1bbf88" }}>
-            <CheckCircleFilled style={{ fontSize: 11 }} />KYC Verified
+          <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#1bbf88" }}>
+            <CheckCircleFilled style={{ fontSize: 10 }} />KYC Verified
           </span>
-          <span style={{ color: "rgba(255,255,255,0.12)" }}>·</span>
+          <span style={{ opacity: 0.2 }}>·</span>
           <span>📸 Proof uploaded</span>
         </div>
 
-        {/* Buttons — stacked like GoFundMe */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {/* Buttons — pill style, compact */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <Link href={`/quick-pay/${campaign.slug}`}>
             <button style={{
-              width: "100%", padding: "13px 0",
-              borderRadius: 50,
-              border: "none",
+              width: "100%", padding: "11px 0", borderRadius: 50, border: "none",
               background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-              color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer",
-              boxShadow: "0 6px 20px rgba(29,197,255,0.3)",
-              letterSpacing: "0.01em",
+              color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 5px 18px rgba(29,197,255,0.28)",
             }}>
               Donate now
             </button>
           </Link>
           <Link href={`/campaigns/${campaign.slug}`}>
             <button style={{
-              width: "100%", padding: "12px 0",
-              borderRadius: 50,
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(255,255,255,0.05)",
-              color: "#f0f6ff", fontSize: 14, fontWeight: 600, cursor: "pointer",
+              width: "100%", padding: "10px 0", borderRadius: 50,
+              border: "1px solid rgba(255,255,255,0.11)",
+              background: "rgba(255,255,255,0.04)",
+              color: "#8899aa", fontSize: 13, fontWeight: 500, cursor: "pointer",
             }}>
-              See the story
+              See the story →
             </button>
           </Link>
         </div>
@@ -313,7 +288,7 @@ export default function PublicHomePage() {
         position: "relative", overflow: "hidden",
         minHeight: "calc(100vh - 68px)",
         display: "flex", alignItems: "center",
-        padding: "60px clamp(16px, 5vw, 72px)",
+        padding: "32px clamp(16px, 5vw, 72px)",
       }}>
         {/* Background glows */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
@@ -347,26 +322,26 @@ export default function PublicHomePage() {
             <div style={{ flex: "1 1 420px", minWidth: 0 }}>
 
               {/* Wave badge */}
-              <motion.div {...fadeUp(0)} style={{ marginBottom: 28 }}>
+              <motion.div {...fadeUp(0)} style={{ marginBottom: 18 }}>
                 <div style={{
                   display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "7px 16px", borderRadius: 20,
+                  padding: "5px 14px", borderRadius: 20,
                   background: "rgba(29,197,255,0.08)",
                   border: "1px solid rgba(29,197,255,0.2)",
                 }}>
-                  <ThunderboltOutlined style={{ color: BLUE, fontSize: 13 }} />
-                  <span style={{ color: BLUE, fontSize: 13, fontWeight: 600 }}>Powered by Wave Mobile Money</span>
+                  <ThunderboltOutlined style={{ color: BLUE, fontSize: 12 }} />
+                  <span style={{ color: BLUE, fontSize: 12, fontWeight: 600 }}>Powered by Wave Mobile Money</span>
                 </div>
               </motion.div>
 
               {/* Headline */}
               <motion.h1 {...fadeUp(0.08)} style={{
-                fontSize: "clamp(38px, 6vw, 68px)",
+                fontSize: "clamp(34px, 5vw, 60px)",
                 fontWeight: 900,
-                lineHeight: 1.04,
+                lineHeight: 1.06,
                 letterSpacing: "-0.04em",
                 color: "#f0f6ff",
-                margin: "0 0 20px",
+                margin: "0 0 14px",
               }}>
                 Fund What<br />
                 Matters in<br />
@@ -377,16 +352,16 @@ export default function PublicHomePage() {
               </motion.h1>
 
               <motion.p {...fadeUp(0.16)} style={{
-                fontSize: "clamp(15px, 1.8vw, 18px)",
-                color: "#8899aa", lineHeight: 1.8,
-                maxWidth: 460, margin: "0 0 36px",
+                fontSize: "clamp(14px, 1.6vw, 16px)",
+                color: "#8899aa", lineHeight: 1.7,
+                maxWidth: 460, margin: "0 0 24px",
               }}>
                 Launch a campaign, share your Wave QR code, and collect donations directly to your wallet.
-                Every campaign shows photos and proof so donors trust exactly where their money goes.
+                Every campaign shows photos and proof so donors know exactly where their money goes.
               </motion.p>
 
               {/* CTAs */}
-              <motion.div {...fadeUp(0.22)} style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 40 }}>
+              <motion.div {...fadeUp(0.22)} style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 }}>
                 <Link href="/campaigns">
                   <button style={{
                     padding: "13px 26px", borderRadius: 12, border: "none",
@@ -425,7 +400,7 @@ export default function PublicHomePage() {
               </motion.div>
 
               {/* Trust pills */}
-              <motion.div {...fadeUp(0.28)} style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 40 }}>
+              <motion.div {...fadeUp(0.28)} style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
                 <TrustPill icon={<SafetyOutlined style={{ color: "#1bbf88", fontSize: 12 }} />} label="KYC Verified Campaigners" />
                 <TrustPill icon={<span style={{ fontSize: 12 }}>📸</span>} label="Proof of Expenditure" />
                 <TrustPill icon={<span style={{ fontSize: 12 }}>⭐</span>} label="Donor Reviews" />
@@ -449,7 +424,7 @@ export default function PublicHomePage() {
                     { v: isLoading ? "—" : String(stats?.successful_donations ?? 0), l: "Donations" },
                   ].map(({ v, l }, i, arr) => (
                     <div key={l} style={{
-                      flex: 1, padding: "18px 16px", textAlign: "center",
+                      flex: 1, padding: "12px 12px", textAlign: "center",
                       borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
                     }}>
                       <StatPill value={v} label={l} />

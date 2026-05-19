@@ -83,137 +83,107 @@ function FeaturedCampaignCard({ campaign }: {
 
   return (
     <motion.div {...fadeUp(0.2)} style={{
-      position: "relative",
-      borderRadius: 24,
+      borderRadius: 20,
       overflow: "hidden",
       maxWidth: 400,
       width: "100%",
-      boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
+      background: "#111827",
+      border: "1px solid rgba(255,255,255,0.08)",
+      boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
     }}>
-      {/* Full-bleed background image — fills the entire card */}
-      <div style={{ position: "absolute", inset: 0 }}>
+      {/* ── IMAGE — full, unobstructed ── */}
+      <div style={{ position: "relative", height: 240 }}>
         <Image
           src={campaign.cover_image_url ?? "/sample.png"}
           alt={campaign.title}
           fill unoptimized sizes="400px"
           style={{ objectFit: "cover", objectPosition: "center top" }}
         />
-        {/* Scrim: clear at top so image shows, dense at bottom so text pops */}
+        {/* Only two small floating badges — nothing else touches the image */}
         <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 30%, rgba(0,0,0,0.75) 65%, rgba(0,0,0,0.92) 100%)",
-        }} />
+          position: "absolute", top: 12, left: 12,
+          display: "inline-flex", alignItems: "center", gap: 5,
+          padding: "4px 10px", borderRadius: 20,
+          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)",
+          border: "1px solid rgba(27,191,136,0.5)",
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1bbf88", boxShadow: "0 0 6px #1bbf88", display: "inline-block" }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#1bbf88", letterSpacing: "0.05em" }}>LIVE</span>
+        </div>
+        <div style={{
+          position: "absolute", top: 12, right: 12,
+          display: "flex", alignItems: "center", gap: 5,
+          padding: "4px 10px", borderRadius: 20,
+          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)",
+          border: "1px solid rgba(29,197,255,0.35)",
+        }}>
+          <svg width="12" height="13" viewBox="0 0 13 14" fill="none">
+            <path d="M6.5 0.5L1 2.5V6.5C1 9.538 3.44 12.376 6.5 13.5C9.56 12.376 12 9.538 12 6.5V2.5L6.5 0.5Z"
+              fill="rgba(29,197,255,0.15)" stroke={BLUE} strokeWidth="1" strokeLinejoin="round"/>
+            <path d="M4 7L5.8 8.8L9 5.5" stroke={BLUE} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span style={{ fontSize: 11, fontWeight: 600, color: BLUE }}>Verified</span>
+        </div>
       </div>
 
-      {/* Content */}
-      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", minHeight: 440 }}>
+      {/* ── INFO PANEL — solid dark, below image ── */}
+      <div style={{ padding: "16px 18px 18px" }}>
 
-        {/* Top row: LIVE left, KYC badge right */}
-        <div style={{
-          padding: "14px 14px 0",
-          display: "flex", justifyContent: "space-between", alignItems: "center",
+        {/* Title */}
+        <h3 style={{
+          margin: "0 0 12px", fontSize: 17, fontWeight: 700,
+          color: "#f0f6ff", lineHeight: 1.3, letterSpacing: "-0.02em",
         }}>
-          {/* LIVE */}
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 5,
-            padding: "4px 10px", borderRadius: 20,
-            background: "rgba(0,0,0,0.45)", backdropFilter: "blur(10px)",
-            border: "1px solid rgba(27,191,136,0.45)",
-          }}>
-            <span style={{
-              width: 6, height: 6, borderRadius: "50%",
-              background: "#1bbf88", boxShadow: "0 0 8px #1bbf88", display: "inline-block",
-            }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#1bbf88", letterSpacing: "0.06em" }}>LIVE</span>
-          </div>
+          {campaign.title}
+        </h3>
 
-          {/* KYC verified shield — top right */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 5,
-            padding: "5px 10px", borderRadius: 20,
-            background: "rgba(0,0,0,0.45)", backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255,255,255,0.15)",
-          }}>
-            {/* Shield checkmark SVG */}
-            <svg width="13" height="14" viewBox="0 0 13 14" fill="none">
-              <path d="M6.5 0.5L1 2.5V6.5C1 9.538 3.44 12.376 6.5 13.5C9.56 12.376 12 9.538 12 6.5V2.5L6.5 0.5Z"
-                fill="rgba(29,197,255,0.2)" stroke="#1dc5ff" strokeWidth="1" strokeLinejoin="round"/>
-              <path d="M4 7L5.8 8.8L9 5.5" stroke="#1dc5ff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span style={{ fontSize: 11, fontWeight: 600, color: BLUE }}>Verified</span>
+        {/* Ring + amount */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <RingProgress pct={pct} size={60} />
+            <div style={{
+              position: "absolute", inset: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 10, fontWeight: 800, color: BLUE,
+            }}>
+              {Math.round(pct)}%
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: "#f0f6ff", lineHeight: 1, letterSpacing: "-0.03em" }}>
+              {campaign.amount_raised.toLocaleString()}
+              <span style={{ fontSize: 13, fontWeight: 500, color: "#8899aa", marginLeft: 5 }}>GMD</span>
+            </div>
+            {hasTarget && (
+              <div style={{ fontSize: 11, color: "#4a5568", marginTop: 4 }}>
+                of {(campaign.target_amount ?? 0).toLocaleString()} GMD goal
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Spacer — photo visible here */}
-        <div style={{ flex: 1 }} />
-
-        {/* Bottom: title + stats + buttons — on a blur panel */}
-        <div style={{
-          margin: "0 10px 10px",
-          padding: "14px 14px 14px",
-          background: "rgba(8,12,22,0.72)",
-          backdropFilter: "blur(20px)",
-          borderRadius: 16,
-          border: "1px solid rgba(255,255,255,0.08)",
-        }}>
-          {/* Title */}
-          <h3 style={{
-            margin: "0 0 10px",
-            fontSize: 17, fontWeight: 800,
-            color: "#fff", lineHeight: 1.25,
-            letterSpacing: "-0.02em",
-          }}>
-            {campaign.title}
-          </h3>
-
-          {/* Ring + amount inline */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <RingProgress pct={pct} size={56} />
-              <div style={{
-                position: "absolute", inset: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 9, fontWeight: 800, color: BLUE,
-              }}>
-                {Math.round(pct)}%
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.03em" }}>
-                {campaign.amount_raised.toLocaleString()}
-                <span style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.5)", marginLeft: 6 }}>GMD</span>
-              </div>
-              {hasTarget && (
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 3 }}>
-                  of {(campaign.target_amount ?? 0).toLocaleString()} GMD goal
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-            <Link href={`/quick-pay/${campaign.slug}`}>
-              <button style={{
-                width: "100%", padding: "12px 0", borderRadius: 50, border: "none",
-                background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-                color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(29,197,255,0.4)",
-              }}>
-                Donate now
-              </button>
-            </Link>
-            <Link href={`/campaigns/${campaign.slug}`}>
-              <button style={{
-                width: "100%", padding: "10px 0", borderRadius: 50,
-                border: "1px solid rgba(255,255,255,0.18)",
-                background: "transparent",
-                color: "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: 500, cursor: "pointer",
-              }}>
-                See the story →
-              </button>
-            </Link>
-          </div>
+        {/* Buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <Link href={`/quick-pay/${campaign.slug}`}>
+            <button style={{
+              width: "100%", padding: "12px 0", borderRadius: 50, border: "none",
+              background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+              color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 4px 20px rgba(29,197,255,0.35)",
+            }}>
+              Donate now
+            </button>
+          </Link>
+          <Link href={`/campaigns/${campaign.slug}`}>
+            <button style={{
+              width: "100%", padding: "10px 0", borderRadius: 50,
+              border: "1px solid rgba(255,255,255,0.1)",
+              background: "rgba(255,255,255,0.04)",
+              color: "#8899aa", fontSize: 13, fontWeight: 500, cursor: "pointer",
+            }}>
+              See the story →
+            </button>
+          </Link>
         </div>
       </div>
     </motion.div>

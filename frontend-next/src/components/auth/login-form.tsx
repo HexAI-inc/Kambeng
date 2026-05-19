@@ -7,7 +7,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { loginWithCredentials } from "@/lib/api";
+import { loginWithCredentials, getMyProfile } from "@/lib/api";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -42,7 +42,9 @@ export function LoginFormCard({ nextTarget, errorMessage, successMessage }: Logi
     setSubmitError(null);
     try {
       await loginWithCredentials(values.username, values.password);
-      router.replace(nextTarget || "/dashboard");
+      const profile = await getMyProfile().catch(() => null);
+      const isAdmin = profile?.role === "ADMIN";
+      router.replace(nextTarget || (isAdmin ? "/admin/overview" : "/dashboard"));
       router.refresh();
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to sign in. Please try again.");

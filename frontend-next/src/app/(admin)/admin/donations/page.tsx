@@ -2,332 +2,171 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ColumnDef } from "@tanstack/react-table";
+import { motion } from "framer-motion";
 import { useAdminPendingDonations, useApproveDonation, useRejectDonation } from "@/hooks/use-frontend-data";
 import type { AdminDonation } from "@/types/frontend";
-import { AppButton, AppCard, AppDataTable, AppSpace, AppTag, useAppFeedback } from "@/components/ui";
-import styles from "./donations.module.css";
 
-type DonationStatus = "pending" | "approved" | "rejected" | "completed";
+const BLUE = "#1dc5ff";
+const GREEN = "#1bbf88";
+const RED = "#ef4444";
 
-const STATUS_META: Record<DonationStatus, { color?: string; text: string }> = {
-  pending: { color: "orange", text: "Pending" },
-  approved: { color: "green", text: "Approved" },
-  rejected: { color: "red", text: "Rejected" },
-  completed: { color: "blue", text: "Completed" },
-};
-
-function getStatusMeta(status: string) {
-  const normalizedStatus = status.toLowerCase() as DonationStatus;
-
-  return STATUS_META[normalizedStatus] ?? {
-    text: status,
-  };
+function fadeUp(delay = 0) {
+  return { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay, ease: "easeOut" as const } };
 }
 
-export default function DonationReconciliationPage() {
+function StatusChip({ status }: { status: string }) {
+  const s = status.toLowerCase();
+  const map: Record<string, { color: string; bg: string; border: string }> = {
+    pending:   { color: "#f97316", bg: "rgba(249,115,22,0.1)", border: "rgba(249,115,22,0.25)" },
+    approved:  { color: GREEN,     bg: "rgba(27,191,136,0.1)", border: "rgba(27,191,136,0.25)" },
+    completed: { color: BLUE,      bg: "rgba(29,197,255,0.1)", border: "rgba(29,197,255,0.2)" },
+    rejected:  { color: RED,       bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.25)" },
+  };
+  const cfg = map[s] ?? map.pending;
+  return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}` }}>{status}</span>;
+}
+
+const PAGE_SIZE = 10;
+
+export default function DonationsPage() {
   const router = useRouter();
   const { data: donations, isLoading } = useAdminPendingDonations();
   const approveDonation = useApproveDonation();
   const rejectDonation = useRejectDonation();
-  const { message } = useAppFeedback();
 
   const [rejectingRef, setRejectingRef] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [page, setPage] = useState(1);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
-  const donationRows = donations ?? [];
-  const pendingCount = donationRows.filter(
-    (donation) => !donation.reconciliation_source && donation.status.toLowerCase() === "pending",
-  ).length;
-  const reviewedCount = donationRows.length - pendingCount;
+  const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
 
-  const handleApprove = async (clientReference: string) => {
-    try {
-      await approveDonation.mutateAsync(clientReference);
-      message.success("Donation approved");
-    } catch {
-      message.error("Failed to approve donation");
-    }
+  const rows = donations ?? [];
+  const pendingCount = rows.filter((d) => !d.reconciliation_source && d.status.toLowerCase() === "pending").length;
+  const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+
+  const handleApprove = async (ref: string) => {
+    try { await approveDonation.mutateAsync(ref); showToast("Donation approved", true); }
+    catch { showToast("Failed to approve", false); }
   };
 
   const handleRejectSubmit = async () => {
-    if (!rejectingRef || !rejectionReason.trim()) {
-      message.error("Please provide a rejection reason");
-      return;
-    }
-
+    if (!rejectingRef || !rejectionReason.trim()) { showToast("Please provide a reason", false); return; }
     try {
-      await rejectDonation.mutateAsync({
-        clientReference: rejectingRef,
-        reason: rejectionReason,
-      });
-      message.success("Donation rejected");
+      await rejectDonation.mutateAsync({ clientReference: rejectingRef, reason: rejectionReason });
+      showToast("Donation rejected", true);
       setRejectingRef(null);
       setRejectionReason("");
-    } catch {
-      message.error("Failed to reject donation");
-    }
+    } catch { showToast("Failed to reject", false); }
   };
 
-  const columns: ColumnDef<AdminDonation>[] = [
-    {
-      accessorKey: "client_reference",
-      header: "Reference",
-      size: 120,
-      cell: (info) => (
-        <span className={styles.reference}>
-          {info.row.original.client_reference}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "campaign_title",
-      header: "Campaign",
-      size: 150,
-    },
-    {
-      accessorKey: "donor_name",
-      header: "Donor",
-      size: 130,
-      cell: (info) => info.row.original.donor_name || "Anonymous",
-    },
-    {
-      accessorKey: "amount",
-      header: "Amount",
-      size: 100,
-      cell: (info) => (
-        <span className={styles.amount}>
-          ${(info.row.original.amount / 100).toFixed(2)}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      size: 100,
-      cell: (info) => {
-        const status = info.row.original.status;
-        const config = getStatusMeta(status);
-
-        return config.color ? (
-          <AppTag color={config.color}>{config.text}</AppTag>
-        ) : (
-          <AppTag>{config.text}</AppTag>
-        );
-      },
-    },
-    {
-      accessorKey: "created_at",
-      header: "Date",
-      size: 120,
-      cell: (info) => new Date(info.row.original.created_at).toLocaleDateString(),
-    },
-    {
-      accessorKey: "reconciliation_source",
-      header: "Source",
-      size: 100,
-      cell: (info) => info.row.original.reconciliation_source || "—",
-    },
-    {
-      header: "Actions",
-      size: 200,
-      cell: (info) => {
-        const donation = info.row.original;
-        const isProcessed =
-          donation.reconciliation_source !== null ||
-          donation.status.toLowerCase() !== "pending";
-
-        if (isProcessed) {
-          return (
-            <div className={styles.processedStatus}>
-              <span>Reconciled</span>
-              {donation.reconciliation_source && (
-                <span className={styles.source}>
-                  ({donation.reconciliation_source})
-                </span>
-              )}
-            </div>
-          );
-        }
-
-        return (
-          <div className={styles.actions}>
-            <AppButton
-              type="text"
-              size="small"
-              onClick={() => router.push(`/admin/campaigns/${donation.campaign_id}/view`)}
-            >
-              View
-            </AppButton>
-            <AppButton
-              type="primary"
-              size="small"
-              onClick={() => handleApprove(donation.client_reference)}
-              loading={approveDonation.isPending}
-            >
-              Approve
-            </AppButton>
-            <AppButton
-              size="small"
-              danger
-              onClick={() => setRejectingRef(donation.client_reference)}
-            >
-              Reject
-            </AppButton>
-          </div>
-        );
-      },
-    },
-  ];
-
   return (
-    <AppSpace direction="vertical" size="large" className={styles.container}>
-      <div className={styles.hero}>
-        <div>
-          <p className={styles.kicker}>Payments queue</p>
-          <h1>Donation Reconciliation</h1>
-          <p className={styles.subtitle}>
-            Review incoming donations, clear legitimate payments, and flag anything suspicious.
-          </p>
-        </div>
+    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
-        <div className={styles.summaryGrid}>
-          <div className={styles.summaryCard}>
-            <span className={styles.summaryLabel}>Pending review</span>
-            <strong className={styles.summaryValue}>{pendingCount}</strong>
-          </div>
-          <div className={styles.summaryCard}>
-            <span className={styles.summaryLabel}>Reviewed</span>
-            <strong className={styles.summaryValue}>{reviewedCount}</strong>
-          </div>
-          <div className={styles.summaryCard}>
-            <span className={styles.summaryLabel}>Total loaded</span>
-            <strong className={styles.summaryValue}>{donationRows.length}</strong>
-          </div>
-        </div>
-      </div>
+        {toast && (
+          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : RED, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>{toast.msg}</div>
+        )}
 
-      {rejectingRef && (
-        <AppCard className={styles.rejectModal}>
-          <AppSpace direction="vertical" size="medium">
-            <h3>Reject Donation</h3>
-            <p className={styles.modalSubtitle}>
-              Add a short reason so the audit trail explains why the payment was rejected.
-            </p>
+        {/* Header + stats */}
+        <motion.div {...fadeUp(0)}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
             <div>
-              <label className={styles.label}>Rejection Reason</label>
-              <textarea
-                className={styles.reasonInput}
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Explain why this donation is being rejected..."
-                rows={4}
-              />
+              <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Donation Reconciliation</div>
+              <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Review incoming payments and clear legitimate donations</div>
             </div>
-            <div className={styles.modalActions}>
-              <AppButton onClick={handleRejectSubmit} danger loading={rejectDonation.isPending}>
-                Confirm Rejection
-              </AppButton>
-              <AppButton
-                onClick={() => {
-                  setRejectingRef(null);
-                  setRejectionReason("");
-                }}
-              >
-                Cancel
-              </AppButton>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
+            {[
+              { label: "Pending review", value: String(pendingCount), color: pendingCount > 0 ? "#f97316" : "#8899aa" },
+              { label: "Reviewed", value: String(rows.length - pendingCount), color: GREEN },
+              { label: "Total loaded", value: String(rows.length), color: "#f0f6ff" },
+            ].map(({ label, value, color }, i, arr) => (
+              <div key={label} style={{ padding: "12px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color }}>{value}</div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Reject modal */}
+        {rejectingRef && (
+          <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ background: "#0d1120", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 14, padding: "22px 24px" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Reject Donation</div>
+            <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 14 }}>Ref: <span style={{ color: "#8899aa", fontFamily: "monospace" }}>{rejectingRef}</span></div>
+            <textarea value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Explain why this donation is being rejected…" rows={3}
+              style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)", color: "#f0f6ff", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
+            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+              <button onClick={() => void handleRejectSubmit()} disabled={rejectDonation.isPending} style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: "rgba(239,68,68,0.85)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                {rejectDonation.isPending ? "Rejecting…" : "Confirm Rejection"}
+              </button>
+              <button onClick={() => { setRejectingRef(null); setRejectionReason(""); }} style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
             </div>
-          </AppSpace>
-        </AppCard>
-      )}
+          </motion.div>
+        )}
 
-      <AppCard className={styles.tableCard}>
-        <AppDataTable
-          data={donationRows}
-          columns={columns}
-          isLoading={isLoading}
-          expandableRows
-          renderExpandedRow={(row) => (
-            <DonationDetailsPanel donation={row} />
-          )}
-          emptyText="No donations are waiting for review. Campaign detail pages show the underlying fundraising activity."
-        />
-      </AppCard>
-    </AppSpace>
-  );
-}
+        {/* Table */}
+        <motion.div {...fadeUp(0.08)}>
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+              <div>Reference</div><div>Campaign</div><div>Donor</div><div>Amount</div><div>Status</div><div>Source</div><div>Actions</div>
+            </div>
 
-interface DonationDetailsPanelProps {
-  donation: AdminDonation;
-}
-
-function DonationDetailsPanel({ donation }: DonationDetailsPanelProps) {
-  const statusMeta = getStatusMeta(donation.status);
-
-  return (
-    <div className={styles.detailsPanel}>
-      <AppSpace direction="vertical" size="medium">
-        <div className={styles.detailsGrid}>
-          <div className={styles.detailItem}>
-            <span className={styles.label}>Reference:</span>
-            <span>{donation.client_reference}</span>
-          </div>
-
-          <div className={styles.detailItem}>
-            <span className={styles.label}>Campaign:</span>
-            <span>{donation.campaign_title}</span>
-          </div>
-
-          <div className={styles.detailItem}>
-            <span className={styles.label}>Donor:</span>
-            <span>{donation.donor_name || "Anonymous"}</span>
-          </div>
-
-          <div className={styles.detailItem}>
-            <span className={styles.label}>Amount:</span>
-            <span className={styles.amount}>
-              ${(donation.amount / 100).toFixed(2)}
-            </span>
-          </div>
-
-          <div className={styles.detailItem}>
-            <span className={styles.label}>Status:</span>
-            {statusMeta.color ? (
-              <AppTag color={statusMeta.color}>{statusMeta.text}</AppTag>
-            ) : (
-              <AppTag>{statusMeta.text}</AppTag>
-            )}
-          </div>
-
-          <div className={styles.detailItem}>
-            <span className={styles.label}>Created:</span>
-            <span>{new Date(donation.created_at).toLocaleString()}</span>
-          </div>
-
-          {donation.reconciliation_source && (
-            <>
-              <div className={styles.detailItem}>
-                <span className={styles.label}>Reconciliation Source:</span>
-                <span>{donation.reconciliation_source}</span>
+            {isLoading ? (
+              <div style={{ padding: 40, textAlign: "center" }}>
+                <div style={{ width: 32, height: 32, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
+                <div style={{ color: "#4a5568", fontSize: 13 }}>Loading donations…</div>
               </div>
+            ) : rows.length === 0 ? (
+              <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No donations waiting for review</div>
+            ) : pageRows.map((d: AdminDonation, i: number) => {
+              const isPending = !d.reconciliation_source && d.status.toLowerCase() === "pending";
+              return (
+                <div key={d.client_reference} style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", borderLeft: isPending ? `3px solid #f97316` : "3px solid transparent", transition: "background 0.15s" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
+                >
+                  <div style={{ fontSize: 11, fontFamily: "monospace", color: "#8899aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.client_reference}</div>
+                  <div style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.campaign_title}</div>
+                  <div style={{ fontSize: 12, color: "#8899aa" }}>{d.donor_name || "Anonymous"}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{(d.amount / 100).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
+                  <div><StatusChip status={d.status} /></div>
+                  <div style={{ fontSize: 12, color: "#4a5568" }}>{d.reconciliation_source || "—"}</div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <button onClick={() => router.push(`/admin/campaigns/${d.campaign_id}/view`)} style={btnStyle("default")}>Campaign</button>
+                    {isPending && (
+                      <>
+                        <button onClick={() => void handleApprove(d.client_reference)} disabled={approveDonation.isPending} style={btnStyle("green")}>Approve</button>
+                        <button onClick={() => setRejectingRef(d.client_reference)} style={btnStyle("red")}>Reject</button>
+                      </>
+                    )}
+                    {!isPending && <span style={{ fontSize: 11, color: "#4a5568", padding: "5px 0" }}>Reconciled</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
 
-              <div className={styles.detailItem}>
-                <span className={styles.label}>Reconciliation Reason:</span>
-                <span>{donation.reconciliation_reason || "—"}</span>
-              </div>
-
-              <div className={styles.detailItem}>
-                <span className={styles.label}>Reconciled At:</span>
-                <span>
-                  {donation.reconciled_at
-                    ? new Date(donation.reconciled_at).toLocaleString()
-                    : "—"}
-                </span>
-              </div>
-            </>
-          )}
-        </div>
-      </AppSpace>
+        {totalPages > 1 && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 4 }}>
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={pageBtnStyle(false)}>←</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => <button key={p} onClick={() => setPage(p)} style={pageBtnStyle(p === page)}>{p}</button>)}
+            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={pageBtnStyle(false)}>→</button>
+          </div>
+        )}
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
+}
+
+function btnStyle(v: "default" | "green" | "red"): React.CSSProperties {
+  const m = { default: { c: "#8899aa", b: "rgba(255,255,255,0.1)", bg: "rgba(255,255,255,0.04)" }, green: { c: "#1bbf88", b: "rgba(27,191,136,0.25)", bg: "rgba(27,191,136,0.08)" }, red: { c: "#ef4444", b: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" } }[v];
+  return { padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid ${m.b}`, background: m.bg, color: m.c, cursor: "pointer" };
+}
+function pageBtnStyle(active: boolean): React.CSSProperties {
+  return { width: 32, height: 32, borderRadius: 8, fontSize: 13, fontWeight: 700, border: `1px solid ${active ? "rgba(29,197,255,0.4)" : "rgba(255,255,255,0.1)"}`, background: active ? "rgba(29,197,255,0.12)" : "rgba(255,255,255,0.03)", color: active ? "#1dc5ff" : "#8899aa", cursor: "pointer" };
 }

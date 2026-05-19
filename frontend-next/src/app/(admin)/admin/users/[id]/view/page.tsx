@@ -1,114 +1,101 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { Spin, Result, Button, Space } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
-
+import { motion } from "framer-motion";
 import { useAdminUserDetail } from "@/hooks/use-frontend-data";
-import { AppButton, AppCard, AppSpace, AppTag } from "@/components/ui";
+
+const BLUE = "#1dc5ff";
+const GREEN = "#1bbf88";
+const RED = "#ef4444";
+
+function Field({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
+  return (
+    <div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 14, color: "#f0f6ff", fontFamily: mono ? "monospace" : undefined }}>{value ?? "—"}</div>
+    </div>
+  );
+}
+
+function Chip({ label, color, bg, border }: { label: string; color: string; bg: string; border: string }) {
+  return <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 20, color, background: bg, border: `1px solid ${border}` }}>{label}</span>;
+}
 
 export default function UserViewPage() {
   const params = useParams();
   const router = useRouter();
   const userId = Array.isArray(params?.id) ? parseInt(params.id[0]) : parseInt(params?.id as string);
-
   const { data: user, isLoading, error } = useAdminUserDetail(userId);
 
   if (isLoading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
-        <Spin size="large" />
+      <div style={{ background: "#0a0f1a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 36, height: 36, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   if (error || !user) {
-    return <Result status="404" title="User Not Found" subTitle="This user does not exist or was deleted." />;
+    return (
+      <div style={{ background: "#0a0f1a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>😕</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#f0f6ff", marginBottom: 8 }}>User not found</div>
+          <button onClick={() => router.back()} style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Go back</button>
+        </div>
+      </div>
+    );
   }
 
-  const kycStatusColor =
-    user.kyc_status === "APPROVED" ? "green" : user.kyc_status === "REJECTED" ? "red" : "orange";
-  const roleTag = user.role === "ADMIN" ? "volcano" : "blue";
-  const statusTag = user.is_active ? "green" : "red";
+  const initials = user.full_name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() ?? "?";
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-      <AppSpace direction="vertical" style={{ width: "100%" }} size="large">
-        <Space>
-          <AppButton
-            icon={<ArrowLeftOutlined />}
-            onClick={() => router.back()}
-            type="default"
-          >
-            Back
-          </AppButton>
-          <h2 style={{ margin: 0 }}>User Details</h2>
-        </Space>
+    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
-        <AppCard title="User Information">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
+            <button onClick={() => router.back()} style={{ width: 34, height: 34, borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>←</button>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff" }}>{initials}</div>
             <div>
-              <label style={{ fontWeight: 600, color: "#666" }}>User ID</label>
-              <div>{user.id}</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>{user.full_name}</div>
+              <div style={{ fontSize: 13, color: "#4a5568" }}>{user.email}</div>
             </div>
-            <div>
-              <label style={{ fontWeight: 600, color: "#666" }}>Full Name</label>
-              <div>{user.full_name}</div>
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, color: "#666" }}>Email</label>
-              <div style={{ fontFamily: "monospace", fontSize: "12px" }}>{user.email}</div>
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, color: "#666" }}>Wave Number</label>
-              <div style={{ fontFamily: "monospace", fontSize: "12px" }}>{user.wave_number}</div>
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, color: "#666" }}>Role</label>
-              <div>
-                <AppTag color={roleTag}>{user.role}</AppTag>
-              </div>
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, color: "#666" }}>Status</label>
-              <div>
-                <AppTag color={statusTag}>{user.is_active ? "Active" : "Suspended"}</AppTag>
-              </div>
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, color: "#666" }}>KYC Status</label>
-              <div>
-                <AppTag color={kycStatusColor}>{user.kyc_status}</AppTag>
-              </div>
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, color: "#666" }}>Campaigns</label>
-              <div>{user.campaign_count}</div>
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, color: "#666" }}>Total Raised (GMD)</label>
-              <div>{user.total_raised?.toFixed(2) ?? "0.00"}</div>
-            </div>
-            <div>
-              <label style={{ fontWeight: 600, color: "#666" }}>Created At</label>
-              <div>{new Date(user.created_at).toLocaleString()}</div>
-            </div>
-            {user.last_activity && (
-              <div>
-                <label style={{ fontWeight: 600, color: "#666" }}>Last Activity</label>
-                <div>{new Date(user.last_activity).toLocaleString()}</div>
-              </div>
-            )}
           </div>
-        </AppCard>
+        </motion.div>
 
-        <Space>
-          <AppButton type="primary" onClick={() => router.push(`/admin/users/${user.id}/edit`)}>
-            Edit User
-          </AppButton>
-          <AppButton onClick={() => router.back()}>Close</AppButton>
-        </Space>
-      </AppSpace>
+        {/* Info card */}
+        <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "24px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <Field label="User ID" value={`#${user.id}`} />
+            <Field label="Wave Number" value={user.wave_number} mono />
+            <Field label="Role" value={
+              <Chip label={String(user.role)} color={user.role === "ADMIN" ? "#f97316" : BLUE} bg={user.role === "ADMIN" ? "rgba(249,115,22,0.1)" : "rgba(29,197,255,0.1)"} border={user.role === "ADMIN" ? "rgba(249,115,22,0.25)" : "rgba(29,197,255,0.2)"} />
+            } />
+            <Field label="Account Status" value={
+              <Chip label={user.is_active ? "Active" : "Suspended"} color={user.is_active ? GREEN : RED} bg={user.is_active ? "rgba(27,191,136,0.1)" : "rgba(239,68,68,0.1)"} border={user.is_active ? "rgba(27,191,136,0.25)" : "rgba(239,68,68,0.25)"} />
+            } />
+            <Field label="KYC Status" value={
+              user.kyc_status
+                ? <Chip label={String(user.kyc_status)} color={user.kyc_status === "APPROVED" ? GREEN : user.kyc_status === "REJECTED" ? RED : "#f97316"} bg={user.kyc_status === "APPROVED" ? "rgba(27,191,136,0.1)" : user.kyc_status === "REJECTED" ? "rgba(239,68,68,0.1)" : "rgba(249,115,22,0.1)"} border={user.kyc_status === "APPROVED" ? "rgba(27,191,136,0.25)" : user.kyc_status === "REJECTED" ? "rgba(239,68,68,0.25)" : "rgba(249,115,22,0.25)"} />
+                : "—"
+            } />
+            <Field label="Campaigns" value={<span style={{ fontSize: 18, fontWeight: 800, color: BLUE }}>{user.campaign_count ?? 0}</span>} />
+            <Field label="Total Raised" value={<span style={{ fontWeight: 700, color: GREEN }}>{Number(user.total_raised ?? 0).toLocaleString()} GMD</span>} />
+            <Field label="Joined" value={new Date(user.created_at).toLocaleString()} />
+            {user.last_activity && <Field label="Last Activity" value={new Date(user.last_activity).toLocaleString()} />}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button onClick={() => router.push(`/admin/users/${user.id}/edit`)} style={{ padding: "10px 20px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Edit User</button>
+          <button onClick={() => router.back()} style={{ padding: "10px 20px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Back</button>
+        </div>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

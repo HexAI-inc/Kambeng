@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowLeftOutlined, SafetyOutlined, ThunderboltOutlined } from "@ant-design/icons";
 
 import { api } from "@/lib/api";
 import { useCampaignGoals } from "@/hooks/use-frontend-data";
@@ -101,8 +100,7 @@ export default function QuickPayPage() {
           color: "#8899aa", fontSize: 14, marginBottom: 32,
           transition: "color 0.2s",
         }}>
-          <ArrowLeftOutlined />
-          Back to campaign
+          ← Back to campaign
         </Link>
 
         <div style={{
@@ -400,12 +398,11 @@ export default function QuickPayPage() {
                     transition: "all 0.2s",
                   }}
                 >
-                  <ThunderboltOutlined />
-                  {isSubmitting ? "Redirecting to Wave..." : "Donate with Wave"}
+                  ⚡ {isSubmitting ? "Redirecting to Wave..." : "Donate with Wave"}
                 </button>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center", marginTop: 4 }}>
-                  <SafetyOutlined style={{ color: "#1bbf88", fontSize: 13 }} />
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z" fill="rgba(27,191,136,0.2)" stroke="#1bbf88" strokeWidth="1.5"/><path d="M9 12l2 2 4-4" stroke="#1bbf88" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   <span style={{ fontSize: 12, color: "#4a5568" }}>
                     Secured by Wave Mobile Money
                   </span>

@@ -84,117 +84,127 @@ function FeaturedCampaignCard({ campaign }: {
 
   return (
     <motion.div {...fadeUp(0.2)} style={{
-      background: "#111827",
-      borderRadius: 20,
+      position: "relative",
+      borderRadius: 24,
       overflow: "hidden",
-      border: "1px solid rgba(255,255,255,0.09)",
-      boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
       maxWidth: 400,
       width: "100%",
+      boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
     }}>
-      {/* Cover — full bleed image OR rich gradient placeholder */}
-      <div style={{ position: "relative", height: 170, flexShrink: 0, overflow: "hidden" }}>
+      {/* Full-bleed background image — fills the entire card */}
+      <div style={{ position: "absolute", inset: 0 }}>
         <Image
           src={campaign.cover_image_url ?? "/sample.png"}
           alt={campaign.title}
           fill unoptimized sizes="400px"
           style={{ objectFit: "cover", objectPosition: "center top" }}
         />
-        {/* Gradient overlay — title reads on top of any image */}
+        {/* Dark scrim so text is readable — lighter at top, heavier at bottom */}
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(10,15,26,0.85) 100%)",
+          background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.82) 100%)",
         }} />
-        {/* LIVE badge + title overlaid on image */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <div style={{
-              display: "flex", alignItems: "center", gap: 5,
-              padding: "3px 8px", borderRadius: 20,
-              background: "rgba(27,191,136,0.2)", border: "1px solid rgba(27,191,136,0.35)",
-            }}>
-              <span style={{
-                width: 5, height: 5, borderRadius: "50%",
-                background: "#1bbf88", boxShadow: "0 0 5px #1bbf88", display: "inline-block",
-              }} />
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#1bbf88", letterSpacing: "0.06em" }}>LIVE</span>
-            </div>
-          </div>
-          <h3 style={{
-            margin: 0, fontSize: 16, fontWeight: 700,
-            color: "#fff", lineHeight: 1.25,
-            textShadow: "0 1px 8px rgba(0,0,0,0.6)",
-          }}>
-            {campaign.title}
-          </h3>
-        </div>
       </div>
 
-      {/* Body */}
-      <div style={{ padding: "14px 18px 18px" }}>
+      {/* All content sits on top of the image */}
+      <div style={{ position: "relative", zIndex: 1, padding: "16px 18px 20px" }}>
 
-        {/* Ring + numbers — compact horizontal */}
+        {/* LIVE badge */}
+        <div style={{ marginBottom: "auto", paddingBottom: 100 }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 5,
+            padding: "4px 10px", borderRadius: 20,
+            background: "rgba(27,191,136,0.25)", border: "1px solid rgba(27,191,136,0.4)",
+            backdropFilter: "blur(8px)",
+          }}>
+            <span style={{
+              width: 5, height: 5, borderRadius: "50%",
+              background: "#1bbf88", boxShadow: "0 0 6px #1bbf88", display: "inline-block",
+            }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#1bbf88", letterSpacing: "0.07em" }}>LIVE</span>
+          </div>
+        </div>
+
+        {/* Title */}
+        <h3 style={{
+          margin: "0 0 14px", fontSize: 18, fontWeight: 800,
+          color: "#fff", lineHeight: 1.25,
+          textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+        }}>
+          {campaign.title}
+        </h3>
+
+        {/* Ring + numbers — glass panel */}
         <div style={{
           display: "flex", alignItems: "center", gap: 16,
-          padding: "14px 16px",
-          background: "rgba(255,255,255,0.03)",
+          padding: "12px 14px",
+          background: "rgba(0,0,0,0.35)",
+          backdropFilter: "blur(16px)",
           borderRadius: 14,
-          border: "1px solid rgba(255,255,255,0.06)",
-          marginBottom: 14,
+          border: "1px solid rgba(255,255,255,0.1)",
+          marginBottom: 10,
         }}>
           <div style={{ position: "relative", flexShrink: 0 }}>
-            <RingProgress pct={pct} size={72} />
+            <RingProgress pct={pct} size={68} />
             <div style={{
               position: "absolute", inset: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 12, fontWeight: 800, color: BLUE,
+              fontSize: 11, fontWeight: 800, color: BLUE,
             }}>
               {Math.round(pct)}%
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: "#f0f6ff", lineHeight: 1, letterSpacing: "-0.03em" }}>
+            <div style={{ fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.03em" }}>
               {campaign.amount_raised.toLocaleString()}
             </div>
-            <div style={{ fontSize: 12, color: "#8899aa", marginTop: 2 }}>GMD raised</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>GMD raised</div>
             {hasTarget && (
-              <div style={{ fontSize: 11, color: "#4a5568", marginTop: 4 }}>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>
                 {(campaign.target_amount ?? 0).toLocaleString()} GMD goal
               </div>
             )}
           </div>
         </div>
 
-        {/* Trust — one compact line */}
+        {/* Trust — one line, glass */}
         <div style={{
           display: "flex", alignItems: "center", gap: 10,
-          fontSize: 11, color: "#8899aa", marginBottom: 14,
+          fontSize: 11, color: "rgba(255,255,255,0.55)",
+          marginBottom: 12,
+          padding: "6px 10px",
+          background: "rgba(0,0,0,0.25)",
+          backdropFilter: "blur(8px)",
+          borderRadius: 8,
+          border: "1px solid rgba(255,255,255,0.07)",
         }}>
           <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#1bbf88" }}>
             <CheckCircleFilled style={{ fontSize: 10 }} />KYC Verified
           </span>
-          <span style={{ opacity: 0.2 }}>·</span>
+          <span style={{ opacity: 0.3 }}>·</span>
           <span>📸 Proof uploaded</span>
         </div>
 
-        {/* Buttons — pill style, compact */}
+        {/* Buttons — solid, no transparency */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <Link href={`/quick-pay/${campaign.slug}`}>
             <button style={{
-              width: "100%", padding: "11px 0", borderRadius: 50, border: "none",
+              width: "100%", padding: "13px 0", borderRadius: 50, border: "none",
               background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-              color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
-              boxShadow: "0 5px 18px rgba(29,197,255,0.28)",
+              color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 6px 20px rgba(29,197,255,0.4)",
+              letterSpacing: "0.01em",
             }}>
               Donate now
             </button>
           </Link>
           <Link href={`/campaigns/${campaign.slug}`}>
             <button style={{
-              width: "100%", padding: "10px 0", borderRadius: 50,
-              border: "1px solid rgba(255,255,255,0.11)",
-              background: "rgba(255,255,255,0.04)",
-              color: "#8899aa", fontSize: 13, fontWeight: 500, cursor: "pointer",
+              width: "100%", padding: "11px 0", borderRadius: 50,
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: "rgba(255,255,255,0.12)",
+              backdropFilter: "blur(8px)",
+              color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer",
             }}>
               See the story →
             </button>

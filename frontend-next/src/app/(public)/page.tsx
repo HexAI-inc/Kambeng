@@ -7,7 +7,6 @@ import {
   ArrowRightOutlined,
   ThunderboltOutlined,
   SafetyOutlined,
-  CheckCircleFilled,
 } from "@ant-design/icons";
 import { useHomeFeed, useSessionProfile } from "@/hooks/use-frontend-data";
 
@@ -106,16 +105,20 @@ function FeaturedCampaignCard({ campaign }: {
         }} />
       </div>
 
-      {/* Content — image dominates top, UI anchored at bottom */}
-      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", minHeight: 460 }}>
+      {/* Content */}
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", minHeight: 440 }}>
 
-        {/* Top: LIVE badge only — image breathes here */}
-        <div style={{ padding: "16px 16px 0" }}>
+        {/* Top row: LIVE left, KYC badge right */}
+        <div style={{
+          padding: "14px 14px 0",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          {/* LIVE */}
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 5,
             padding: "4px 10px", borderRadius: 20,
-            background: "rgba(0,0,0,0.4)", border: "1px solid rgba(27,191,136,0.5)",
-            backdropFilter: "blur(8px)",
+            background: "rgba(0,0,0,0.45)", backdropFilter: "blur(10px)",
+            border: "1px solid rgba(27,191,136,0.45)",
           }}>
             <span style={{
               width: 6, height: 6, borderRadius: "50%",
@@ -123,82 +126,89 @@ function FeaturedCampaignCard({ campaign }: {
             }} />
             <span style={{ fontSize: 11, fontWeight: 700, color: "#1bbf88", letterSpacing: "0.06em" }}>LIVE</span>
           </div>
+
+          {/* KYC verified shield — top right */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 5,
+            padding: "5px 10px", borderRadius: 20,
+            background: "rgba(0,0,0,0.45)", backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255,255,255,0.15)",
+          }}>
+            {/* Shield checkmark SVG */}
+            <svg width="13" height="14" viewBox="0 0 13 14" fill="none">
+              <path d="M6.5 0.5L1 2.5V6.5C1 9.538 3.44 12.376 6.5 13.5C9.56 12.376 12 9.538 12 6.5V2.5L6.5 0.5Z"
+                fill="rgba(29,197,255,0.2)" stroke="#1dc5ff" strokeWidth="1" strokeLinejoin="round"/>
+              <path d="M4 7L5.8 8.8L9 5.5" stroke="#1dc5ff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span style={{ fontSize: 11, fontWeight: 600, color: BLUE }}>Verified</span>
+          </div>
         </div>
 
-        {/* Spacer — image shows through here */}
+        {/* Spacer — photo visible here */}
         <div style={{ flex: 1 }} />
 
-        {/* Bottom UI panel — sits over the lower portion of the image */}
-        <div style={{ padding: "0 14px 16px" }}>
-
-          {/* Title — large, white, reads on the image */}
+        {/* Bottom: title + stats + buttons — on a blur panel */}
+        <div style={{
+          margin: "0 10px 10px",
+          padding: "14px 14px 14px",
+          background: "rgba(8,12,22,0.72)",
+          backdropFilter: "blur(20px)",
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}>
+          {/* Title */}
           <h3 style={{
-            margin: "0 0 12px",
-            fontSize: 20, fontWeight: 800,
-            color: "#fff", lineHeight: 1.2,
+            margin: "0 0 10px",
+            fontSize: 17, fontWeight: 800,
+            color: "#fff", lineHeight: 1.25,
             letterSpacing: "-0.02em",
           }}>
             {campaign.title}
           </h3>
 
-          {/* Progress: ring left, numbers right — NO background panel */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 14,
-            marginBottom: 10,
-          }}>
+          {/* Ring + amount inline */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
             <div style={{ position: "relative", flexShrink: 0 }}>
-              <RingProgress pct={pct} size={64} />
+              <RingProgress pct={pct} size={56} />
               <div style={{
                 position: "absolute", inset: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 10, fontWeight: 800, color: BLUE,
+                fontSize: 9, fontWeight: 800, color: BLUE,
               }}>
                 {Math.round(pct)}%
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.03em" }}>
+              <div style={{ fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.03em" }}>
                 {campaign.amount_raised.toLocaleString()}
+                <span style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.5)", marginLeft: 6 }}>GMD</span>
               </div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 2 }}>
-                GMD raised{hasTarget ? ` · ${(campaign.target_amount ?? 0).toLocaleString()} goal` : ""}
-              </div>
+              {hasTarget && (
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 3 }}>
+                  of {(campaign.target_amount ?? 0).toLocaleString()} GMD goal
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Trust — minimal, no box */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 8,
-            fontSize: 11, color: "rgba(255,255,255,0.55)",
-            marginBottom: 14,
-          }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#1bbf88", fontWeight: 600 }}>
-              <CheckCircleFilled style={{ fontSize: 10 }} />KYC Verified
-            </span>
-            <span style={{ opacity: 0.3 }}>·</span>
-            <span>📸 Proof uploaded</span>
-          </div>
-
           {/* Buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
             <Link href={`/quick-pay/${campaign.slug}`}>
               <button style={{
-                width: "100%", padding: "13px 0", borderRadius: 50, border: "none",
+                width: "100%", padding: "12px 0", borderRadius: 50, border: "none",
                 background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-                color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer",
-                boxShadow: "0 6px 24px rgba(29,197,255,0.45)",
-                letterSpacing: "0.01em",
+                color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                boxShadow: "0 4px 20px rgba(29,197,255,0.4)",
               }}>
                 Donate now
               </button>
             </Link>
             <Link href={`/campaigns/${campaign.slug}`}>
               <button style={{
-                width: "100%", padding: "11px 0", borderRadius: 50,
-                border: "1px solid rgba(255,255,255,0.25)",
-                background: "rgba(255,255,255,0.1)",
-                backdropFilter: "blur(12px)",
-                color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                width: "100%", padding: "10px 0", borderRadius: 50,
+                border: "1px solid rgba(255,255,255,0.18)",
+                background: "transparent",
+                color: "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: 500, cursor: "pointer",
               }}>
                 See the story →
               </button>

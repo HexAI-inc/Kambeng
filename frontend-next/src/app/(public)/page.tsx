@@ -3,11 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import {
-  ArrowRightOutlined,
-  ThunderboltOutlined,
-  SafetyOutlined,
-} from "@ant-design/icons";
 import { useHomeFeed, useSessionProfile } from "@/hooks/use-frontend-data";
 
 const BLUE = "#1dc5ff";
@@ -83,39 +78,64 @@ function FeaturedCampaignCard({ campaign }: {
 
   return (
     <motion.div {...fadeUp(0.2)} style={{
+      position: "relative",
       borderRadius: 20,
       overflow: "hidden",
       maxWidth: 400,
       width: "100%",
-      background: "#111827",
-      border: "1px solid rgba(255,255,255,0.08)",
-      boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
-    }}>
-      {/* ── IMAGE — full, unobstructed ── */}
-      <Link href={`/campaigns/${campaign.slug}`}>
-      <div style={{ position: "relative", height: 200, cursor: "pointer" }}>
-        <Image
-          src={campaign.cover_image_url ?? "/sample.png"}
-          alt={campaign.title}
-          fill unoptimized sizes="400px"
-          style={{ objectFit: "cover", objectPosition: "center top" }}
-        />
-        {/* Only two small floating badges — nothing else touches the image */}
+      aspectRatio: "4/5",
+      /* 3D pop: hard close shadow + deep ambient + subtle blue lift */
+      boxShadow: `
+        0 2px 0 rgba(255,255,255,0.06),
+        0 4px 8px rgba(0,0,0,0.4),
+        0 16px 40px rgba(0,0,0,0.5),
+        0 32px 80px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(255,255,255,0.06)
+      `,
+      transform: "translateY(0)",
+    }}
+      whileHover={{ y: -6, boxShadow: `
+        0 2px 0 rgba(255,255,255,0.06),
+        0 8px 16px rgba(0,0,0,0.45),
+        0 24px 60px rgba(0,0,0,0.55),
+        0 48px 100px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(29,197,255,0.2),
+        0 0 40px rgba(29,197,255,0.08)
+      ` }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+    >
+      {/* Full-card image — entire card is the photo */}
+      <Image
+        src={campaign.cover_image_url ?? "/sample.png"}
+        alt={campaign.title}
+        fill unoptimized sizes="400px"
+        style={{ objectFit: "cover", objectPosition: "center 15%" }}
+      />
+
+      {/* Bottom gradient — only darkens the bottom 50%, top is pure image */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        background: "linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.65) 55%, rgba(0,0,0,0.97) 100%)",
+      }} />
+
+      {/* Top badges */}
+      <div style={{
+        position: "absolute", top: 14, left: 14, right: 14, zIndex: 2,
+        display: "flex", justifyContent: "space-between",
+      }}>
         <div style={{
-          position: "absolute", top: 12, left: 12,
           display: "inline-flex", alignItems: "center", gap: 5,
           padding: "4px 10px", borderRadius: 20,
-          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)",
+          background: "rgba(0,0,0,0.45)", backdropFilter: "blur(10px)",
           border: "1px solid rgba(27,191,136,0.5)",
         }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1bbf88", boxShadow: "0 0 6px #1bbf88", display: "inline-block" }} />
           <span style={{ fontSize: 11, fontWeight: 700, color: "#1bbf88", letterSpacing: "0.05em" }}>LIVE</span>
         </div>
         <div style={{
-          position: "absolute", top: 12, right: 12,
           display: "flex", alignItems: "center", gap: 5,
           padding: "4px 10px", borderRadius: 20,
-          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)",
+          background: "rgba(0,0,0,0.45)", backdropFilter: "blur(10px)",
           border: "1px solid rgba(29,197,255,0.35)",
         }}>
           <svg width="12" height="13" viewBox="0 0 13 14" fill="none">
@@ -126,59 +146,65 @@ function FeaturedCampaignCard({ campaign }: {
           <span style={{ fontSize: 11, fontWeight: 600, color: BLUE }}>Verified</span>
         </div>
       </div>
-      </Link>
 
-      {/* ── INFO PANEL ── */}
-      <div style={{ padding: "12px 16px 16px" }}>
-
-        {/* Title — clickable */}
+      {/* Bottom content — overlaid on dark gradient, like the reference card */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
+        padding: "16px",
+      }}>
+        {/* Title */}
         <Link href={`/campaigns/${campaign.slug}`}>
           <h3 style={{
-            margin: "0 0 10px", fontSize: 15, fontWeight: 700,
-            color: "#f0f6ff", lineHeight: 1.3, letterSpacing: "-0.01em",
+            margin: "0 0 4px", fontSize: 18, fontWeight: 800,
+            color: "#fff", lineHeight: 1.25, letterSpacing: "-0.02em",
             cursor: "pointer",
           }}>
             {campaign.title}
           </h3>
         </Link>
 
-        {/* Ring + amount + donate — all on one row */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-          {/* Mini ring */}
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            <RingProgress pct={pct} size={44} />
-            <div style={{
-              position: "absolute", inset: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 8, fontWeight: 800, color: BLUE,
-            }}>
-              {Math.round(pct)}%
-            </div>
-          </div>
+        {/* Raised amount — compact, one line */}
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", marginBottom: 12 }}>
+          <span style={{ fontWeight: 700, color: "#fff", fontSize: 15 }}>
+            {campaign.amount_raised.toLocaleString()} GMD
+          </span>
+          {hasTarget && (
+            <span> raised · {Math.round(pct)}% of goal</span>
+          )}
+        </div>
 
-          {/* Amount */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 20, fontWeight: 900, color: "#f0f6ff", lineHeight: 1, letterSpacing: "-0.03em" }}>
-              {campaign.amount_raised.toLocaleString()}
-              <span style={{ fontSize: 11, fontWeight: 500, color: "#8899aa", marginLeft: 4 }}>GMD</span>
-            </div>
-            {hasTarget && (
-              <div style={{ fontSize: 10, color: "#4a5568", marginTop: 2 }}>
-                of {(campaign.target_amount ?? 0).toLocaleString()} goal
-              </div>
-            )}
+        {/* Ring progress bar — thin horizontal, reads better at this size */}
+        {hasTarget && (
+          <div style={{ height: 3, background: "rgba(255,255,255,0.15)", borderRadius: 2, marginBottom: 14, overflow: "hidden" }}>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
+              style={{ height: "100%", background: `linear-gradient(90deg, ${BLUE}, #079bd4)`, borderRadius: 2 }}
+            />
           </div>
+        )}
 
-          {/* Single donate button — right side */}
-          <Link href={`/quick-pay/${campaign.slug}`} style={{ flexShrink: 0 }}>
+        {/* Buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <Link href={`/quick-pay/${campaign.slug}`}>
             <button style={{
-              padding: "9px 18px", borderRadius: 50, border: "none",
+              width: "100%", padding: "12px 0", borderRadius: 50, border: "none",
               background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-              color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-              boxShadow: "0 4px 16px rgba(29,197,255,0.35)",
-              whiteSpace: "nowrap",
+              color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 4px 20px rgba(29,197,255,0.4)",
             }}>
-              Donate
+              Donate now
+            </button>
+          </Link>
+          <Link href={`/campaigns/${campaign.slug}`}>
+            <button style={{
+              width: "100%", padding: "10px 0", borderRadius: 50,
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: "transparent",
+              color: "rgba(255,255,255,0.8)", fontSize: 13, fontWeight: 500, cursor: "pointer",
+            }}>
+              See the story →
             </button>
           </Link>
         </div>
@@ -253,7 +279,7 @@ function SmallCampaignCard({ campaign }: {
             {campaign.amount_raised.toLocaleString()} GMD raised
           </div>
         </div>
-        <ArrowRightOutlined style={{ color: "#4a5568", fontSize: 12, flexShrink: 0 }} />
+        <span style={{ color: "#4a5568", fontSize: 12, flexShrink: 0 }}>→</span>
       </div>
     </Link>
   );
@@ -323,7 +349,7 @@ export default function PublicHomePage() {
                   background: "rgba(29,197,255,0.08)",
                   border: "1px solid rgba(29,197,255,0.2)",
                 }}>
-                  <ThunderboltOutlined style={{ color: BLUE, fontSize: 12 }} />
+                  <Image src="/wave.png" alt="Wave" width={16} height={16} style={{ objectFit: "contain", borderRadius: 3 }} />
                   <span style={{ color: BLUE, fontSize: 12, fontWeight: 600 }}>Powered by Wave Mobile Money</span>
                 </div>
               </motion.div>
@@ -368,7 +394,7 @@ export default function PublicHomePage() {
                     onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.88"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
                   >
-                    Browse Campaigns <ArrowRightOutlined />
+                    Browse Campaigns →
                   </button>
                 </Link>
                 <Link href={isLoggedIn ? "/dashboard" : "/auth/signup"}>
@@ -395,7 +421,7 @@ export default function PublicHomePage() {
 
               {/* Trust pills */}
               <motion.div {...fadeUp(0.28)} style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
-                <TrustPill icon={<SafetyOutlined style={{ color: "#1bbf88", fontSize: 12 }} />} label="KYC Verified Campaigners" />
+                <TrustPill icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z" fill="rgba(27,191,136,0.2)" stroke="#1bbf88" strokeWidth="1.5"/><path d="M9 12l2 2 4-4" stroke="#1bbf88" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>} label="KYC Verified Campaigners" />
                 <TrustPill icon={<span style={{ fontSize: 12 }}>📸</span>} label="Proof of Expenditure" />
                 <TrustPill icon={<span style={{ fontSize: 12 }}>⭐</span>} label="Donor Reviews" />
               </motion.div>
@@ -464,7 +490,7 @@ export default function PublicHomePage() {
                     borderRadius: 10, fontSize: 13, color: "#8899aa", fontWeight: 500,
                     transition: "color 0.2s",
                   }}>
-                    View all campaigns <ArrowRightOutlined style={{ fontSize: 11 }} />
+                    View all campaigns →
                   </Link>
                 </motion.div>
               )}
@@ -476,96 +502,156 @@ export default function PublicHomePage() {
 
       {/* ── TRUST SECTION ── */}
       <section style={{
-        padding: "80px clamp(16px, 5vw, 72px)",
+        padding: "96px clamp(16px, 5vw, 72px)",
         borderTop: "1px solid rgba(255,255,255,0.05)",
+        position: "relative", overflow: "hidden",
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 52 }}>
-            <div style={{
-              display: "inline-block",
-              padding: "5px 14px", borderRadius: 20,
-              background: "rgba(29,197,255,0.07)",
-              border: "1px solid rgba(29,197,255,0.15)",
-              fontSize: 12, color: BLUE, fontWeight: 600, letterSpacing: "0.06em",
-              textTransform: "uppercase", marginBottom: 16,
-            }}>
-              Built on trust
+        {/* Subtle background accent */}
+        <div style={{
+          position: "absolute", width: 600, height: 600,
+          background: "radial-gradient(circle, rgba(27,191,136,0.05) 0%, transparent 70%)",
+          right: "-10%", top: "0%", pointerEvents: "none",
+        }} />
+
+        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1 }}>
+
+          {/* Section header — left-aligned with a number accent for credibility */}
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 24, marginBottom: 56 }}>
+            <div>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 7,
+                padding: "4px 12px", borderRadius: 20,
+                background: "rgba(27,191,136,0.08)",
+                border: "1px solid rgba(27,191,136,0.2)",
+                fontSize: 11, color: "#1bbf88", fontWeight: 700, letterSpacing: "0.08em",
+                textTransform: "uppercase", marginBottom: 14,
+              }}>
+                <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#1bbf88"/></svg>
+                Built on trust
+              </div>
+              <h2 style={{
+                fontSize: "clamp(28px, 4vw, 44px)",
+                fontWeight: 900, color: "#f0f6ff",
+                margin: "0", letterSpacing: "-0.04em", lineHeight: 1.05,
+              }}>
+                Donors know exactly<br />where their money goes
+              </h2>
             </div>
-            <h2 style={{
-              fontSize: "clamp(26px, 4vw, 40px)",
-              fontWeight: 800, color: "#f0f6ff",
-              margin: "0 0 14px", letterSpacing: "-0.03em",
-            }}>
-              Donors know exactly where<br />their money goes
-            </h2>
-            <p style={{ color: "#8899aa", fontSize: 16, maxWidth: 520, margin: "0 auto", lineHeight: 1.7 }}>
+            <p style={{ color: "#8899aa", fontSize: 15, maxWidth: 360, margin: 0, lineHeight: 1.75 }}>
               Every campaign on Kambeng comes with photos, receipts, and verified identity — because trust is everything.
             </p>
           </div>
 
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 20,
+            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+            gap: 2,
+            background: "rgba(255,255,255,0.04)",
+            borderRadius: 20,
+            overflow: "hidden",
+            border: "1px solid rgba(255,255,255,0.06)",
           }}>
             {[
               {
-                icon: "🪪",
-                color: "rgba(27,191,136,0.1)",
-                border: "rgba(27,191,136,0.2)",
-                iconColor: "#1bbf88",
+                svgIcon: (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="6" width="18" height="13" rx="2" stroke="#1bbf88" strokeWidth="1.8"/>
+                    <circle cx="8.5" cy="11.5" r="2" stroke="#1bbf88" strokeWidth="1.6"/>
+                    <path d="M5 19c0-2 1.5-3 3.5-3s3.5 1 3.5 3" stroke="#1bbf88" strokeWidth="1.6" strokeLinecap="round"/>
+                    <path d="M14 10h4M14 13.5h2.5" stroke="#1bbf88" strokeWidth="1.6" strokeLinecap="round"/>
+                  </svg>
+                ),
+                accent: "#1bbf88",
+                glow: "rgba(27,191,136,0.12)",
+                border: "rgba(27,191,136,0.18)",
                 title: "KYC Verified Identity",
                 desc: "Every campaigner submits ID and is verified before they can receive or withdraw money. No anonymous accounts.",
+                stat: "100%", statLabel: "verified",
               },
               {
-                icon: "📸",
-                color: "rgba(29,197,255,0.08)",
+                svgIcon: (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="5" width="18" height="14" rx="2" stroke={BLUE} strokeWidth="1.8"/>
+                    <circle cx="12" cy="12" r="3.5" stroke={BLUE} strokeWidth="1.6"/>
+                    <circle cx="12" cy="12" r="1" fill={BLUE}/>
+                    <path d="M5 7h2M17 7h2" stroke={BLUE} strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                ),
+                accent: BLUE,
+                glow: "rgba(29,197,255,0.1)",
                 border: "rgba(29,197,255,0.15)",
-                iconColor: BLUE,
                 title: "Photo & Receipt Proof",
                 desc: "Campaigners upload photos and receipts showing exactly how donations were spent. Visible to all donors.",
+                stat: "Public", statLabel: "to everyone",
               },
               {
-                icon: "⚡",
-                color: "rgba(251,191,36,0.08)",
+                svgIcon: (
+                  <Image src="/wave.png" alt="Wave" width={26} height={26} style={{ objectFit: "contain", borderRadius: 4 }} />
+                ),
+                accent: "#fbbf24",
+                glow: "rgba(251,191,36,0.1)",
                 border: "rgba(251,191,36,0.15)",
-                iconColor: "#fbbf24",
                 title: "Wave Mobile Money",
                 desc: "Payments go directly to the campaigner's Wave wallet — no intermediary, no delay, no hidden fees.",
+                stat: "0%", statLabel: "hidden fees",
               },
               {
-                icon: "⭐",
-                color: "rgba(168,85,247,0.08)",
+                svgIcon: (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2Z" stroke="#a855f7" strokeWidth="1.7" strokeLinejoin="round"/>
+                  </svg>
+                ),
+                accent: "#a855f7",
+                glow: "rgba(168,85,247,0.1)",
                 border: "rgba(168,85,247,0.15)",
-                iconColor: "#a855f7",
                 title: "Public Donor Reviews",
                 desc: "Donors leave public ratings and feedback on every campaign. A transparent track record, permanently visible.",
+                stat: "Always", statLabel: "visible",
               },
-            ].map(({ icon, color, border, iconColor, title, desc }) => (
+            ].map(({ svgIcon, accent, glow, border, title, desc, stat, statLabel }, i) => (
               <div key={title} style={{
-                padding: "28px 24px",
-                background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 16,
-                transition: "border-color 0.3s, background 0.3s",
+                padding: "32px 28px",
+                background: "#0d1120",
+                position: "relative",
+                cursor: "default",
+                transition: "background 0.3s",
               }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.borderColor = border;
-                  (e.currentTarget as HTMLDivElement).style.background = color;
+                  (e.currentTarget as HTMLDivElement).style.background = glow;
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.07)";
-                  (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)";
+                  (e.currentTarget as HTMLDivElement).style.background = "#0d1120";
                 }}
               >
+                {/* Top accent line */}
+                <div style={{
+                  position: "absolute", top: 0, left: 28, right: 28, height: 2,
+                  background: `linear-gradient(90deg, ${accent}, transparent)`,
+                  borderRadius: "0 0 2px 2px",
+                }} />
+
+                {/* Icon */}
                 <div style={{
                   width: 48, height: 48, borderRadius: 12,
-                  background: color, border: `1px solid ${border}`,
+                  background: `${glow}`,
+                  border: `1px solid ${border}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 22, marginBottom: 16,
-                }}>{icon}</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#f0f6ff", marginBottom: 10 }}>{title}</div>
-                <div style={{ fontSize: 14, color: "#8899aa", lineHeight: 1.7 }}>{desc}</div>
+                  marginBottom: 20,
+                }}>{svgIcon}</div>
+
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 8, letterSpacing: "-0.01em" }}>{title}</div>
+                <div style={{ fontSize: 13, color: "#6b7a8d", lineHeight: 1.75, marginBottom: 20 }}>{desc}</div>
+
+                {/* Stat chip */}
+                <div style={{
+                  display: "inline-flex", alignItems: "baseline", gap: 5,
+                  padding: "4px 10px", borderRadius: 8,
+                  background: `${glow}`,
+                  border: `1px solid ${border}`,
+                }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: accent }}>{stat}</span>
+                  <span style={{ fontSize: 11, color: "#4a5568" }}>{statLabel}</span>
+                </div>
               </div>
             ))}
           </div>

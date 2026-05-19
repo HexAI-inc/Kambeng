@@ -4,16 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SearchOutlined, FireOutlined, HeartOutlined, AlertOutlined, AppstoreOutlined } from "@ant-design/icons";
 import { usePublicCampaignDiscovery } from "@/hooks/use-frontend-data";
 
 type BrowseFilter = "all" | "schools" | "health" | "emergency";
 
-const FILTERS: Array<{ value: BrowseFilter; label: string; icon: React.ReactNode; keywords?: string[] }> = [
-  { value: "all", label: "All", icon: <AppstoreOutlined /> },
-  { value: "schools", label: "Education", icon: <FireOutlined />, keywords: ["school", "education", "classroom", "student"] },
-  { value: "health", label: "Health", icon: <HeartOutlined />, keywords: ["health", "clinic", "medical", "hospital"] },
-  { value: "emergency", label: "Emergency", icon: <AlertOutlined />, keywords: ["flood", "relief", "emergency", "disaster"] },
+const FILTERS: Array<{ value: BrowseFilter; label: string; icon: string; keywords?: string[] }> = [
+  { value: "all", label: "All", icon: "▦" },
+  { value: "schools", label: "Education", icon: "◈", keywords: ["school", "education", "classroom", "student"] },
+  { value: "health", label: "Health", icon: "♥", keywords: ["health", "clinic", "medical", "hospital"] },
+  { value: "emergency", label: "Emergency", icon: "⚡", keywords: ["flood", "relief", "emergency", "disaster"] },
 ];
 
 function matchesFilter(
@@ -313,10 +312,10 @@ export default function CampaignDiscoveryPage() {
         {/* Search + filters */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 48 }}>
           <div style={{ position: "relative", maxWidth: 560 }}>
-            <SearchOutlined style={{
+            <span style={{
               position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
-              color: "#4a5568", fontSize: 16, zIndex: 1,
-            }} />
+              color: "#4a5568", fontSize: 15, zIndex: 1, lineHeight: 1,
+            }}>⌕</span>
             <input
               type="text"
               placeholder="Search campaigns..."

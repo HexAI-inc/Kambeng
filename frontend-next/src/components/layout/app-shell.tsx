@@ -3,11 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MenuOutlined, CloseOutlined, HomeOutlined, AppstoreOutlined, UserOutlined, LogoutOutlined, LoginOutlined, DashboardOutlined } from "@ant-design/icons";
-import { AppButton, AppSpace, AppText } from "@/components/ui";
 import { useSessionProfile } from "@/hooks/use-frontend-data";
 
-type NavItem = { key: string; label: string; href: string; icon?: React.ReactNode };
+type NavItem = { key: string; label: string; href: string };
 
 function isItemActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -53,21 +51,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const navLinks = useMemo<NavItem[]>(() => {
     const base: NavItem[] = [
-      { key: "home", label: "Home", href: "/", icon: <HomeOutlined /> },
-      { key: "campaigns", label: "Campaigns", href: "/campaigns", icon: <AppstoreOutlined /> },
+      { key: "home", label: "Home", href: "/" },
+      { key: "campaigns", label: "Campaigns", href: "/campaigns" },
     ];
     if (isLoggedIn) {
-      base.push({ key: "dashboard", label: "Dashboard", href: "/dashboard", icon: <DashboardOutlined /> });
+      base.push({ key: "dashboard", label: "Dashboard", href: "/dashboard" });
       if (isAdmin) {
-        base.push({ key: "admin", label: "Admin", href: "/admin/campaigns", icon: <UserOutlined /> });
+        base.push({ key: "admin", label: "Admin", href: "/admin/overview" });
       }
     }
     return base;
   }, [isLoggedIn, isAdmin]);
 
   const authLink = isLoggedIn
-    ? { key: "logout", label: "Logout", href: "/auth/logout", icon: <LogoutOutlined /> }
-    : { key: "login", label: "Login", href: "/auth/login", icon: <LoginOutlined /> };
+    ? { key: "logout", label: "Logout", href: "/auth/logout" }
+    : { key: "login", label: "Login", href: "/auth/login" };
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -176,7 +174,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
-            {mobileOpen ? <CloseOutlined /> : <MenuOutlined />}
+            {mobileOpen ? "✕" : "☰"}
           </button>
         </div>
       </header>

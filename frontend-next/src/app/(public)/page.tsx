@@ -92,7 +92,8 @@ function FeaturedCampaignCard({ campaign }: {
       boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
     }}>
       {/* ── IMAGE — full, unobstructed ── */}
-      <div style={{ position: "relative", height: 240 }}>
+      <Link href={`/campaigns/${campaign.slug}`}>
+      <div style={{ position: "relative", height: 200, cursor: "pointer" }}>
         <Image
           src={campaign.cover_image_url ?? "/sample.png"}
           alt={campaign.title}
@@ -125,63 +126,59 @@ function FeaturedCampaignCard({ campaign }: {
           <span style={{ fontSize: 11, fontWeight: 600, color: BLUE }}>Verified</span>
         </div>
       </div>
+      </Link>
 
-      {/* ── INFO PANEL — solid dark, below image ── */}
-      <div style={{ padding: "16px 18px 18px" }}>
+      {/* ── INFO PANEL ── */}
+      <div style={{ padding: "12px 16px 16px" }}>
 
-        {/* Title */}
-        <h3 style={{
-          margin: "0 0 12px", fontSize: 17, fontWeight: 700,
-          color: "#f0f6ff", lineHeight: 1.3, letterSpacing: "-0.02em",
-        }}>
-          {campaign.title}
-        </h3>
+        {/* Title — clickable */}
+        <Link href={`/campaigns/${campaign.slug}`}>
+          <h3 style={{
+            margin: "0 0 10px", fontSize: 15, fontWeight: 700,
+            color: "#f0f6ff", lineHeight: 1.3, letterSpacing: "-0.01em",
+            cursor: "pointer",
+          }}>
+            {campaign.title}
+          </h3>
+        </Link>
 
-        {/* Ring + amount */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+        {/* Ring + amount + donate — all on one row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          {/* Mini ring */}
           <div style={{ position: "relative", flexShrink: 0 }}>
-            <RingProgress pct={pct} size={60} />
+            <RingProgress pct={pct} size={44} />
             <div style={{
               position: "absolute", inset: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 10, fontWeight: 800, color: BLUE,
+              fontSize: 8, fontWeight: 800, color: BLUE,
             }}>
               {Math.round(pct)}%
             </div>
           </div>
-          <div>
-            <div style={{ fontSize: 26, fontWeight: 900, color: "#f0f6ff", lineHeight: 1, letterSpacing: "-0.03em" }}>
+
+          {/* Amount */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 20, fontWeight: 900, color: "#f0f6ff", lineHeight: 1, letterSpacing: "-0.03em" }}>
               {campaign.amount_raised.toLocaleString()}
-              <span style={{ fontSize: 13, fontWeight: 500, color: "#8899aa", marginLeft: 5 }}>GMD</span>
+              <span style={{ fontSize: 11, fontWeight: 500, color: "#8899aa", marginLeft: 4 }}>GMD</span>
             </div>
             {hasTarget && (
-              <div style={{ fontSize: 11, color: "#4a5568", marginTop: 4 }}>
-                of {(campaign.target_amount ?? 0).toLocaleString()} GMD goal
+              <div style={{ fontSize: 10, color: "#4a5568", marginTop: 2 }}>
+                of {(campaign.target_amount ?? 0).toLocaleString()} goal
               </div>
             )}
           </div>
-        </div>
 
-        {/* Buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <Link href={`/quick-pay/${campaign.slug}`}>
+          {/* Single donate button — right side */}
+          <Link href={`/quick-pay/${campaign.slug}`} style={{ flexShrink: 0 }}>
             <button style={{
-              width: "100%", padding: "12px 0", borderRadius: 50, border: "none",
+              padding: "9px 18px", borderRadius: 50, border: "none",
               background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-              color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
-              boxShadow: "0 4px 20px rgba(29,197,255,0.35)",
+              color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 4px 16px rgba(29,197,255,0.35)",
+              whiteSpace: "nowrap",
             }}>
-              Donate now
-            </button>
-          </Link>
-          <Link href={`/campaigns/${campaign.slug}`}>
-            <button style={{
-              width: "100%", padding: "10px 0", borderRadius: 50,
-              border: "1px solid rgba(255,255,255,0.1)",
-              background: "rgba(255,255,255,0.04)",
-              color: "#8899aa", fontSize: 13, fontWeight: 500, cursor: "pointer",
-            }}>
-              See the story →
+              Donate
             </button>
           </Link>
         </div>

@@ -92,41 +92,76 @@ function FeaturedCampaignCard({ campaign }: {
       maxWidth: 400,
       width: "100%",
     }}>
-      {/* Cover — shorter, only shows when there's a real image */}
-      {campaign.cover_image_url && (
-        <div style={{ position: "relative", height: 150, background: "#0d1829", flexShrink: 0 }}>
+      {/* Cover — full bleed image OR rich gradient placeholder */}
+      <div style={{ position: "relative", height: 170, flexShrink: 0, overflow: "hidden" }}>
+        {campaign.cover_image_url ? (
           <Image src={campaign.cover_image_url} alt={campaign.title}
             fill unoptimized sizes="400px" style={{ objectFit: "cover" }} />
+        ) : (
+          /* Gradient placeholder — visually rich, no flag */
           <div style={{
-            position: "absolute", bottom: 0, left: 0, right: 0, height: 50,
-            background: "linear-gradient(to bottom, transparent, #111827)",
-          }} />
-        </div>
-      )}
-
-      {/* Body */}
-      <div style={{ padding: "18px 20px 20px" }}>
-        {/* LIVE + title row */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 5,
-            padding: "3px 9px", borderRadius: 20, flexShrink: 0,
-            background: "rgba(27,191,136,0.12)", border: "1px solid rgba(27,191,136,0.25)",
+            position: "absolute", inset: 0,
+            background: "linear-gradient(135deg, #0d2340 0%, #0a3d5c 40%, #061e30 100%)",
           }}>
-            <span style={{
-              width: 5, height: 5, borderRadius: "50%",
-              background: "#1bbf88", boxShadow: "0 0 5px #1bbf88", display: "inline-block",
+            {/* Decorative circles */}
+            <div style={{
+              position: "absolute", width: 180, height: 180, borderRadius: "50%",
+              background: "rgba(29,197,255,0.08)", top: -40, right: -40,
             }} />
-            <span style={{ fontSize: 10, fontWeight: 700, color: "#1bbf88", letterSpacing: "0.06em" }}>LIVE</span>
+            <div style={{
+              position: "absolute", width: 100, height: 100, borderRadius: "50%",
+              background: "rgba(29,197,255,0.05)", bottom: -20, left: 20,
+            }} />
+            {/* Campaign initial — large, elegant */}
+            <div style={{
+              position: "absolute", inset: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <div style={{
+                width: 64, height: 64, borderRadius: 18,
+                background: "rgba(29,197,255,0.12)",
+                border: "1px solid rgba(29,197,255,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 28, fontWeight: 900, color: BLUE,
+                letterSpacing: "-0.02em",
+              }}>
+                {campaign.title.charAt(0).toUpperCase()}
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Gradient overlay — title reads on top of any image */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(10,15,26,0.85) 100%)",
+        }} />
+        {/* LIVE badge + title overlaid on image */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: 5,
+              padding: "3px 8px", borderRadius: 20,
+              background: "rgba(27,191,136,0.2)", border: "1px solid rgba(27,191,136,0.35)",
+            }}>
+              <span style={{
+                width: 5, height: 5, borderRadius: "50%",
+                background: "#1bbf88", boxShadow: "0 0 5px #1bbf88", display: "inline-block",
+              }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#1bbf88", letterSpacing: "0.06em" }}>LIVE</span>
+            </div>
           </div>
           <h3 style={{
-            margin: 0, fontSize: 15, fontWeight: 700,
-            color: "#f0f6ff", lineHeight: 1.3,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            margin: 0, fontSize: 16, fontWeight: 700,
+            color: "#fff", lineHeight: 1.25,
+            textShadow: "0 1px 8px rgba(0,0,0,0.6)",
           }}>
             {campaign.title}
           </h3>
         </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: "14px 18px 18px" }}>
 
         {/* Ring + numbers — compact horizontal */}
         <div style={{
@@ -236,7 +271,14 @@ function SmallCampaignCard({ campaign }: {
           {campaign.cover_image_url ? (
             <Image src={campaign.cover_image_url} alt={campaign.title} fill unoptimized sizes="48px" style={{ objectFit: "cover" }} />
           ) : (
-            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, opacity: 0.3 }}>🇬🇲</div>
+            <div style={{
+              width: "100%", height: "100%",
+              background: "linear-gradient(135deg, #0d2340, #0a3d5c)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 16, fontWeight: 800, color: BLUE,
+            }}>
+              {campaign.title.charAt(0).toUpperCase()}
+            </div>
           )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>

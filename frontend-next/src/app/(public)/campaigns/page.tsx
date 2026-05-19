@@ -109,10 +109,18 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
         ) : (
           <div style={{
             position: "absolute", inset: 0,
-            background: "linear-gradient(135deg, #0d2340 0%, #1a2333 50%, #0d2340 100%)",
+            background: "linear-gradient(135deg, #0d2340 0%, #0a3d5c 50%, #061e30 100%)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <div style={{ fontSize: 48, opacity: 0.15 }}>🇬🇲</div>
+            <div style={{
+              width: 56, height: 56, borderRadius: 14,
+              background: "rgba(29,197,255,0.1)",
+              border: "1px solid rgba(29,197,255,0.15)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 24, fontWeight: 900, color: "#1dc5ff",
+            }}>
+              {campaign.title.charAt(0).toUpperCase()}
+            </div>
           </div>
         )}
         {/* Status badge */}

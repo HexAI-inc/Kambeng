@@ -72,16 +72,16 @@ export default function AdminCommissionsPage() {
 
         {/* KPI strip */}
         <motion.div {...fadeUp(0.06)}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
               { label: "Total earned", value: `${(summary?.total_commissions ?? 0).toFixed(2)} GMD`, color: "#f0f6ff" },
               { label: "Available", value: `${available.toFixed(2)} GMD`, color: GREEN },
               { label: "Withdrawn", value: `${(summary?.withdrawn_commissions ?? 0).toFixed(2)} GMD`, color: BLUE },
               { label: "Pending", value: `${(summary?.pending_commissions ?? 0).toFixed(2)} GMD`, color: "#f97316" },
-            ].map(({ label, value, color }, i, arr) => (
-              <div key={label} style={{ padding: "16px 20px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-                <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color, letterSpacing: "-0.02em" }}>{value}</div>
+            ].map(({ label, value, color }, i) => (
+              <div key={label} style={{ padding: "14px 16px", borderRight: i % 2 === 0 ? "1px solid rgba(255,255,255,0.05)" : "none", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color, letterSpacing: "-0.02em" }}>{value}</div>
               </div>
             ))}
           </div>
@@ -140,30 +140,31 @@ export default function AdminCommissionsPage() {
         <motion.div {...fadeUp(0.14)}>
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
             <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>Commission Sources</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 130px 130px 110px 100px 110px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-              <div>Campaign</div><div>User</div><div>Gross</div><div>Commission</div><div>Status</div><div>Date</div><div>Actions</div>
-            </div>
-
             {rows.length === 0 ? (
               <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No commission sources yet</div>
             ) : pageRows.map((s: CommissionSourceItem, i: number) => (
-              <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 130px 130px 110px 100px 110px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
+              <div key={i} style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{s.campaign_title}</div>
-                  <div style={{ fontSize: 11, color: "#4a5568" }}>#{s.campaign_id}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{s.campaign_title}</div>
+                    <div style={{ fontSize: 11, color: "#4a5568" }}>{s.user_name} · {new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+                  </div>
+                  <StatusChip status={s.status} />
                 </div>
-                <div>
-                  <div style={{ fontSize: 13, color: "#8899aa" }}>{s.user_name}</div>
-                  <div style={{ fontSize: 11, color: "#4a5568" }}>#{s.user_id}</div>
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Gross</div>
+                    <div style={{ fontSize: 13, color: "#8899aa" }}>{s.gross_amount.toFixed(2)} GMD</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Commission</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>+{s.platform_commission.toFixed(2)} GMD</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 13, color: "#8899aa" }}>{s.gross_amount.toFixed(2)} GMD</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>+{s.platform_commission.toFixed(2)} GMD</div>
-                <div><StatusChip status={s.status} /></div>
-                <div style={{ fontSize: 12, color: "#4a5568" }}>{new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
-                <button onClick={() => router.push(`/admin/campaigns/${s.campaign_id}/view`)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}>View</button>
+                <button onClick={() => router.push(`/admin/campaigns/${s.campaign_id}/view`)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}>View Campaign</button>
               </div>
             ))}
           </div>

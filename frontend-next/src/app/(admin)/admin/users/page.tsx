@@ -86,14 +86,6 @@ export default function AdminUsersPage() {
 
         <motion.div {...fadeUp(0.06)}>
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
-            <div style={{
-              display: "grid", gridTemplateColumns: "52px 1fr 100px 100px 80px 80px 160px",
-              padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)",
-              fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em",
-            }}>
-              <div>ID</div><div>User</div><div>Role</div><div>Status</div><div>KYC</div><div>Camps</div><div>Actions</div>
-            </div>
-
             {isLoading ? (
               <div style={{ padding: 40, textAlign: "center" }}>
                 <div style={{ width: 32, height: 32, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
@@ -105,49 +97,42 @@ export default function AdminUsersPage() {
               <motion.div
                 key={u.id}
                 {...fadeUp(0.03 * i)}
-                style={{
-                  display: "grid", gridTemplateColumns: "52px 1fr 100px 100px 80px 80px 160px",
-                  padding: "13px 18px", alignItems: "center",
-                  borderBottom: "1px solid rgba(255,255,255,0.04)",
-                  transition: "background 0.15s",
-                }}
+                style={{ padding: "16px 18px", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
-                <div style={{ fontSize: 12, color: "#4a5568", fontWeight: 600 }}>#{u.id}</div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{u.full_name}</div>
-                  <div style={{ fontSize: 11, color: "#4a5568" }}>{u.email}</div>
-                  {u.wave_number && <div style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{u.wave_number}</div>}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 10 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 2 }}>{u.full_name}</div>
+                    <div style={{ fontSize: 11, color: "#4a5568" }}>{u.email}</div>
+                    {u.wave_number && <div style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{u.wave_number}</div>}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 600, flexShrink: 0 }}>#{u.id}</div>
                 </div>
-                <div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                   <Chip
                     label={String(u.role)}
                     color={u.role === "ADMIN" ? "#f97316" : BLUE}
                     bg={u.role === "ADMIN" ? "rgba(249,115,22,0.1)" : "rgba(29,197,255,0.1)"}
                     border={u.role === "ADMIN" ? "rgba(249,115,22,0.25)" : "rgba(29,197,255,0.2)"}
                   />
-                </div>
-                <div>
                   <Chip
                     label={u.is_active ? "Active" : "Suspended"}
                     color={u.is_active ? GREEN : RED}
                     bg={u.is_active ? "rgba(27,191,136,0.1)" : "rgba(239,68,68,0.1)"}
                     border={u.is_active ? "rgba(27,191,136,0.25)" : "rgba(239,68,68,0.25)"}
                   />
-                </div>
-                <div>
                   {u.kyc_status && (
                     <Chip
-                      label={String(u.kyc_status)}
+                      label={`KYC: ${u.kyc_status}`}
                       color={u.kyc_status === "APPROVED" ? GREEN : u.kyc_status === "REJECTED" ? RED : "#f97316"}
                       bg={u.kyc_status === "APPROVED" ? "rgba(27,191,136,0.1)" : u.kyc_status === "REJECTED" ? "rgba(239,68,68,0.1)" : "rgba(249,115,22,0.1)"}
                       border={u.kyc_status === "APPROVED" ? "rgba(27,191,136,0.25)" : u.kyc_status === "REJECTED" ? "rgba(239,68,68,0.25)" : "rgba(249,115,22,0.25)"}
                     />
                   )}
+                  <span style={{ fontSize: 11, color: "#4a5568", alignSelf: "center" }}>{u.campaign_count ?? 0} campaigns</span>
                 </div>
-                <div style={{ fontSize: 13, color: "#8899aa", fontWeight: 600 }}>{u.campaign_count ?? 0}</div>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <button onClick={() => router.push(`/admin/users/${u.id}/view`)} style={btnStyle("default")}>View</button>
                   <button
                     onClick={() =>

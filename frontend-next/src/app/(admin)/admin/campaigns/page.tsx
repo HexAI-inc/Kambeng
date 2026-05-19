@@ -103,21 +103,9 @@ export default function AdminCampaignsPage() {
           />
         </motion.div>
 
-        {/* Table card */}
+        {/* Card list */}
         <motion.div {...fadeUp(0.06)}>
-          <div style={{
-            background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
-            borderRadius: 16, overflow: "hidden",
-          }}>
-            {/* Table header */}
-            <div style={{
-              display: "grid", gridTemplateColumns: "60px 1fr 160px 120px 120px 200px",
-              padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)",
-              fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em",
-            }}>
-              <div>ID</div><div>Campaign</div><div>Status</div><div>Raised</div><div>Target</div><div>Actions</div>
-            </div>
-
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
             {isLoading ? (
               <div style={{ padding: 40, textAlign: "center" }}>
                 <div style={{ width: 32, height: 32, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
@@ -129,23 +117,30 @@ export default function AdminCampaignsPage() {
               <motion.div
                 key={c.id}
                 {...fadeUp(0.03 * i)}
-                style={{
-                  display: "grid", gridTemplateColumns: "60px 1fr 160px 120px 120px 200px",
-                  padding: "14px 18px", alignItems: "center",
-                  borderBottom: "1px solid rgba(255,255,255,0.04)",
-                  transition: "background 0.15s",
-                }}
+                style={{ padding: "16px 18px", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
-                <div style={{ fontSize: 12, color: "#4a5568", fontWeight: 600 }}>#{c.id}</div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 2 }}>{c.title}</div>
-                  <div style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{c.slug}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 2 }}>{c.title}</div>
+                    <div style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{c.slug}</div>
+                  </div>
+                  <div style={{ flexShrink: 0 }}><StatusChip status={String(c.status)} /></div>
                 </div>
-                <div><StatusChip status={String(c.status)} /></div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{Number(c.amount_raised ?? 0).toLocaleString()} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
-                <div style={{ fontSize: 13, color: "#8899aa" }}>{c.target_amount ? `${Number(c.target_amount).toLocaleString()} GMD` : "—"}</div>
+                <div style={{ display: "flex", gap: 16, marginBottom: 10, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Raised</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{Number(c.amount_raised ?? 0).toLocaleString()} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
+                  </div>
+                  {c.target_amount && (
+                    <div>
+                      <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Target</div>
+                      <div style={{ fontSize: 13, color: "#8899aa" }}>{Number(c.target_amount).toLocaleString()} GMD</div>
+                    </div>
+                  )}
+                  <div style={{ fontSize: 11, color: "#4a5568", alignSelf: "flex-end" }}>#{c.id}</div>
+                </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <button onClick={() => router.push(`/admin/campaigns/${c.id}/view`)} style={btnStyle("default")}>View</button>
                   {String(c.status) !== "ACTIVE" && (

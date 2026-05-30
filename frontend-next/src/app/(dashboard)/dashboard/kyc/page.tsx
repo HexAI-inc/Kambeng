@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useKYCStatus, useSubmitKYC } from "@/hooks/use-frontend-data";
+import MediaViewer from "@/components/ui/MediaViewer";
+import { useKYCStatus, useSubmitKYC, useSessionProfile } from "@/hooks/use-frontend-data";
 import { useAppFeedback } from "@/components/ui";
 import { motion } from "framer-motion";
 
@@ -146,9 +147,11 @@ function UploadBox({ docType, label, icon, file, onChange }: {
 }
 
 export default function KYCPage() {
-  const { data: kycStatus, isLoading } = useKYCStatus();
+  const { data: session } = useSessionProfile(true);
+  const { data: kycStatus, isLoading } = useKYCStatus(session?.id);
   const submitKYC = useSubmitKYC();
   const { message } = useAppFeedback();
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   const [uploads, setUploads] = useState<DocumentUpload[]>(
     DOC_TYPES.map(({ key }) => ({ type: key, file: null }))
@@ -158,6 +161,7 @@ export default function KYCPage() {
   const isPending  = kycStatus?.status === "SUBMITTED" || kycStatus?.status === "REVIEWING";
   const isRejected = kycStatus?.status === "REJECTED";
   const hasFiles   = uploads.some((u) => u.file !== null);
+  const statusVisible = Boolean(kycStatus?.status && kycStatus.status !== "NOT_SUBMITTED");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,7 +190,7 @@ export default function KYCPage() {
 
     if (anySuccess) {
       message.success("Documents submitted. Awaiting review.");
-      setTimeout(() => window.location.reload(), 1800);
+      setUploads(DOC_TYPES.map(({ key }) => ({ type: key, file: null })));
     }
   };
 
@@ -203,7 +207,7 @@ export default function KYCPage() {
         {/* Status */}
         {isLoading ? (
           <div style={{ height: 68, borderRadius: 12, background: "rgba(255,255,255,0.05)" }} />
-        ) : kycStatus?.status ? (
+        ) : statusVisible && kycStatus ? (
           <motion.div {...fadeUp(0.06)}>
             <StatusBanner status={kycStatus.status} reason={kycStatus.rejection_reason ?? undefined} />
           </motion.div>
@@ -287,24 +291,35 @@ export default function KYCPage() {
                       {new Date(doc.upload_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                     </div>
                   </div>
-                  <a
-                    href={doc.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      fontSize: 12, fontWeight: 600, color: BLUE,
-                      padding: "5px 12px", borderRadius: 7,
-                      background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.15)",
-                      textDecoration: "none",
-                    }}
+                  <button onClick={async () => {
+                    try {
+                      const q = new URLSearchParams({ url: doc.file_url });
+                      const res = await fetch(`/api/backend/media/presign?${q.toString()}`);
+                      if (res.ok) {
+                        const b = await res.json();
+                        setViewerSrc(b.url);
+                      } else {
+                        setViewerSrc(doc.file_url);
+                      }
+                    } catch {
+                      setViewerSrc(doc.file_url);
+                    }
+                  }}
+                  style={{
+                    fontSize: 12, fontWeight: 600, color: BLUE,
+                    padding: "5px 12px", borderRadius: 7,
+                    background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.15)",
+                    textDecoration: "none", cursor: "pointer",
+                  }}
                   >
                     View ↗
-                  </a>
+                  </button>
                 </div>
               ))}
             </div>
           </motion.div>
         )}
+        {viewerSrc && <MediaViewer src={viewerSrc} onClose={() => setViewerSrc(null)} />}
       </div>
     </div>
   );

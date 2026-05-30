@@ -7,6 +7,7 @@ from sqlalchemy.future import select
 from sqlalchemy import cast, String
 
 from app.api.routes.auth import get_admin_user
+from app.api.routes.auth import get_current_user_optional
 from app.db.database import get_db
 from app.models.moderation import ModerationReport, ReportStatus
 from app.models.user import User
@@ -24,6 +25,7 @@ logger = get_logger("moderation")
 async def submit_report(
     report_in: ModerationReportCreate,
     db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
 ):
     """Submit a moderation report. Anonymous reports allowed."""
     
@@ -32,7 +34,7 @@ async def submit_report(
         reported_entity_type=report_in.reported_entity_type,
         reported_entity_id=report_in.reported_entity_id,
         campaign_id=report_in.campaign_id,
-        reported_by_user_id=None,  # Anonymous report
+        reported_by_user_id=current_user.id if current_user else None,
         reason=report_in.reason,
         description=report_in.description,
         status=ReportStatus.OPEN

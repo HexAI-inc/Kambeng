@@ -1,16 +1,15 @@
-# Progress (Updated: 2026-05-04)
+# Progress (Updated: 2026-05-30)
 
 ## Done
 
-- Public campaign detail now shows reviews, rating summary, and proof images
-- Public campaign browse page now has a school-oriented filter
-- Added frontend hooks and types for public reviews and campaign images
+- Added backend/.env to backend/.gitignore
+- Removed backend/.env from all git history
+- Force-pushed rewritten development branch to GitHub
 
 ## Doing
 
-- Waiting for the next frontend polish slice
+
 
 ## Next
 
-- Optionally add review submission UI for logged-in donors
-- Optionally refine the mobile money checkout copy on the quick-pay page
+

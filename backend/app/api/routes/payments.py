@@ -30,6 +30,7 @@ from app.schemas.recurring_donation import (
     RecurringDonationListResponse,
 )
 from app.services.hexai_service import HexAIPaymentService
+from app.services.email_service import send_email, render_recurring_donation_confirmation_email
 from app.services.payment_reconciliation import (
     DonationNotFoundError,
     DonationTransitionConflictError,
@@ -444,6 +445,18 @@ async def create_recurring_donation(
     db.add(recurring_donation)
     await db.commit()
     await db.refresh(recurring_donation)
+
+    send_email(
+        current_user.email,
+        f"Recurring donation set up for {campaign.title}",
+        render_recurring_donation_confirmation_email(
+            current_user.full_name or "there",
+            campaign.title,
+            recurring_donation.amount,
+            recurring_donation.frequency,
+            recurring_donation.next_charge_date.isoformat(),
+        ),
+    )
     
     logger.info(
         "Recurring donation created",

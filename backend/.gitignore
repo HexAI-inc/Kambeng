@@ -3,7 +3,7 @@ uploads/
 
 # Keep the compressed archive tracked (if you want to push a snapshot)
 # uploads.tar.gz
-
+.env
 # Virtual environment
 venv/
 .venv/

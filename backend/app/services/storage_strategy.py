@@ -39,6 +39,11 @@ class StorageStrategy(ABC):
         """Save a KYC document and return its URL."""
         pass
 
+    @abstractmethod
+    def presign_get(self, path: str, expires: int = 3600) -> str:
+        """Return a URL that can be used to GET the object. For local strategy this may be the direct URL."""
+        pass
+
 
 def get_storage_strategy() -> StorageStrategy:
     """Factory function that returns the active storage strategy based on STORAGE_STRATEGY env var."""

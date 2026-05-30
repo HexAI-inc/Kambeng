@@ -12,7 +12,7 @@ export default async function LoginPage({
     <LoginFormCard
       nextTarget={nextTarget}
       errorMessage={resolvedSearchParams.error}
-      successMessage={resolvedSearchParams.message === "signup_success" ? "Account created. You can log in now." : undefined}
+      successMessage={resolvedSearchParams.message === "signup_success" ? "Account created. Check your email to verify your account." : undefined}
     />
   );
 }

@@ -104,6 +104,21 @@ class LocalStorageStrategy(StorageStrategy):
         url = f"{settings.MEDIA_URL_PREFIX}/{relative}"
         return url
 
+    def presign_get(self, path: str, expires: int = 3600) -> str:
+        """For local storage, the media URL is directly accessible via MEDIA_URL_PREFIX; return that URL.
+
+        `path` may be a full file system path or a relative url; if it's a filesystem path we try to convert it.
+        """
+        # If path looks like an absolute file path, try to map to media url
+        if path.startswith(str(self.media_root)):
+            rel = path[len(str(self.media_root)):].lstrip("/\\")
+            return f"{settings.MEDIA_URL_PREFIX}/{rel}"
+
+        # If already a URL or relative path, return as-is or normalize
+        if path.startswith("/"):
+            return f"{settings.MEDIA_URL_PREFIX}/{path.lstrip('/')}"
+        return path
+
     @staticmethod
     def _resolve_extension(original_filename: str, content_type: str) -> str:
         """Resolve file extension from filename or content type."""

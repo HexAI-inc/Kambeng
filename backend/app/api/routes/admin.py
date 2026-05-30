@@ -15,6 +15,7 @@ from app.models.user import User
 from app.models.audit_log import AdminAuditLog, AuditActionType
 from app.models.payout import Payout
 from app.models.ledger import TransactionLedger, TransactionType, TransactionStatus
+from app.models.donation import Donation
 from app.schemas.campaign import CampaignRead
 from app.schemas.kyc import KYCRead, KYCRejectRequest
 from app.schemas.review import ReviewRead
@@ -198,7 +199,7 @@ async def approve_kyc(
         raise HTTPException(status_code=404, detail="KYC submission not found")
     
     # Update submission
-    submission.status = KYCStatus.APPROVED
+    submission.status = KYCStatus.APPROVED.value
     submission.reviewed_by_admin_id = admin_user.id
     submission.reviewed_at = datetime.now(UTC)
     
@@ -220,7 +221,7 @@ async def approve_kyc(
         target_entity_type="KYC",
         target_entity_id=submission.id,
         target_user_id=submission.user_id,
-        description=f"KYC submission {submission.document_type.value} approved for user {user.full_name if user else 'Unknown'}",
+        description=f"KYC submission {submission.document_type} approved for user {user.full_name if user else 'Unknown'}",
         new_value="APPROVED"
     )
     
@@ -246,7 +247,7 @@ async def reject_kyc(
         raise HTTPException(status_code=404, detail="KYC submission not found")
     
     # Update submission
-    submission.status = KYCStatus.REJECTED
+    submission.status = KYCStatus.REJECTED.value
     submission.reviewed_by_admin_id = admin_user.id
     submission.reviewed_at = datetime.now(UTC)
     submission.rejection_reason = rejection_reason
@@ -698,6 +699,85 @@ async def list_payouts_overview(
     return overview
 
 
+
+@router.get("/donations/pending")
+async def list_pending_donations(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Return recent donations that are still pending reconciliation for admin review."""
+    query = select(Donation).where(Donation.status == "PENDING")
+    result = await db.execute(query.order_by(Donation.created_at.desc()).offset(skip).limit(limit))
+    donations = result.scalars().all()
+
+    out = []
+    for d in donations:
+        campaign_title = None
+        if d.campaign_id:
+            camp_res = await db.execute(select(Campaign).where(Campaign.id == d.campaign_id))
+            camp = camp_res.scalars().first()
+            campaign_title = camp.title if camp else None
+
+        out.append({
+            "id": d.id,
+            "campaign_id": d.campaign_id,
+            "campaign_title": campaign_title,
+            "donor_id": None,
+            "donor_name": d.donor_name,
+            "amount": d.amount,
+            "status": d.status,
+            "client_reference": d.client_reference,
+            "created_at": d.created_at,
+            "reconciliation_source": d.reconciliation_source,
+            "reconciliation_reason": d.reconciliation_reason,
+            "reconciled_by_admin_id": d.reconciled_by_admin_id,
+            "reconciled_at": d.reconciled_at,
+        })
+
+    return out
+
+
+@router.get("/donations/successful")
+async def list_successful_donations(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Return successful donations for the admin donations overview."""
+    query = select(Donation).where(Donation.status == "SUCCEEDED")
+    result = await db.execute(query.order_by(Donation.created_at.desc()).offset(skip).limit(limit))
+    donations = result.scalars().all()
+
+    out = []
+    for d in donations:
+        campaign_title = None
+        if d.campaign_id:
+            camp_res = await db.execute(select(Campaign).where(Campaign.id == d.campaign_id))
+            camp = camp_res.scalars().first()
+            campaign_title = camp.title if camp else None
+
+        out.append({
+            "id": d.id,
+            "campaign_id": d.campaign_id,
+            "campaign_title": campaign_title,
+            "donor_id": None,
+            "donor_name": d.donor_name,
+            "amount": d.amount,
+            "status": d.status,
+            "client_reference": d.client_reference,
+            "created_at": d.created_at,
+            "reconciliation_source": d.reconciliation_source,
+            "reconciliation_reason": d.reconciliation_reason,
+            "reconciled_by_admin_id": d.reconciled_by_admin_id,
+            "reconciled_at": d.reconciled_at,
+        })
+
+    return out
+
+
 @router.get("/system/stats", response_model=AdminSystemStats)
 async def get_system_stats(
     db: AsyncSession = Depends(get_db),
@@ -766,30 +846,37 @@ async def get_commissions_summary(
     _admin_user: User = Depends(get_admin_user),
 ):
     """Get platform commissions summary and breakdown by source."""
-    # Get all payouts with platform commissions
+    # Count only campaign payouts as earned commissions.
     payouts_result = await db.execute(
-        select(Payout).where(Payout.platform_commission > 0).order_by(Payout.created_at.desc())
+        select(Payout).where(
+            and_(
+                Payout.platform_commission > 0,
+                Payout.campaign_id.isnot(None),
+            )
+        ).order_by(Payout.created_at.desc())
     )
     payouts = payouts_result.scalars().all()
     
-    total_commissions = sum(p.platform_commission for p in payouts)
+    total_commissions = sum((p.platform_commission or 0.0) for p in payouts)
     
-    # Get already withdrawn commissions (payouts with SUCCEEDED status)
+    # Get already withdrawn commissions (admin withdrawal payouts with SUCCEEDED status)
     withdrawn_result = await db.execute(
         select(func.sum(Payout.platform_commission)).where(
             and_(
                 Payout.platform_commission > 0,
+                Payout.campaign_id.is_(None),
                 cast(Payout.status, String) == "SUCCEEDED"
             )
         )
     )
     withdrawn_commissions = withdrawn_result.scalar() or 0.0
     
-    # Get pending commissions (PENDING status)
+    # Get pending commissions (admin withdrawal payouts in flight)
     pending_result = await db.execute(
         select(func.sum(Payout.platform_commission)).where(
             and_(
                 Payout.platform_commission > 0,
+                Payout.campaign_id.is_(None),
                 cast(Payout.status, String) == "PENDING"
             )
         )
@@ -803,7 +890,7 @@ async def get_commissions_summary(
     
     await _log_audit_action(
         db=db,
-        action_type="COMMISSIONS_VIEWED",
+        action_type=AuditActionType.COMMISSIONS_VIEWED,
         performed_by_admin_id=_admin_user.id,
         target_entity_type="COMMISSIONS",
         target_entity_id=0,
@@ -829,7 +916,12 @@ async def get_commission_sources(
 ):
     """Get detailed breakdown of commissions by payout source."""
     payouts_result = await db.execute(
-        select(Payout).where(Payout.platform_commission > 0).order_by(Payout.created_at.desc()).offset(skip).limit(limit)
+        select(Payout).where(
+            and_(
+                Payout.platform_commission > 0,
+                Payout.campaign_id.isnot(None),
+            )
+        ).order_by(Payout.created_at.desc()).offset(skip).limit(limit)
     )
     payouts = payouts_result.scalars().all()
     
@@ -839,6 +931,8 @@ async def get_commission_sources(
             select(Campaign).where(Campaign.id == payout.campaign_id)
         )
         campaign = campaign_result.scalars().first()
+        if not campaign:
+            continue
         
         user_result = await db.execute(
             select(User).where(User.id == campaign.user_id)
@@ -904,7 +998,7 @@ async def withdraw_commissions(
     # Log the audit action
     await _log_audit_action(
         db=db,
-        action_type="COMMISSION_WITHDRAWAL_INITIATED",
+        action_type=AuditActionType.COMMISSION_WITHDRAWAL_INITIATED,
         performed_by_admin_id=admin_user.id,
         target_entity_type="COMMISSION_WITHDRAWAL",
         target_entity_id=commission_payout.id,

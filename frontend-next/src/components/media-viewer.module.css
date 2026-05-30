@@ -1,0 +1,39 @@
+.viewerShell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+}
+
+.viewerImage {
+  width: 100%;
+  max-height: min(80vh, 820px);
+  object-fit: contain;
+  display: block;
+  background: #0f1724;
+}
+
+.viewerFrame {
+  width: 100%;
+  height: min(78vh, 760px);
+  border: 0;
+  background: #0f1724;
+}
+
+.description {
+  margin: 0;
+  padding: 0 20px 20px;
+  color: #6b7a8d;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .viewerFrame {
+    height: min(70vh, 560px);
+  }
+
+  .description {
+    padding: 0 16px 16px;
+  }
+}

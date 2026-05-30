@@ -199,7 +199,7 @@ export default function AdminOverviewPage() {
           <div className="kpi-grid">
             <KPI label="KYC Pending" value={statsLoading ? "—" : fmt(stats?.kyc_pending_count ?? 0)} sub="awaiting review" color={ORANGE} href="/admin/kyc-queue" />
             <KPI label="KYC Approved" value={statsLoading ? "—" : fmt(stats?.kyc_approved_count ?? 0)} sub="verified users" color={GREEN} href="/admin/kyc-queue" />
-            <KPI label="Open Reports" value={openModReports} sub="moderation queue" color={RED} href="/admin/moderation-reports" />
+            <KPI label="Open Reports" value={openModReports} sub="moderation queue" color={RED} href="/admin/moderation" />
             <KPI label="Available Commission" value={commissions ? `${fmt(commissions.available_commissions)} GMD` : "—"} sub="ready to withdraw" color={PURPLE} href="/admin/commissions" />
           </div>
         </motion.div>
@@ -347,7 +347,7 @@ export default function AdminOverviewPage() {
             {[
               { label: "Review KYC Queue", href: "/admin/kyc-queue", color: BLUE },
               { label: "Manage Campaigns", href: "/admin/campaigns", color: GREEN },
-              { label: "Moderation Reports", href: "/admin/moderation-reports", color: RED },
+              { label: "Moderation", href: "/admin/moderation", color: RED },
               { label: "Financial Reports", href: "/admin/reports", color: ORANGE },
               { label: "User Management", href: "/admin/users", color: PURPLE },
               { label: "Commissions", href: "/admin/commissions", color: BLUE },

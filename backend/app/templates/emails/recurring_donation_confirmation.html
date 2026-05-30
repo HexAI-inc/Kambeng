@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block preheader %}Your recurring donation is active and ready to go.{% endblock %}
+{% block eyebrow %}Recurring donation set up{% endblock %}
+{% block heading %}You're all set{% endblock %}
+{% block intro %}Hi {{ full_name }}, your recurring donation to {{ campaign_title }} is active. We’ll send the next payment reminder when it’s due.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="detail" style="margin-bottom: 12px;">
+      <div class="detail-label">Campaign</div>
+      <div class="detail-value">{{ campaign_title }}</div>
+    </div>
+    <div class="detail" style="margin-bottom: 12px;">
+      <div class="detail-label">Amount</div>
+      <div class="detail-value">GMD {{ amount }}</div>
+    </div>
+    <div class="detail" style="margin-bottom: 12px;">
+      <div class="detail-label">Frequency</div>
+      <div class="detail-value">{{ frequency|title }}</div>
+    </div>
+    <div class="detail">
+      <div class="detail-label">Next charge date</div>
+      <div class="detail-value">{{ next_charge_date }}</div>
+    </div>
+
+    <div class="button-wrap" style="text-align: center; padding-top: 18px;">
+      <a class="button" href="{{ frontend_url }}/dashboard/recurring-donations" target="_blank" rel="noopener">Manage recurring donations</a>
+    </div>
+  </div>
+{% endblock %}

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.database import Base
@@ -23,9 +23,9 @@ class KYC(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    document_type = Column(Enum(KYCDocumentType))
+    document_type = Column(String, nullable=False)
     document_file_url = Column(String)  # Path or URL to stored document
-    status = Column(Enum(KYCStatus), default=KYCStatus.SUBMITTED, index=True)
+    status = Column(String, default=KYCStatus.SUBMITTED.value, index=True, nullable=False)
     
     reviewed_by_admin_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     reviewed_at = Column(DateTime(timezone=True), nullable=True)

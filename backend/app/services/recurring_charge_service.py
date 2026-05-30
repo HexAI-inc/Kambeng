@@ -10,7 +10,11 @@ from app.models.donation import Donation
 from app.models.user import User
 from app.models.ledger import TransactionLedger, TransactionType, TransactionStatus
 from app.services.hexai_service import HexAIPaymentService
-from app.services.email_service import send_email, render_recurring_donation_reminder
+from app.services.email_service import (
+    send_email,
+    render_recurring_donation_reminder,
+    render_recurring_donation_issue_email,
+)
 from app.core.config import settings
 from app.db.database import engine as async_engine
 import uuid
@@ -162,14 +166,14 @@ async def process_single_recurring_charge(
             },
         )
         # Send error email to user
-        await send_email(
+        send_email(
             user.email,
             "Payment Issue with Your Recurring Donation",
-            f"""
-            <p>Hi {user.full_name},</p>
-            <p>We encountered an issue processing your recurring donation of {recurring_donation.amount} GMD to {campaign.title}.</p>
-            <p>Please try again manually or contact support if the issue persists.</p>
-            """,
+            render_recurring_donation_issue_email(
+                user.full_name or "Supporter",
+                campaign.title,
+                recurring_donation.amount,
+            ),
         )
         return
     
@@ -210,9 +214,9 @@ async def process_single_recurring_charge(
         payment_link=payment_link,
     )
     
-    email_sent = await send_email(
+    email_sent = send_email(
         user.email,
-        f"Your Monthly Donation to {campaign.title} is Due",
+        f"Your {recurring_donation.frequency.title()} Donation to {campaign.title} is Due",
         html_content,
     )
     

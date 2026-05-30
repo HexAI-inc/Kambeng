@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block preheader %}We couldn’t process your recurring donation payment.{% endblock %}
+{% block eyebrow %}Recurring donation issue{% endblock %}
+{% block heading %}Payment issue detected{% endblock %}
+{% block intro %}Hi {{ full_name }}, we ran into an issue while preparing your recurring donation for {{ campaign_title }}. Please try again manually.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="detail" style="margin-bottom: 12px;">
+      <div class="detail-label">Campaign</div>
+      <div class="detail-value">{{ campaign_title }}</div>
+    </div>
+    <div class="detail" style="margin-bottom: 12px;">
+      <div class="detail-label">Amount</div>
+      <div class="detail-value">GMD {{ amount }}</div>
+    </div>
+    <div class="detail" style="margin-bottom: 16px;">
+      <div class="detail-label">What to do next</div>
+      <div class="detail-value" style="font-weight: 500;">Please retry the payment or contact support if the issue continues.</div>
+    </div>
+    <div class="button-wrap" style="text-align: center; padding-top: 6px;">
+      <a class="button" href="{{ frontend_url }}" target="_blank" rel="noopener">Open Kambeng</a>
+    </div>
+  </div>
+{% endblock %}

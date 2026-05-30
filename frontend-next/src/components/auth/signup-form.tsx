@@ -47,7 +47,22 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) { setSubmitError(payload?.detail ?? "Signup failed."); return; }
-    router.replace("/auth/login?message=signup_success");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("kambeng_onboarding_email", payload.email ?? values.email.trim());
+      window.localStorage.setItem("kambeng_onboarding_wave_number", payload.wave_number ?? values.waveNumber.trim());
+      window.localStorage.setItem("kambeng_onboarding_full_name", payload.full_name ?? values.fullName.trim());
+      const verificationCode = response.headers.get("x-verification-code");
+      if (verificationCode) {
+        window.localStorage.setItem("kambeng_onboarding_verification_code", verificationCode);
+      }
+    }
+    const searchParams = new URLSearchParams({
+      full_name: payload.full_name ?? values.fullName.trim(),
+      email: payload.email ?? values.email.trim(),
+      wave_number: payload.wave_number ?? values.waveNumber.trim(),
+      message: "signup_success",
+    });
+    router.replace(`/auth/onboarding?${searchParams.toString()}`);
   });
 
   const inputStyle: React.CSSProperties = {

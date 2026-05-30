@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block eyebrow %}KYC Submission{% endblock %}
+{% block heading %}New KYC Submitted for Review{% endblock %}
+{% block intro %}A user has submitted their identity document for review. Please review the submission in the admin panel.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; gap:16px; align-items:center;">
+      <div>
+        <div style="font-size:14px; color:#8899aa;">Name</div>
+        <div style="font-weight:800; font-size:16px; margin-top:6px;">{{ full_name }}</div>
+      </div>
+      <div>
+        <div style="font-size:14px; color:#8899aa;">Email</div>
+        <div style="font-weight:700; font-size:14px; margin-top:6px;">{{ user_email }}</div>
+      </div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div class="detail">
+      <div class="detail-label">Document type</div>
+      <div class="detail-value">{{ document_type }}</div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div style="text-align:center; padding-top:8px;">
+      <a class="button" href="{{ review_link }}">Open submission in admin</a>
+    </div>
+  </div>
+{% endblock %}

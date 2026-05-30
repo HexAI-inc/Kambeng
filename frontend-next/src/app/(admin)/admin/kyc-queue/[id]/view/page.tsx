@@ -3,6 +3,8 @@
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAdminKYCDetail } from "@/hooks/use-frontend-data";
+import { useState } from "react";
+import MediaViewer from "@/components/ui/MediaViewer";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -81,7 +83,7 @@ export default function KYCViewPage() {
             )}
             <Field label="Document" span value={
               submission.document_file_url
-                ? <a href={submission.document_file_url} target="_blank" rel="noopener noreferrer" style={{ color: BLUE, fontWeight: 600, textDecoration: "none" }}>View Document ↗</a>
+                ? <DocumentLink url={submission.document_file_url} />
                 : "No document uploaded"
             } />
             {submission.rejection_reason && (
@@ -102,4 +104,47 @@ export default function KYCViewPage() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
+}
+
+function DocumentLink({ url }: { url: string }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [src, setSrc] = useState<string | null>(null);
+
+  const onOpen = async () => {
+    setLoading(true);
+    try {
+      const q = new URLSearchParams({ url });
+      const res = await fetch(`/api/backend/media/presign?${q.toString()}`);
+      if (!res.ok) throw new Error("presign failed");
+      const body = await res.json();
+      setSrc(body.url);
+      setOpen(true);
+    } catch (e) {
+      // fallback to original url
+      setSrc(url);
+      setOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onClose = () => {
+    setOpen(false);
+    setSrc(null);
+  };
+
+  return (
+    <>
+      <button onClick={onOpen} disabled={loading} style={{ color: BLUE, fontWeight: 600, textDecoration: "none", background: "transparent", border: "none", padding: 0, cursor: "pointer" }}>{loading ? "Loading…" : "View Document"}</button>
+      {open && src && <MediaViewer src={src} type={guessMime(src)} onClose={onClose} />}
+    </>
+  );
+}
+
+function guessMime(url: string) {
+  const lower = url.split("?")[0].toLowerCase();
+  if (lower.endsWith(".pdf")) return "application/pdf";
+  if (lower.match(/\.(jpg|jpeg|png|gif|webp)$/)) return "image/" + lower.split('.').pop();
+  return "";
 }

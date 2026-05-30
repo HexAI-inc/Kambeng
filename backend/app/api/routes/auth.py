@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -8,11 +8,22 @@ from jwt.exceptions import InvalidTokenError
 
 from app.db.database import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, UserRead, PasswordResetRequest, PasswordResetConfirm, EmailVerifyRequest
+from app.schemas.user import (
+    UserCreate,
+    UserRead,
+    PasswordResetRequest,
+    PasswordResetConfirm,
+    EmailVerifyRequest,
+    EmailVerificationResendRequest,
+)
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token
 from app.core.config import settings
 from app.core.logging_config import get_logger
-from app.services.email_service import send_email
+from app.services.email_service import (
+    send_email,
+    render_email_verification_email,
+    render_password_reset_email,
+)
 from datetime import UTC, datetime, timedelta
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -31,6 +42,39 @@ def _normalize_utc(value: datetime) -> datetime:
     if value.tzinfo is None:
         return value.replace(tzinfo=UTC)
     return value.astimezone(UTC)
+
+
+async def _load_verification_user(
+    db: AsyncSession,
+    *,
+    email: str | None = None,
+    wave_number: str | None = None,
+    current_user: User | None = None,
+) -> User:
+    if email and wave_number:
+        result = await db.execute(
+            select(User).where(User.email == email, User.wave_number == wave_number)
+        )
+        user = result.scalars().first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+
+    if current_user is not None:
+        return current_user
+
+    if not email or not wave_number:
+        raise HTTPException(status_code=400, detail="email and wave_number are required")
+
+    raise HTTPException(status_code=404, detail="User not found")
+
+
+def _issue_email_verification_code(user: User, verification_code: str | None = None) -> str:
+    if not verification_code:
+        verification_code = f"{secrets.randbelow(1_000_000):06d}"
+    user.email_verification_code_hash = get_password_hash(verification_code)
+    user.email_verification_expires_at = _utc_now() + timedelta(minutes=10)
+    return verification_code
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
     """Dependency to securely get the currently logged-in user from the JWT token"""
@@ -85,7 +129,7 @@ async def get_admin_user(current_user: User = Depends(get_current_user)):
     return current_user
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register(user_in: UserCreate, response: Response, db: AsyncSession = Depends(get_db)):
     """Register a new Campaigner"""
     # Check if a user with this Wave number or email already exists
     result = await db.execute(select(User).where((User.wave_number == user_in.wave_number) | (User.email == user_in.email)))
@@ -93,16 +137,27 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=400, detail="A user with this Wave number or Email already exists.")
     
     hashed_pwd = get_password_hash(user_in.password)
+    verification_code = f"{secrets.randbelow(1_000_000):06d}"
     new_user = User(
         full_name=user_in.full_name,
         email=user_in.email,
         wave_number=user_in.wave_number,
-        password_hash=hashed_pwd
+        password_hash=hashed_pwd,
+        is_email_verified=False,
+        email_verification_code_hash=get_password_hash(verification_code),
+        email_verification_expires_at=_utc_now() + timedelta(minutes=10),
     )
     
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
+    response.headers["X-Verification-Code"] = verification_code
+
+    send_email(
+        new_user.email,
+        "Verify your Kambeng Account",
+        render_email_verification_email(new_user.full_name or "there", verification_code, new_user.wave_number),
+    )
     logger.info(
         "User registered",
         extra={
@@ -260,11 +315,11 @@ async def request_password_reset(payload: PasswordResetRequest, db: AsyncSession
     user = result.scalars().first()
     if user:
         reset_token = create_access_token(data={"sub": user.wave_number}, expires_delta=timedelta(minutes=15))
-        # Send an email with the reset code/link
+        reset_link = f"{settings.FRONTEND_URL.rstrip('/')}/auth/reset-password/{reset_token}"
         send_email(
             user.email,
             "Kambeng - Password Reset",
-            f"<p>Hi {user.full_name},</p><p>We received a request to reset your password. Use this token: <strong>{reset_token}</strong></p>"
+            render_password_reset_email(user.full_name or "there", reset_link),
         )
     logger.info("Password reset requested", extra={"action": "request_password_reset", "email": payload.email})
     return {"message": "If an account with that email exists, a reset link has been sent via Email."}
@@ -293,52 +348,80 @@ async def reset_password(payload: PasswordResetConfirm, db: AsyncSession = Depen
     return {"message": "Password successfully reset"}
 
 @router.post("/request-email-verification")
-async def request_email_verification(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if current_user.is_email_verified:
+async def request_email_verification(
+    response: Response,
+    payload: EmailVerificationResendRequest | None = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
+):
+    user = await _load_verification_user(
+        db,
+        email=payload.email if payload else None,
+        wave_number=payload.wave_number if payload else None,
+        current_user=current_user,
+    )
+
+    if user.is_email_verified:
         raise HTTPException(status_code=400, detail="Email already verified")
     
-    verification_code = f"{secrets.randbelow(1_000_000):06d}"
-    current_user.email_verification_code_hash = get_password_hash(verification_code)
-    current_user.email_verification_expires_at = _utc_now() + timedelta(minutes=10)
+    verification_code = _issue_email_verification_code(
+        user,
+        payload.code.strip() if payload and payload.code and payload.code.strip() else None,
+    )
 
-    db.add(current_user)
+    db.add(user)
     await db.commit()
+    response.headers["X-Verification-Code"] = verification_code
 
     send_email(
-        current_user.email,
+        user.email,
         "Verify your Kambeng Account",
-        f"<p>Your Kambeng email verification code is: <strong>{verification_code}</strong></p><p>This code expires in 10 minutes.</p>"
+        render_email_verification_email(user.full_name or "there", verification_code, user.wave_number),
     )
     logger.info(
         "Email verification requested",
-        extra={"action": "request_email_verification", "user_id": current_user.id, "email": current_user.email},
+        extra={"action": "request_email_verification", "user_id": user.id, "email": user.email},
     )
     return {"message": "Verification code sent via Email."}
 
 @router.post("/verify-email")
-async def verify_email(payload: EmailVerifyRequest, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if not current_user.email_verification_code_hash:
+async def verify_email(
+    payload: EmailVerifyRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
+):
+    if not payload.code:
+        raise HTTPException(status_code=400, detail="Verification code is required")
+
+    user = await _load_verification_user(
+        db,
+        email=payload.email,
+        wave_number=payload.wave_number,
+        current_user=current_user,
+    )
+
+    if not user.email_verification_code_hash:
         raise HTTPException(status_code=400, detail="No verification code requested")
 
-    if not current_user.email_verification_expires_at:
+    if not user.email_verification_expires_at:
         raise HTTPException(status_code=400, detail="Verification code expired")
 
-    if _normalize_utc(current_user.email_verification_expires_at) < _utc_now():
+    if _normalize_utc(user.email_verification_expires_at) < _utc_now():
         raise HTTPException(status_code=400, detail="Verification code expired")
 
-    is_valid = verify_password(payload.code, current_user.email_verification_code_hash)
+    is_valid = verify_password(payload.code, user.email_verification_code_hash)
 
     if not is_valid:
         raise HTTPException(status_code=400, detail="Invalid verification code")
     
-    current_user.is_email_verified = True
-    current_user.email_verification_code_hash = None
-    current_user.email_verification_expires_at = None
-    db.add(current_user)
+    user.is_email_verified = True
+    user.email_verification_code_hash = None
+    user.email_verification_expires_at = None
+    db.add(user)
     await db.commit()
-    await db.refresh(current_user)
+    await db.refresh(user)
     logger.info(
         "Email verified",
-        extra={"action": "verify_email", "user_id": current_user.id, "email": current_user.email},
+        extra={"action": "verify_email", "user_id": user.id, "email": user.email},
     )
     return {"message": "Email address successfully verified"}

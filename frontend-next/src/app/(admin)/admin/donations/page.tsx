@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useAdminPendingDonations, useApproveDonation, useRejectDonation } from "@/hooks/use-frontend-data";
+import { useAdminSuccessfulDonations } from "@/hooks/use-frontend-data";
 import type { AdminDonation } from "@/types/frontend";
 
 const BLUE = "#1dc5ff";
@@ -30,57 +30,33 @@ const PAGE_SIZE = 10;
 
 export default function DonationsPage() {
   const router = useRouter();
-  const { data: donations, isLoading } = useAdminPendingDonations();
-  const approveDonation = useApproveDonation();
-  const rejectDonation = useRejectDonation();
-
-  const [rejectingRef, setRejectingRef] = useState<string | null>(null);
-  const [rejectionReason, setRejectionReason] = useState("");
+  const { data: donations, isLoading } = useAdminSuccessfulDonations();
   const [page, setPage] = useState(1);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
-
-  const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
 
   const rows = donations ?? [];
-  const pendingCount = rows.filter((d) => !d.reconciliation_source && d.status.toLowerCase() === "pending").length;
+  const completedCount = rows.filter((d) => d.status.toLowerCase() === "succeeded").length;
   const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
-
-  const handleApprove = async (ref: string) => {
-    try { await approveDonation.mutateAsync(ref); showToast("Donation approved", true); }
-    catch { showToast("Failed to approve", false); }
-  };
-
-  const handleRejectSubmit = async () => {
-    if (!rejectingRef || !rejectionReason.trim()) { showToast("Please provide a reason", false); return; }
-    try {
-      await rejectDonation.mutateAsync({ clientReference: rejectingRef, reason: rejectionReason });
-      showToast("Donation rejected", true);
-      setRejectingRef(null);
-      setRejectionReason("");
-    } catch { showToast("Failed to reject", false); }
-  };
 
   return (
     <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
-        {toast && (
-          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : RED, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>{toast.msg}</div>
-        )}
-
         {/* Header + stats */}
         <motion.div {...fadeUp(0)}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Donation Reconciliation</div>
-              <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Review incoming payments and clear legitimate donations</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Donations Overview</div>
+              <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Snapshot of successful donations recorded on the platform.</div>
             </div>
+            <button onClick={() => router.push("/admin/reconciliations")} style={{ padding: "9px 16px", borderRadius: 9, border: "1px solid rgba(29,197,255,0.2)", background: "rgba(29,197,255,0.08)", color: "#1dc5ff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+              Open reconciliation workspace
+            </button>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
             {[
-              { label: "Pending review", value: String(pendingCount), color: pendingCount > 0 ? "#f97316" : "#8899aa" },
-              { label: "Reviewed", value: String(rows.length - pendingCount), color: GREEN },
+              { label: "Successful", value: String(completedCount), color: GREEN },
+              { label: "Failed or pending", value: String(rows.length - completedCount), color: "#8899aa" },
               { label: "Total loaded", value: String(rows.length), color: "#f0f6ff" },
             ].map(({ label, value, color }, i, arr) => (
               <div key={label} style={{ padding: "12px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
@@ -91,27 +67,11 @@ export default function DonationsPage() {
           </div>
         </motion.div>
 
-        {/* Reject modal */}
-        {rejectingRef && (
-          <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ background: "#0d1120", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 14, padding: "22px 24px" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Reject Donation</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 14 }}>Ref: <span style={{ color: "#8899aa", fontFamily: "monospace" }}>{rejectingRef}</span></div>
-            <textarea value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Explain why this donation is being rejected…" rows={3}
-              style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)", color: "#f0f6ff", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
-            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-              <button onClick={() => void handleRejectSubmit()} disabled={rejectDonation.isPending} style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: "rgba(239,68,68,0.85)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                {rejectDonation.isPending ? "Rejecting…" : "Confirm Rejection"}
-              </button>
-              <button onClick={() => { setRejectingRef(null); setRejectionReason(""); }} style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
-            </div>
-          </motion.div>
-        )}
-
         {/* Table */}
         <motion.div {...fadeUp(0.08)}>
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
             <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-              <div>Reference</div><div>Campaign</div><div>Donor</div><div>Amount</div><div>Status</div><div>Source</div><div>Actions</div>
+              <div>Reference</div><div>Campaign</div><div>Donor</div><div>Amount</div><div>Status</div><div>Source</div><div>Review</div>
             </div>
 
             {isLoading ? (
@@ -120,29 +80,22 @@ export default function DonationsPage() {
                 <div style={{ color: "#4a5568", fontSize: 13 }}>Loading donations…</div>
               </div>
             ) : rows.length === 0 ? (
-              <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No donations waiting for review</div>
-            ) : pageRows.map((d: AdminDonation, i: number) => {
-              const isPending = !d.reconciliation_source && d.status.toLowerCase() === "pending";
+              <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No successful donations found</div>
+            ) : pageRows.map((d: AdminDonation) => {
               return (
-                <div key={d.client_reference} style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", borderLeft: isPending ? `3px solid #f97316` : "3px solid transparent", transition: "background 0.15s" }}
+                <div key={d.client_reference} style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                 >
                   <div style={{ fontSize: 11, fontFamily: "monospace", color: "#8899aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.client_reference}</div>
                   <div style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.campaign_title}</div>
                   <div style={{ fontSize: 12, color: "#8899aa" }}>{d.donor_name || "Anonymous"}</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{(d.amount / 100).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{d.amount.toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
                   <div><StatusChip status={d.status} /></div>
                   <div style={{ fontSize: 12, color: "#4a5568" }}>{d.reconciliation_source || "—"}</div>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                     <button onClick={() => router.push(`/admin/campaigns/${d.campaign_id}/view`)} style={btnStyle("default")}>Campaign</button>
-                    {isPending && (
-                      <>
-                        <button onClick={() => void handleApprove(d.client_reference)} disabled={approveDonation.isPending} style={btnStyle("green")}>Approve</button>
-                        <button onClick={() => setRejectingRef(d.client_reference)} style={btnStyle("red")}>Reject</button>
-                      </>
-                    )}
-                    {!isPending && <span style={{ fontSize: 11, color: "#4a5568", padding: "5px 0" }}>Reconciled</span>}
+                    <span style={{ fontSize: 11, color: "#4a5568", padding: "5px 0" }}>Successful</span>
                   </div>
                 </div>
               );

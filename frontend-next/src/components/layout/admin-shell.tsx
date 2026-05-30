@@ -28,7 +28,10 @@ const NAV: NavSection[] = [
     label: "Finance",
     items: [
       { key: "donations", label: "Donations", href: "/admin/donations", icon: "◆" },
+      { key: "reconciliations", label: "Reconciliations", href: "/admin/reconciliations", icon: "◎" },
       { key: "commissions", label: "Commissions", href: "/admin/commissions", icon: "◇" },
+      { key: "payouts", label: "Payouts", href: "/admin/payouts", icon: "◈" },
+      { key: "auditlogs", label: "Audit Logs", href: "/admin/audit-logs", icon: "▦" },
       { key: "reports", label: "Reports", href: "/admin/reports", icon: "▦" },
     ],
   },
@@ -37,7 +40,6 @@ const NAV: NavSection[] = [
     items: [
       { key: "kyc", label: "KYC Queue", href: "/admin/kyc-queue", icon: "◎" },
       { key: "moderation", label: "Moderation", href: "/admin/moderation", icon: "◈" },
-      { key: "mod-reports", label: "Reports Queue", href: "/admin/moderation-reports", icon: "◪" },
     ],
   },
 ];

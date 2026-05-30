@@ -36,7 +36,9 @@ class DOSpacesStrategy(StorageStrategy):
             )
 
         self.bucket = settings.DO_SPACES_BUCKET
-        self.region = settings.DO_SPACES_REGION
+        self.region = settings.DO_SPACES_REGION.lower()
+        self.prefix = (settings.DO_SPACES_PREFIX or "kambeng").strip("/")
+        self.public_endpoint = settings.DO_SPACES_PUBLIC_ENDPOINT.rstrip("/")
 
         # Create S3 client configured for DO Spaces
         self.s3_client = boto3.client(
@@ -48,6 +50,42 @@ class DOSpacesStrategy(StorageStrategy):
         )
         logger.info(f"DO Spaces client initialized for bucket: {self.bucket}")
 
+    def _key(self, *parts: str) -> str:
+        return "/".join([self.prefix, *[part.strip("/") for part in parts if part]])
+
+    def _public_url(self, key: str) -> str:
+        return f"{self.public_endpoint}/{key.lstrip('/')}"
+
+    def _ensure_bucket_exists(self) -> None:
+        """Create the configured bucket if it does not already exist."""
+        try:
+            self.s3_client.head_bucket(Bucket=self.bucket)
+        except ClientError as exc:
+            error_code = str(exc.response.get("Error", {}).get("Code", ""))
+            status_code = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+
+            if error_code == "403" or status_code == 403:
+                logger.warning(
+                    "Skipping DO Spaces bucket existence check for %s because HeadBucket returned 403",
+                    self.bucket,
+                )
+                return
+
+            if error_code not in {"404", "NoSuchBucket", "NotFound"}:
+                raise
+
+            create_kwargs = {"Bucket": self.bucket}
+            if self.region != "us-east-1":
+                create_kwargs["CreateBucketConfiguration"] = {"LocationConstraint": self.region}
+
+            try:
+                self.s3_client.create_bucket(**create_kwargs)
+                logger.info(f"Created missing DO Spaces bucket: {self.bucket}")
+            except ClientError as create_exc:
+                create_error_code = str(create_exc.response.get("Error", {}).get("Code", ""))
+                if create_error_code not in {"BucketAlreadyOwnedByYou", "BucketAlreadyExists"}:
+                    raise
+
     def save_campaign_image(
         self,
         campaign_id: int,
@@ -58,24 +96,19 @@ class DOSpacesStrategy(StorageStrategy):
         """Upload a campaign image to DO Spaces and return metadata with URL."""
         extension = self._resolve_extension(original_filename, content_type)
         file_name = f"{uuid.uuid4().hex}{extension}"
-        key = f"campaigns/{campaign_id}/{file_name}"
+        key = self._key("campaigns", str(campaign_id), file_name)
 
         try:
+            self._ensure_bucket_exists()
             self.s3_client.put_object(
                 Bucket=self.bucket,
                 Key=key,
                 Body=content,
                 ContentType=content_type,
+                ACL='public-read',
             )
 
-            # Build public URL. Support two common endpoint styles:
-            # 1) Region endpoint (e.g. https://lon1.digitaloceanspaces.com) -> use path-style: /{bucket}/{key}
-            # 2) Bucket subdomain endpoint (e.g. https://my-bucket.lon1.digitaloceanspaces.com) -> use subdomain-style: /{key}
-            endpoint = settings.DO_SPACES_ENDPOINT.rstrip("/")
-            if endpoint.startswith(f"https://{self.bucket}.") or endpoint.startswith(f"http://{self.bucket}."):
-                url = f"{endpoint}/{key}"
-            else:
-                url = f"{endpoint}/{self.bucket}/{key}"
+            url = self._public_url(key)
             return {
                 "file_name": file_name,
                 "original_name": original_filename,
@@ -90,7 +123,7 @@ class DOSpacesStrategy(StorageStrategy):
 
     def list_campaign_images(self, campaign_id: int) -> List[Dict[str, str | int]]:
         """List all images for a campaign from DO Spaces."""
-        prefix = f"campaigns/{campaign_id}/"
+        prefix = self._key("campaigns", str(campaign_id)) + "/"
         images: List[Dict[str, str | int]] = []
 
         try:
@@ -105,16 +138,11 @@ class DOSpacesStrategy(StorageStrategy):
                 key = obj["Key"]
                 file_name = key.split("/")[-1]
 
-                endpoint = settings.DO_SPACES_ENDPOINT.rstrip("/")
-                if endpoint.startswith(f"https://{self.bucket}.") or endpoint.startswith(f"http://{self.bucket}."):
-                    url = f"{endpoint}/{key}"
-                else:
-                    url = f"{endpoint}/{self.bucket}/{key}"
                 images.append(
                     {
                         "file_name": file_name,
                         "size": obj["Size"],
-                        "url": url,
+                        "url": self._public_url(key),
                         "path": key,
                     }
                 )
@@ -125,7 +153,7 @@ class DOSpacesStrategy(StorageStrategy):
 
     def delete_campaign_image(self, campaign_id: int, file_name: str) -> bool:
         """Delete a campaign image from DO Spaces."""
-        key = f"campaigns/{campaign_id}/{file_name}"
+        key = self._key("campaigns", str(campaign_id), file_name)
 
         try:
             self.s3_client.delete_object(Bucket=self.bucket, Key=key)
@@ -140,19 +168,43 @@ class DOSpacesStrategy(StorageStrategy):
         """Upload a KYC document to DO Spaces and return its URL."""
         extension = f".{file_extension.lstrip('.')}" if file_extension else ".bin"
         file_name = f"{uuid.uuid4().hex}{extension}"
-        key = f"kyc/{user_id}/{file_name}"
+        key = self._key("kyc", str(user_id), file_name)
 
         try:
+            self._ensure_bucket_exists()
             self.s3_client.put_object(
                 Bucket=self.bucket,
                 Key=key,
                 Body=file_content,
+                ContentType= f"image/{file_extension.lstrip('.')}" if file_extension else "application/octet-stream",
+                ACL='public-read',
             )
-            url = f"{settings.DO_SPACES_ENDPOINT.rstrip('/')}/{self.bucket}/{key}"
-            return url
+            return self._public_url(key)
         except ClientError as e:
             logger.error(f"Failed to upload KYC document: {e}")
             raise
+
+    def presign_get(self, path: str, expires: int = 3600) -> str:
+        """Return a presigned GET URL for the given object key or public URL.
+
+        `path` may be a full public URL previously returned by `_public_url`, or a bucket key.
+        """
+        # Normalize key if a full URL was provided
+        key = path
+        if path.startswith(self.public_endpoint):
+            key = path[len(self.public_endpoint):].lstrip("/")
+
+        try:
+            url = self.s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": self.bucket, "Key": key},
+                ExpiresIn=expires,
+            )
+            return url
+        except ClientError as e:
+            logger.error(f"Failed to generate presigned GET url for {path}: {e}")
+            # Fall back to public URL
+            return self._public_url(key)
 
     @staticmethod
     def _resolve_extension(original_filename: str, content_type: str) -> str:

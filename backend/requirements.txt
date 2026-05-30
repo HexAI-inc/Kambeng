@@ -16,6 +16,7 @@ PyJWT==2.8.0           # For Authentication
 alembic==1.13.1        # Database Migrations
 python-multipart==0.0.6 # For accepting file uploads (Proof of Expenditure)
 resend==0.8.0
+Jinja2==3.1.6
 apscheduler==3.10.4    # For scheduled background jobs (recurring donations)
 cryptography==42.0.8   # For field-level encryption of sensitive data
 psutil==7.2.2          # System metrics for /api/monitor endpoint

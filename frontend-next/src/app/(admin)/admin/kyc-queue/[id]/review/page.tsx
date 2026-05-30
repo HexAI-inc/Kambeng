@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import MediaViewer from "@/components/ui/MediaViewer";
 import { motion } from "framer-motion";
 import { useAdminKYCDetail, useApproveKYC, useRejectKYC } from "@/hooks/use-frontend-data";
 
@@ -109,10 +110,7 @@ export default function KYCReviewPage() {
             {submission.document_file_url && (
               <div style={{ gridColumn: "1 / -1" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>Document</div>
-                <a href={submission.document_file_url} target="_blank" rel="noopener noreferrer"
-                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, border: `1px solid rgba(29,197,255,0.25)`, background: "rgba(29,197,255,0.08)", color: BLUE, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
-                  View Document ↗
-                </a>
+                <DocumentLink url={submission.document_file_url} />
               </div>
             )}
             {submission.rejection_reason && (
@@ -190,4 +188,45 @@ export default function KYCReviewPage() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
+}
+
+function DocumentLink({ url }: { url: string }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [src, setSrc] = useState<string | null>(null);
+
+  const onOpen = async () => {
+    setLoading(true);
+    try {
+      const q = new URLSearchParams({ url });
+      const res = await fetch(`/api/backend/media/presign?${q.toString()}`);
+      if (!res.ok) throw new Error("presign failed");
+      const body = await res.json();
+      setSrc(body.url);
+      setOpen(true);
+    } catch (e) {
+      setSrc(url);
+      setOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onClose = () => { setOpen(false); setSrc(null); };
+
+  return (
+    <>
+      <button onClick={onOpen} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, border: `1px solid rgba(29,197,255,0.25)`, background: "rgba(29,197,255,0.08)", color: BLUE, fontSize: 13, fontWeight: 600, textDecoration: "none", cursor: "pointer" }}>
+        {loading ? "Loading…" : "View Document"}
+      </button>
+      {open && src && <MediaViewer src={src} type={guessMime(src)} onClose={onClose} />}
+    </>
+  );
+}
+
+function guessMime(url: string) {
+  const lower = url.split("?")[0].toLowerCase();
+  if (lower.endsWith(".pdf")) return "application/pdf";
+  if (lower.match(/\.(jpg|jpeg|png|gif|webp)$/)) return "image/" + lower.split('.').pop();
+  return "";
 }

@@ -22,7 +22,15 @@ class PasswordResetConfirm(BaseModel):
     new_password: str
 
 class EmailVerifyRequest(BaseModel):
-    code: str
+    code: str | None = None
+    email: EmailStr | None = None
+    wave_number: str | None = None
+
+
+class EmailVerificationResendRequest(BaseModel):
+    email: EmailStr | None = None
+    wave_number: str | None = None
+    code: str | None = None
 
 class UserRead(UserBase):
     id: int

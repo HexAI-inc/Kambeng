@@ -3,6 +3,8 @@
 import { Proof, ProofVisibility } from "@/types/frontend";
 import { AppText, AppTag } from "@/components/ui";
 import styles from "./ProofList.module.css";
+import { useState } from "react";
+import MediaViewer from "@/components/ui/MediaViewer";
 
 interface ProofListProps {
   proofs: Proof[];
@@ -25,6 +27,9 @@ const visibilityLabels: Record<ProofVisibility, { label: string; color: string }
 export function ProofList({
   proofs,
 }: ProofListProps) {
+  const [openSrc, setOpenSrc] = useState<string | null>(null);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
+
   if (!proofs || proofs.length === 0) {
     return (
       <div className={styles.emptyState}>
@@ -32,6 +37,21 @@ export function ProofList({
       </div>
     );
   }
+
+  const onView = async (proof: Proof) => {
+    setLoadingId(proof.id);
+    try {
+      const q = new URLSearchParams({ url: proof.file_url });
+      const res = await fetch(`/api/backend/media/presign?${q.toString()}`);
+      if (!res.ok) throw new Error("presign failed");
+      const body = await res.json();
+      setOpenSrc(body.url);
+    } catch (e) {
+      setOpenSrc(proof.file_url);
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   return (
     <div className={styles.proofGrid}>
@@ -53,20 +73,17 @@ export function ProofList({
           )}
 
           <div className={styles.proofFooter}>
-            <a
-              href={proof.file_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.viewLink}
-            >
-              View File
-            </a>
+            <button className={styles.viewLink} onClick={() => onView(proof)} disabled={loadingId === proof.id}>
+              {loadingId === proof.id ? "Loading…" : "View File"}
+            </button>
             <span className={styles.uploadDate}>
               {new Date(proof.created_at).toLocaleDateString()}
             </span>
           </div>
         </div>
       ))}
+
+      {openSrc && <MediaViewer src={openSrc} onClose={() => setOpenSrc(null)} />}
     </div>
   );
 }

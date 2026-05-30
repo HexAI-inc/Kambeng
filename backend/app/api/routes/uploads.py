@@ -61,6 +61,16 @@ def _validate_proof_signature(content: bytes, content_type: str) -> bool:
     return False
 
 
+def _do_spaces_key(*parts: str) -> str:
+    prefix = (settings.DO_SPACES_PREFIX or "kambeng").strip("/")
+    cleaned_parts = [part.strip("/") for part in parts if part]
+    return "/".join([prefix, *cleaned_parts])
+
+
+def _do_spaces_public_url(key: str) -> str:
+    return f"{settings.DO_SPACES_PUBLIC_ENDPOINT.rstrip('/')}/{key.lstrip('/')}"
+
+
 @router.post("/proofs/{slug}", response_model=ProofRead, status_code=status.HTTP_201_CREATED)
 async def upload_campaign_proof(
     slug: str,
@@ -160,16 +170,20 @@ async def list_campaign_proofs(
     is_owner = bool(current_user and campaign.user_id == current_user.id)
     is_admin = bool(current_user and current_user.role == "ADMIN")
     
-    # Check if viewer is a donor to this campaign
-    from sqlalchemy import or_
+    # Check if viewer is a donor to this campaign using the transaction ledger.
     is_donor = False
     if current_user is not None:
         is_donor_query = await db.execute(
-            select(sa.func.count()).select_from(Donation).where(
-                (Donation.campaign_id == campaign.id) & (Donation.user_id == current_user.id)
+            select(sa.func.count())
+            .select_from(TransactionLedger)
+            .where(
+                (TransactionLedger.campaign_id == campaign.id)
+                & (TransactionLedger.created_by_user_id == current_user.id)
+                & (sa.cast(TransactionLedger.transaction_type, sa.String) == "DONATION")
+                & (sa.cast(TransactionLedger.status, sa.String) == "SUCCEEDED")
             )
         )
-        is_donor = is_donor_query.scalar() > 0
+        is_donor = (is_donor_query.scalar() or 0) > 0
 
     proof_result = await db.execute(
         select(Proof)
@@ -230,7 +244,7 @@ async def presign_campaign_image(
         extension = mapping.get(body.content_type, "")
 
     file_name = f"{uuid.uuid4().hex}{extension}"
-    key = f"campaigns/{campaign.id}/{file_name}"
+    key = _do_spaces_key("campaigns", str(campaign.id), file_name)
 
     try:
         post = s3.generate_presigned_post(
@@ -244,11 +258,7 @@ async def presign_campaign_image(
         logger.error(f"Failed to generate presigned post: {e}")
         raise HTTPException(status_code=500, detail="Unable to generate presigned upload")
 
-    endpoint = settings.DO_SPACES_ENDPOINT.rstrip("/")
-    if endpoint.startswith(f"https://{settings.DO_SPACES_BUCKET}.") or endpoint.startswith(f"http://{settings.DO_SPACES_BUCKET}."):
-        public_url = f"{endpoint}/{key}"
-    else:
-        public_url = f"{endpoint}/{settings.DO_SPACES_BUCKET}/{key}"
+    public_url = _do_spaces_public_url(key)
 
     return CampaignPresignResponse(
         url=post["url"],

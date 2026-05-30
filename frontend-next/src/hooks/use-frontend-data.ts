@@ -281,6 +281,37 @@ export function useAdminModerationQueue(enabled = true) {
   });
 }
 
+export function useSubmitModerationReport() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      reportedEntityType,
+      reportedEntityId,
+      campaignId,
+      reason,
+      description,
+    }: {
+      reportedEntityType: "CAMPAIGN" | "REVIEW" | "USER";
+      reportedEntityId: number;
+      campaignId?: number | null;
+      reason: "SCAM" | "INAPPROPRIATE_CONTENT" | "HATE_SPEECH" | "FALSE_INFORMATION" | "HARASSMENT" | "SPAM" | "OTHER";
+      description: string;
+    }) => {
+      const response = await api.post("/moderation/reports", {
+        reported_entity_type: reportedEntityType,
+        reported_entity_id: reportedEntityId,
+        campaign_id: campaignId ?? null,
+        reason,
+        description,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-moderation-queue"] });
+    },
+  });
+}
+
 export function useAdminTransactions(enabled = true) {
   return useQuery({
     queryKey: ["admin-transactions"],
@@ -355,10 +386,10 @@ export function useAdminAuditLogs(enabled = true) {
 
 // ===== KYC Queries & Mutations =====
 
-export function useKYCStatus(enabled = true) {
+export function useKYCStatus(userKey?: number | string, enabled = true) {
   return useQuery({
-    queryKey: ["kyc-status"],
-    enabled,
+    queryKey: ["kyc-status", userKey ?? "anonymous"],
+    enabled: enabled && userKey !== undefined,
     queryFn: async () => {
       const response = await api.get<KYCStatusResponse>("/kyc/status");
       return response.data;
@@ -450,12 +481,26 @@ export function useAdminPendingDonations(enabled = true) {
   });
 }
 
+export function useAdminSuccessfulDonations(enabled = true) {
+  return useQuery({
+    queryKey: ["admin-successful-donations"],
+    enabled,
+    queryFn: async () => {
+      const response = await api.get<AdminDonation[]>("/admin/donations/successful", {
+        params: { limit: 100 },
+      });
+      return response.data;
+    },
+  });
+}
+
 export function useApproveDonation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (clientReference: string) => {
       const response = await api.post<AdminDonation>(
         `/payments/admin/donations/${clientReference}/approve`,
+        {},
       );
       return response.data;
     },

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useSessionProfile, useMyCampaigns } from "@/hooks/use-frontend-data";
+import { useSessionProfile, useMyCampaigns, useKYCStatus } from "@/hooks/use-frontend-data";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -56,20 +56,43 @@ function Shimmer({ w = "100%", h = 16, r = 6 }: { w?: string | number; h?: numbe
   return <div style={{ width: w, height: h, borderRadius: r, background: "rgba(255,255,255,0.06)", flexShrink: 0 }} />;
 }
 
+function KYCStatusChip({ status }: { status: string }) {
+  const normalized = status.toUpperCase();
+  const map: Record<string, { label: string; color: string; bg: string }> = {
+    APPROVED: { label: "Approved", color: GREEN, bg: "rgba(27,191,136,0.12)" },
+    SUBMITTED: { label: "Submitted", color: BLUE, bg: "rgba(29,197,255,0.12)" },
+    REVIEWING: { label: "In review", color: BLUE, bg: "rgba(29,197,255,0.12)" },
+    REJECTED: { label: "Rejected", color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
+    NOT_SUBMITTED: { label: "Not submitted", color: "#f97316", bg: "rgba(249,115,22,0.12)" },
+  };
+  const chip = map[normalized] ?? map.NOT_SUBMITTED;
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, color: chip.color, letterSpacing: "0.08em",
+      background: chip.bg, border: `1px solid ${chip.color}33`,
+      padding: "2px 8px", borderRadius: 20, textTransform: "uppercase" as const,
+    }}>{chip.label}</span>
+  );
+}
+
 export default function DashboardPage() {
   const { data: me, isLoading: meLoading } = useSessionProfile(true);
   const { data: campaigns, isLoading: campaignsLoading } = useMyCampaigns(true);
+  const { data: kycStatus, isLoading: kycLoading } = useKYCStatus(me?.id);
 
   const fullName      = me?.full_name ?? "—";
   const email         = me?.email ?? "—";
   const wave          = me?.wave_number ?? "—";
   const role          = me?.role ?? "USER";
   const emailVerified = me?.is_email_verified ?? false;
+  const kycState      = kycStatus?.status ?? "NOT_SUBMITTED";
+  const kycApproved   = kycState === "APPROVED";
+  const kycPending    = kycState === "SUBMITTED" || kycState === "REVIEWING";
+  const kycRejected   = kycState === "REJECTED";
 
   const totalRaised = (campaigns ?? []).reduce((s, c) => s + c.amount_raised, 0);
   const activeCnt   = (campaigns ?? []).filter((c) => c.status === "ACTIVE").length;
   const campaignCnt = (campaigns ?? []).length;
-  const hasAnyFunds = totalRaised > 0;
 
   const fmt = (n: number) =>
     n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M`
@@ -191,12 +214,13 @@ export default function DashboardPage() {
             borderRadius: 16,
           }}>
             <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>KYC status</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: emailVerified ? GREEN : "#f97316", letterSpacing: "-0.03em", lineHeight: 1, marginBottom: 6 }}>
-              {meLoading ? <Shimmer h={22} w="50%" /> : emailVerified ? "Verified" : "Pending"}
+            <div style={{ fontSize: 22, fontWeight: 900, color: kycApproved ? GREEN : kycPending ? BLUE : kycRejected ? "#ef4444" : "#f97316", letterSpacing: "-0.03em", lineHeight: 1, marginBottom: 6 }}>
+              {kycLoading ? <Shimmer h={22} w="50%" /> : kycApproved ? "Approved" : kycPending ? "Under review" : kycRejected ? "Rejected" : "Start verification"}
             </div>
+            {!kycLoading && <KYCStatusChip status={kycState} />}
             <Link href="/dashboard/kyc">
               <span style={{ fontSize: 11, color: BLUE, fontWeight: 600, cursor: "pointer" }}>
-                {emailVerified ? "View status →" : "Complete KYC →"}
+                {kycApproved ? "View approval →" : kycPending ? "View progress →" : "Complete KYC →"}
               </span>
             </Link>
           </div>
@@ -209,7 +233,7 @@ export default function DashboardPage() {
           }}>
             <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>Wave number</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <img src="/wave.png" alt="Wave" style={{ width: 20, height: 20, objectFit: "contain", borderRadius: 4 }} />
+              <Image src="/wave.png" alt="Wave" width={20} height={20} style={{ objectFit: "contain", borderRadius: 4 }} />
               {meLoading
                 ? <Shimmer h={18} w="70%" />
                 : <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", letterSpacing: "-0.01em" }}>{wave}</div>

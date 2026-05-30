@@ -1,84 +1,110 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAdminModerationQueue, useAdminGlobalSearch } from "@/hooks/use-frontend-data";
-import { AdminModerationReport } from "@/types/frontend";
-import type { AdminSearchResultItem } from "@/types/frontend";
-import { api } from "@/lib/api";
+import axios from "axios";
+import { useAdminModerationQueue, useAdminGlobalSearch, useResolveModerationReport } from "@/hooks/use-frontend-data";
+import type { AdminModerationReport, AdminSearchResultItem } from "@/types/frontend";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
+const RED = "#ef4444";
+
+type ResolutionAction = "content_removed" | "content_reinstated" | "user_warned" | "user_suspended";
+
+const RESOLUTION_ACTIONS: Record<ResolutionAction, { label: string; color: string; bg: string; border: string }> = {
+  content_removed: { label: "Remove Content", color: RED, bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)" },
+  content_reinstated: { label: "Reinstate Content", color: GREEN, bg: "rgba(27,191,136,0.1)", border: "rgba(27,191,136,0.25)" },
+  user_warned: { label: "Warn User", color: "#f97316", bg: "rgba(249,115,22,0.1)", border: "rgba(249,115,22,0.25)" },
+  user_suspended: { label: "Suspend User", color: RED, bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)" },
+};
 
 function fadeUp(delay = 0) {
   return { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay, ease: "easeOut" as const } };
 }
 
-function StatusChip({ status }: { status: string }) {
-  const map: Record<string, { color: string; bg: string; border: string }> = {
-    OPEN:     { color: "#ef4444", bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)" },
-    RESOLVED: { color: GREEN,    bg: "rgba(27,191,136,0.1)", border: "rgba(27,191,136,0.25)" },
-    REVIEWING:{ color: BLUE,     bg: "rgba(29,197,255,0.1)", border: "rgba(29,197,255,0.2)" },
-  };
-  const s = map[status] ?? map.OPEN;
-  return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>{status}</span>;
-}
+// StatusChip removed — not currently used.
 
 const MODELS = ["campaigns","users","donations","reviews","payouts","kyc","moderation"];
 const PAGE_SIZE = 8;
 
 export default function AdminModerationPage() {
-  const queryClient = useQueryClient();
-  const { data: reports } = useAdminModerationQueue(true);
+  const { data: reports, isLoading: reportsLoading } = useAdminModerationQueue(true);
+  const resolveReport = useResolveModerationReport();
 
   const [searchQ, setSearchQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const [page, setPage] = useState(1);
-  const [selectedModels, setSelectedModels] = useState<string[]>(MODELS);
+  const [reportPage, setReportPage] = useState(1);
+  const [resolvingId, setResolvingId] = useState<number | null>(null);
+  const [selectedAction, setSelectedAction] = useState<ResolutionAction | null>(null);
+  const [resolutionNote, setResolutionNote] = useState("");
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [selectedModels, setSelectedModels] = useState<string[]>(() => {
+    try {
+      if (typeof window === "undefined") return MODELS;
+      const v = localStorage.getItem("admin_search_models");
+      return v ? (JSON.parse(v) as string[]) : MODELS;
+    } catch {
+      return MODELS;
+    }
+  });
+  
 
-  const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
-
-  useEffect(() => {
-    try { const v = localStorage.getItem("admin_search_models"); if (v) setSelectedModels(JSON.parse(v) as string[]); } catch { /* ignore */ }
-  }, []);
+  // initial value read from localStorage in useState lazy initializer
   useEffect(() => {
     try { localStorage.setItem("admin_search_models", JSON.stringify(selectedModels)); } catch { /* ignore */ }
   }, [selectedModels]);
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedQ(searchQ.trim()), 400);
+    const t = setTimeout(() => {
+      setDebouncedQ(searchQ.trim());
+      // Reset page when the debounced query updates; do it inside the same timeout
+      setPage(1);
+    }, 400);
     return () => clearTimeout(t);
   }, [searchQ]);
-  useEffect(() => { setPage(1); }, [debouncedQ]);
 
   const modelsParam = selectedModels.length > 0 ? selectedModels.join(",") : undefined;
   const search = useAdminGlobalSearch(debouncedQ || undefined, modelsParam, page, PAGE_SIZE, true);
 
-  const resolveReport = useMutation({
-    mutationFn: async ({ id, actionTaken }: { id: number; actionTaken: string }) => {
-      await api.post(`/moderation/reports/${id}/resolve`, { status: "RESOLVED", action_taken: actionTaken, moderation_note: "Resolved via admin panel" });
-    },
-    onSuccess: async () => {
-      showToast("Report resolved", true);
-      await queryClient.invalidateQueries({ queryKey: ["admin-moderation-queue"] });
-    },
-    onError: () => showToast("Failed to resolve report", false),
-  });
-
-  const queueRows = reports ?? [];
-  const queuePages = Math.max(1, Math.ceil(queueRows.length / PAGE_SIZE));
-  const queuePageRows = queueRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // resolveReport mutation intentionally omitted until UI actions are added.
 
   const searchTotalPages = search.data ? Math.max(1, Math.ceil(search.data.total / PAGE_SIZE)) : 1;
+  const reportRows = (reports ?? []) as AdminModerationReport[];
+  const reportTotalPages = Math.max(1, Math.ceil(reportRows.length / PAGE_SIZE));
+  const reportPageRows = reportRows.slice((reportPage - 1) * PAGE_SIZE, reportPage * PAGE_SIZE);
+  const openCount = reportRows.filter((r) => r.status?.toLowerCase() === "open").length;
 
   const isSearching = debouncedQ.length > 0;
+
+  const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
+
+  const handleResolve = async () => {
+    if (!resolvingId || !selectedAction) {
+      showToast("Please select an action", false);
+      return;
+    }
+
+    try {
+      await resolveReport.mutateAsync({ reportId: resolvingId, action: selectedAction, note: resolutionNote });
+      showToast("Report resolved", true);
+      setResolvingId(null);
+      setSelectedAction(null);
+      setResolutionNote("");
+    } catch (error) {
+      const message = axios.isAxiosError(error) && typeof error.response?.data?.detail === "string"
+        ? error.response.data.detail
+        : "Failed to resolve report";
+      showToast(message, false);
+    }
+  };
 
   const MODEL_URL_MAP: Record<string, (id: number | string) => string> = {
     campaign:   (id) => `/admin/campaigns/${id}/view`,
     user:       (id) => `/admin/users/${id}/view`,
     kyc:        (id) => `/admin/kyc-queue/${id}/view`,
-    moderation: ()   => `/admin/moderation-reports`,
+    moderation: ()   => `/admin/moderation`,
   };
 
   return (
@@ -86,12 +112,17 @@ export default function AdminModerationPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
-          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : "#ef4444", fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>{toast.msg}</div>
+          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : RED, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>{toast.msg}</div>
         )}
+
+        
 
         <motion.div {...fadeUp(0)}>
           <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Moderation</div>
-          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Global search and moderation queue</div>
+          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Global search across content, users, donations, and KYC</div>
+          <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+            <Link href="#moderation-queue" style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(29,197,255,0.25)", background: "rgba(29,197,255,0.08)", color: BLUE, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>Open moderation queue{reports ? ` (${reports.length})` : ""}</Link>
+          </div>
         </motion.div>
 
         {/* Search bar */}
@@ -180,36 +211,80 @@ export default function AdminModerationPage() {
               </div>
             )}
           </motion.div>
-        ) : (
-          /* Moderation queue */
-          <motion.div {...fadeUp(0.1)}>
+        ) : null}
+
+        <motion.div id="moderation-queue" {...fadeUp(0.12)}>
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "22px 22px 26px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#f0f6ff" }}>Moderation Queue</div>
+                <div style={{ fontSize: 12, color: "#6b7a8d", marginTop: 4 }}>{reportRows.length} total · <span style={{ color: openCount > 0 ? RED : "#4a5568" }}>{openCount} open</span></div>
+              </div>
+            </div>
+
+            {resolvingId && (
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 18, marginBottom: 18 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Resolve Report #{resolvingId}</div>
+                <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 16 }}>Choose an action and add optional notes about your decision.</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, marginBottom: 16 }}>
+                  {(Object.entries(RESOLUTION_ACTIONS) as [ResolutionAction, typeof RESOLUTION_ACTIONS[ResolutionAction]][]).map(([key, { label, color, bg, border }]) => (
+                    <button
+                      key={key}
+                      onClick={() => setSelectedAction(key)}
+                      style={{ padding: "12px 14px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", border: `1px solid ${selectedAction === key ? border : "rgba(255,255,255,0.08)"}`, background: selectedAction === key ? bg : "rgba(255,255,255,0.03)", color: selectedAction === key ? color : "#8899aa", textAlign: "left" }}
+                    >{label}</button>
+                  ))}
+                </div>
+                <textarea
+                  value={resolutionNote}
+                  onChange={(e) => setResolutionNote(e.target.value)}
+                  placeholder="Document your reasoning for this action…"
+                  rows={3}
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#f0f6ff", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: 14 }}
+                />
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button onClick={() => void handleResolve()} disabled={!selectedAction || resolveReport.isPending} style={{ padding: "10px 22px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: !selectedAction ? 0.5 : 1 }}>{resolveReport.isPending ? "Resolving…" : "Confirm Resolution"}</button>
+                  <button onClick={() => { setResolvingId(null); setSelectedAction(null); setResolutionNote(""); }} style={{ padding: "10px 20px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                </div>
+              </div>
+            )}
+
             <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
-              <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>
-                Moderation Queue ({queueRows.filter((r: AdminModerationReport) => String(r.status) === "OPEN").length} open)
+              <div style={{ display: "grid", gridTemplateColumns: "52px 140px 120px 100px 1fr 160px 100px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                <div>ID</div><div>Reason</div><div>Entity</div><div>Status</div><div>Description</div><div>Actions</div><div>Date</div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "52px 120px 120px 100px 1fr 180px 100px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-                <div>ID</div><div>Entity</div><div>Type</div><div>Status</div><div>Reason</div><div>Actions</div><div>Date</div>
-              </div>
-              {queueRows.length === 0 ? (
-                <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No open moderation reports</div>
-              ) : queuePageRows.map((r: AdminModerationReport, i: number) => {
-                const isOpen = String(r.status) === "OPEN";
+
+              {reportsLoading ? (
+                <div style={{ padding: 40, textAlign: "center" }}>
+                  <div style={{ width: 32, height: 32, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
+                  <div style={{ color: "#4a5568", fontSize: 13 }}>Loading reports…</div>
+                </div>
+              ) : reportRows.length === 0 ? (
+                <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No moderation reports</div>
+              ) : reportPageRows.map((r: AdminModerationReport) => {
+                const isOpen = r.status?.toLowerCase() === "open";
                 return (
-                  <div key={r.id} style={{ display: "grid", gridTemplateColumns: "52px 120px 120px 100px 1fr 180px 100px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", borderLeft: isOpen ? "3px solid #ef4444" : "3px solid transparent", transition: "background 0.15s" }}
+                  <div key={r.id} style={{ display: "grid", gridTemplateColumns: "52px 140px 120px 100px 1fr 160px 100px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", borderLeft: isOpen ? `3px solid ${RED}` : "3px solid transparent", transition: "background 0.15s" }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                   >
                     <div style={{ fontSize: 12, color: "#4a5568", fontWeight: 600 }}>#{r.id}</div>
-                    <div style={{ fontSize: 12, color: "#8899aa" }}>{r.reported_entity_type}</div>
-                    <div style={{ fontSize: 12, color: "#8899aa" }}>#{r.reported_entity_id}</div>
-                    <div><StatusChip status={String(r.status)} /></div>
-                    <div style={{ fontSize: 12, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.reason}</div>
-                    <div style={{ display: "flex", gap: 6 }}>
+                    <div style={{ fontSize: 12, color: "#8899aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.reason}</div>
+                    <div style={{ fontSize: 12, color: "#4a5568" }}>{r.reported_entity_type}</div>
+                    <div><span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: isOpen ? RED : GREEN, background: isOpen ? "rgba(239,68,68,0.1)" : "rgba(27,191,136,0.1)", border: `1px solid ${isOpen ? "rgba(239,68,68,0.25)" : "rgba(27,191,136,0.25)"}` }}>{r.status}</span></div>
+                    <div style={{ fontSize: 12, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.description || "—"}</div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       {isOpen && (
-                        <>
-                          <button onClick={() => resolveReport.mutate({ id: r.id, actionTaken: "dismissed" })} disabled={resolveReport.isPending} style={btnStyle("default")}>Dismiss</button>
-                          <button onClick={() => resolveReport.mutate({ id: r.id, actionTaken: "campaign_suspended" })} disabled={resolveReport.isPending} style={btnStyle("red")}>Suspend</button>
-                        </>
+                        <button onClick={() => setResolvingId(r.id)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid rgba(29,197,255,0.25)`, background: "rgba(29,197,255,0.08)", color: BLUE, cursor: "pointer" }}>Review</button>
+                      )}
+                      {(r.campaign_id || r.reported_by_user_id) && (
+                        <button
+                          onClick={() => {
+                            if (r.campaign_id) window.open(`/admin/campaigns/${r.campaign_id}/view`, "_blank");
+                            else if (r.reported_by_user_id) window.open(`/admin/users/${r.reported_by_user_id}/view`, "_blank");
+                          }}
+                          style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}
+                        >View</button>
                       )}
                       {!isOpen && <span style={{ fontSize: 11, color: "#4a5568" }}>Resolved</span>}
                     </div>
@@ -218,25 +293,23 @@ export default function AdminModerationPage() {
                 );
               })}
             </div>
-            {queuePages > 1 && (
+
+            {reportTotalPages > 1 && (
               <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 12 }}>
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={pageBtnStyle(false)}>←</button>
-                {Array.from({ length: queuePages }, (_, i) => i + 1).map((p) => <button key={p} onClick={() => setPage(p)} style={pageBtnStyle(p === page)}>{p}</button>)}
-                <button onClick={() => setPage((p) => Math.min(queuePages, p + 1))} disabled={page === queuePages} style={pageBtnStyle(false)}>→</button>
+                <button onClick={() => setReportPage((p) => Math.max(1, p - 1))} disabled={reportPage === 1} style={pageBtnStyle(false)}>←</button>
+                {Array.from({ length: reportTotalPages }, (_, i) => i + 1).map((p) => <button key={p} onClick={() => setReportPage(p)} style={pageBtnStyle(p === reportPage)}>{p}</button>)}
+                <button onClick={() => setReportPage((p) => Math.min(reportTotalPages, p + 1))} disabled={reportPage === reportTotalPages} style={pageBtnStyle(false)}>→</button>
               </div>
             )}
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
 
-function btnStyle(v: "default" | "red"): React.CSSProperties {
-  const m = { default: { c: "#8899aa", b: "rgba(255,255,255,0.1)", bg: "rgba(255,255,255,0.04)" }, red: { c: "#ef4444", b: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" } }[v];
-  return { padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid ${m.b}`, background: m.bg, color: m.c, cursor: "pointer" };
-}
+// btnStyle removed; inline styles used instead.
 function pageBtnStyle(active: boolean): React.CSSProperties {
   return { width: 32, height: 32, borderRadius: 8, fontSize: 13, fontWeight: 700, border: `1px solid ${active ? "rgba(29,197,255,0.4)" : "rgba(255,255,255,0.1)"}`, background: active ? "rgba(29,197,255,0.12)" : "rgba(255,255,255,0.03)", color: active ? "#1dc5ff" : "#8899aa", cursor: "pointer" };
 }

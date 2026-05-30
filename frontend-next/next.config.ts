@@ -12,6 +12,7 @@ function buildRemotePattern(baseUrl: string): URL {
 }
 
 const backendPublicUrl = process.env.BACKEND_PUBLIC_URL ?? "http://127.0.0.1:8001";
+const doSpacesEndpoint = process.env.DO_SPACES_ENDPOINT ?? "https://lon1.digitaloceanspaces.com";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -19,6 +20,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       buildRemotePattern(backendPublicUrl),
+      buildRemotePattern(doSpacesEndpoint),
       {
         protocol: "http",
         hostname: "127.0.0.1",

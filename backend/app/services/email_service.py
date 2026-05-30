@@ -1,13 +1,41 @@
 import logging
+from pathlib import Path
+
 import resend
-import os
-from string import Template
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound, select_autoescape
+
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 # Initialize the Resend client with your API key
 resend.api_key = settings.RESEND_API_KEY
+
+TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "templates" / "emails"
+jinja_env = Environment(
+    loader=FileSystemLoader(str(TEMPLATE_DIR)),
+    autoescape=select_autoescape(["html", "xml"]),
+)
+
+
+def render_template(template_name: str, **context: object) -> str:
+    base_context = {
+        "app_name": "Kambeng",
+        "brand_color": "#1dc5ff",
+        "brand_dark": "#079bd4",
+        "brand_bg": "#0a0f1a",
+        "brand_surface": "#0d1120",
+        "brand_text": "#f0f6ff",
+        "brand_muted": "#8899aa",
+        "frontend_url": settings.FRONTEND_URL.rstrip("/"),
+    }
+
+    try:
+        template = jinja_env.get_template(template_name)
+        return template.render(**base_context, **context)
+    except TemplateNotFound:
+        logger.error("Email template not found", extra={"template": template_name})
+        return ""
 
 def send_email(to_email: str, subject: str, html_content: str) -> bool:
     """
@@ -34,6 +62,23 @@ def send_email(to_email: str, subject: str, html_content: str) -> bool:
         return False
 
 
+def render_password_reset_email(full_name: str, reset_link: str) -> str:
+    return render_template(
+        "password_reset.html",
+        full_name=full_name,
+        reset_link=reset_link,
+    )
+
+
+def render_email_verification_email(full_name: str, verification_code: str, wave_number: str) -> str:
+    return render_template(
+        "verify_email.html",
+        full_name=full_name,
+        verification_code=verification_code,
+        wave_number=wave_number,
+    )
+
+
 def render_recurring_donation_reminder(
     donor_name: str,
     campaign_title: str,
@@ -41,35 +86,51 @@ def render_recurring_donation_reminder(
     frequency: str,
     payment_link: str,
 ) -> str:
-    """
-    Renders the recurring donation reminder email template with provided variables.
-    """
-    template_path = os.path.join(
-        os.path.dirname(__file__), 
-        "..", 
-        "templates", 
-        "emails", 
-        "recurring_donation_reminder.html"
+    return render_template(
+        "recurring_donation_reminder.html",
+        donor_name=donor_name,
+        campaign_title=campaign_title,
+        amount=f"{amount:,.2f}",
+        frequency=frequency,
+        payment_link=payment_link,
     )
-    
-    try:
-        with open(template_path, "r") as f:
-            template_content = f.read()
-    except FileNotFoundError:
-        logger.error(f"Template not found at {template_path}")
-        # Fallback to a simple HTML if template not found
-        return f"""
-        <h2>Your {frequency} Donation is Due</h2>
-        <p>Hi {donor_name},</p>
-        <p>Your recurring donation to <strong>{campaign_title}</strong> is due: <strong>{amount} GMD</strong></p>
-        <p><a href="{payment_link}">Click here to pay</a></p>
-        """
-    
-    # Use simple string replacement for template variables
-    html = template_content.replace("{{ donor_name }}", donor_name)
-    html = html.replace("{{ campaign_title }}", campaign_title)
-    html = html.replace("{{ amount }}", f"{amount:.2f}")
-    html = html.replace("{{ frequency }}", frequency)
-    html = html.replace("{{ payment_link }}", payment_link)
-    
-    return html
+
+
+def render_recurring_donation_confirmation_email(
+    full_name: str,
+    campaign_title: str,
+    amount: float,
+    frequency: str,
+    next_charge_date: str,
+) -> str:
+    return render_template(
+        "recurring_donation_confirmation.html",
+        full_name=full_name,
+        campaign_title=campaign_title,
+        amount=f"{amount:,.2f}",
+        frequency=frequency,
+        next_charge_date=next_charge_date,
+    )
+
+
+def render_recurring_donation_issue_email(
+    full_name: str,
+    campaign_title: str,
+    amount: float,
+) -> str:
+    return render_template(
+        "recurring_donation_issue.html",
+        full_name=full_name,
+        campaign_title=campaign_title,
+        amount=f"{amount:,.2f}",
+    )
+
+
+def render_kyc_submission_review(full_name: str, user_email: str, document_type: str, review_link: str) -> str:
+    return render_template(
+        "kyc_submission_review.html",
+        full_name=full_name,
+        user_email=user_email,
+        document_type=document_type,
+        review_link=review_link,
+    )

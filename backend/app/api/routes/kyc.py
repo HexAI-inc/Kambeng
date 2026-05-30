@@ -11,6 +11,8 @@ from app.models.kyc import KYC, KYCDocumentType, KYCStatus
 from app.models.user import User
 from app.schemas.kyc import KYCSubmit, KYCRead, KYCStatusResponse
 from app.services.storage_strategy import get_storage_strategy
+from app.models.kyc_notification_email import KYCNotificationEmail
+from app.services.email_service import render_kyc_submission_review, send_email
 from app.core.config import settings
 from app.core.logging_config import get_logger
 
@@ -72,9 +74,9 @@ async def submit_kyc(
     # Create KYC submission record
     kyc_submission = KYC(
         user_id=current_user.id,
-        document_type=doc_type_enum,
+        document_type=doc_type_enum.value,
         document_file_url=file_url,
-        status=KYCStatus.SUBMITTED
+        status=KYCStatus.SUBMITTED.value,
     )
     db.add(kyc_submission)
     
@@ -96,7 +98,32 @@ async def submit_kyc(
     return kyc_submission
 
 
-@router.get("/status", response_model=KYCStatusResponse)
+    # Notify active admin recipients about the new KYC submission
+    try:
+        recipients_result = await db.execute(
+            select(KYCNotificationEmail).where(KYCNotificationEmail.is_active.is_(True))
+        )
+        recipients = recipients_result.scalars().all()
+
+        if recipients:
+            review_link = f"{settings.FRONTEND_URL.rstrip('/')}/admin/kyc-queue/{kyc_submission.id}/review"
+            subject = f"New KYC submission: {current_user.full_name or current_user.email}"
+            html = render_kyc_submission_review(
+                full_name=current_user.full_name or "(no name)",
+                user_email=current_user.email,
+                document_type=doc_type_enum.value,
+                review_link=review_link,
+            )
+
+            for r in recipients:
+                try:
+                    send_email(r.email, subject, html)
+                except Exception:
+                    logger.exception("Failed to send KYC notification email", extra={"recipient": getattr(r, 'email', None)})
+    except Exception:
+        logger.exception("Failed to fan-out KYC notification emails")
+
+    return kyc_submission
 async def get_kyc_status(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -111,19 +138,22 @@ async def get_kyc_status(
     )
     submission = latest_submission.scalars().first()
 
+    status = submission.status if submission else (current_user.kyc_status or "NOT_SUBMITTED")
+    rejection_reason = submission.rejection_reason if submission and submission.status == KYCStatus.REJECTED.value else current_user.kyc_rejection_reason
+
     logger.info(
         "KYC status viewed",
         extra={
             "action": "get_kyc_status",
             "user_id": current_user.id,
             "email": current_user.email,
-            "kyc_status": current_user.kyc_status or "NOT_SUBMITTED",
+            "kyc_status": status,
         },
     )
     
     return KYCStatusResponse(
-        status=current_user.kyc_status or "NOT_SUBMITTED",
+        status=status,
         last_submission_id=submission.id if submission else None,
         last_submission_date=submission.created_at if submission else None,
-        rejection_reason=current_user.kyc_rejection_reason
+        rejection_reason=rejection_reason,
     )

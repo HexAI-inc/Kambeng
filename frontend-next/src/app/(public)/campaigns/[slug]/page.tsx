@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 
 import { AppProgress } from "@/components/ui";
+import MediaViewer from "@/components/ui/MediaViewer";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { ProofList } from "@/components/ProofList";
 import {
@@ -15,6 +16,7 @@ import {
   usePublicCampaignImages,
   useCampaignProofs,
   usePublicCampaignReviews,
+  useSubmitModerationReport,
   useSessionProfile,
   useCampaignQRCode,
 } from "@/hooks/use-frontend-data";
@@ -23,6 +25,7 @@ import type { CampaignDiscoveryItem, CampaignGoal, CampaignReview, PublicCampaig
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
+const RED = "#ef4444";
 
 function fadeUp(delay = 0) {
   return {
@@ -43,15 +46,11 @@ function IconPicture() {
 function IconDoc() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
-      <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
-    </svg>
-  );
-}
-function IconStar() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <polyline points="10 9 9 9 8 9"/>
     </svg>
   );
 }
@@ -60,6 +59,13 @@ function IconShare() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
       <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+    </svg>
+  );
+}
+function IconStar() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
     </svg>
   );
 }
@@ -105,6 +111,14 @@ function IconArrowLeft() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+    </svg>
+  );
+}
+function IconFlag() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 22V4" />
+      <path d="M4 4h13l-2 4 2 4H4" />
     </svg>
   );
 }
@@ -706,12 +720,105 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
   );
 }
 
+function ReportModal({
+  campaign,
+  onClose,
+}: {
+  campaign: CampaignDiscoveryItem;
+  onClose: () => void;
+}) {
+  const submitReport = useSubmitModerationReport();
+  const [reason, setReason] = useState<"SCAM" | "INAPPROPRIATE_CONTENT" | "HATE_SPEECH" | "FALSE_INFORMATION" | "HARASSMENT" | "SPAM" | "OTHER">("SCAM");
+  const [description, setDescription] = useState("");
+  const [toast, setToast] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    if (!description.trim()) {
+      setToast("Please add a short explanation.");
+      return;
+    }
+
+    try {
+      await submitReport.mutateAsync({
+        reportedEntityType: "CAMPAIGN",
+        reportedEntityId: campaign.id,
+        campaignId: campaign.id,
+        reason,
+        description,
+      });
+      setToast("Report submitted");
+      setTimeout(onClose, 700);
+    } catch {
+      setToast("Unable to submit report");
+    }
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 22, padding: 24, width: "100%", maxWidth: 500, boxShadow: "0 40px 120px rgba(0,0,0,0.7)" }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff" }}>Report Campaign</div>
+            <div style={{ fontSize: 12, color: "#4a5568", marginTop: 2, maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{campaign.title}</div>
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}>×</button>
+        </div>
+
+        {toast && <div style={{ marginBottom: 12, color: "#f0f6ff", background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.18)", borderRadius: 10, padding: "10px 12px", fontSize: 13 }}>{toast}</div>}
+
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Reason</label>
+          <select value={reason} onChange={(e) => setReason(e.target.value as typeof reason)} style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#f0f6ff", fontSize: 13, outline: "none" }}>
+            <option value="SCAM">Scam</option>
+            <option value="INAPPROPRIATE_CONTENT">Inappropriate content</option>
+            <option value="HATE_SPEECH">Hate speech</option>
+            <option value="FALSE_INFORMATION">False information</option>
+            <option value="HARASSMENT">Harassment</option>
+            <option value="SPAM">Spam</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Description</label>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} placeholder="Tell us what looks wrong…" style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#f0f6ff", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
+        </div>
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={() => void handleSubmit()} disabled={submitReport.isPending} style={{ padding: "10px 18px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{submitReport.isPending ? "Submitting…" : "Submit report"}</button>
+          <button onClick={onClose} style={{ padding: "10px 18px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function CampaignDetailPage() {
   const params = useParams<{ slug: string }>();
   const slug = params?.slug;
   const { data: session } = useSessionProfile(true);
   const isLoggedIn = Boolean(session?.id);
   const [showShare, setShowShare] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
+
+  const openImage = async (img: PublicCampaignImage) => {
+    try {
+      const q = new URLSearchParams({ url: img.url });
+      const res = await fetch(`/api/backend/media/presign?${q.toString()}`);
+      if (!res.ok) throw new Error("presign failed");
+      const body = await res.json();
+      setViewerSrc(body.url);
+    } catch {
+      setViewerSrc(img.url);
+    }
+  };
 
   const { data: campaign, isLoading, error } = useQuery({
     queryKey: ["campaign-detail", slug],
@@ -724,7 +831,7 @@ export default function CampaignDetailPage() {
 
   const { data: reviews = [], isLoading: reviewsLoading } = usePublicCampaignReviews(slug, Boolean(slug));
   const { data: images = [], isLoading: imagesLoading } = usePublicCampaignImages(slug, Boolean(slug));
-  const { data: goals = [], isLoading: goalsLoading } = useCampaignGoals(slug, Boolean(slug));
+  const { data: goals = [] } = useCampaignGoals(slug, Boolean(slug));
   const { data: proofs = [], isLoading: proofsLoading } = useCampaignProofs(slug, Boolean(slug));
 
   const progress = campaign?.target_amount
@@ -851,6 +958,19 @@ export default function CampaignDetailPage() {
                 >
                   <IconShare /> Share <span style={{ color: "rgba(29,197,255,0.5)" }}>/ QR</span>
                 </button>
+                <button
+                  onClick={() => setShowReport(true)}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    padding: "7px 14px", borderRadius: 8,
+                    border: "1px solid rgba(239,68,68,0.24)",
+                    background: "rgba(239,68,68,0.08)",
+                    color: RED, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                    transition: "background 0.2s",
+                  }}
+                >
+                  <IconFlag /> Report
+                </button>
               </div>
 
               <h1 style={{ fontSize: "clamp(20px,2.8vw,30px)", fontWeight: 800, color: "#f0f6ff",
@@ -935,13 +1055,13 @@ export default function CampaignDetailPage() {
               ) : images.length > 0 ? (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px,1fr))", gap: 8 }}>
                   {images.map((img: PublicCampaignImage, i) => (
-                    <a key={i} href={img.url} target="_blank" rel="noreferrer" style={{ display: "block" }}>
+                    <div key={i} style={{ display: "block", cursor: "zoom-in" }} onClick={() => openImage(img)}>
                       <div style={{ position: "relative", aspectRatio: "4/3", borderRadius: 8, overflow: "hidden",
-                        border: "1px solid rgba(255,255,255,0.07)", cursor: "zoom-in" }}>
+                        border: "1px solid rgba(255,255,255,0.07)" }}>
                         <Image src={img.url} alt={img.original_name ?? img.file_name} fill unoptimized
                           sizes="200px" style={{ objectFit: "cover" }} />
                       </div>
-                    </a>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -952,6 +1072,8 @@ export default function CampaignDetailPage() {
               )}
             </div>
           </motion.div>
+
+          {viewerSrc && <MediaViewer src={viewerSrc} onClose={() => setViewerSrc(null)} />}
 
           {/* Proof */}
           <motion.div {...fadeUp(0.15)}>
@@ -1142,6 +1264,19 @@ export default function CampaignDetailPage() {
             >
               <IconQR /> Share & QR Code
             </button>
+
+            <button
+              onClick={() => setShowReport(true)}
+              style={{
+                width: "100%", marginTop: 10, padding: "9px 14px", borderRadius: 9,
+                border: "1px solid rgba(239,68,68,0.24)",
+                background: "rgba(239,68,68,0.08)",
+                color: RED, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+              }}
+            >
+              <IconFlag /> Report Campaign
+            </button>
           </div>
 
           {/* Trust */}
@@ -1189,6 +1324,11 @@ export default function CampaignDetailPage() {
       {/* Share modal */}
       {showShare && campaign && (
         <ShareModal campaign={campaign} onClose={() => setShowShare(false)} />
+      )}
+
+      {/* Report modal */}
+      {showReport && campaign && (
+        <ReportModal campaign={campaign} onClose={() => setShowReport(false)} />
       )}
 
       <style>{`

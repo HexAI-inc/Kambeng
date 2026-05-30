@@ -12,6 +12,7 @@ import {
 } from "@/hooks/use-frontend-data";
 import { ProofUploadForm } from "@/components/ProofUploadForm";
 import { useAppFeedback } from "@/components/ui";
+import MediaViewer from "@/components/ui/MediaViewer";
 import { motion } from "framer-motion";
 
 const BLUE = "#1dc5ff";
@@ -47,6 +48,7 @@ export default function CampaignImagesPage() {
   const [uploading, setUploading] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [activeTab, setActiveTab] = useState<"images" | "proof">("images");
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || !campaignSlug) return;
@@ -221,7 +223,20 @@ export default function CampaignImagesPage() {
                           onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = "1"; }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = "0"; }}
                         >
-                          <button onClick={() => window.open(img.url, "_blank")} style={{
+                          <button onClick={async () => {
+                            try {
+                              const q = new URLSearchParams({ url: img.url });
+                              const res = await fetch(`/api/backend/media/presign?${q.toString()}`);
+                              if (res.ok) {
+                                const body = await res.json();
+                                setViewerSrc(body.url);
+                              } else {
+                                setViewerSrc(img.url);
+                              }
+                            } catch {
+                              setViewerSrc(img.url);
+                            }
+                          }} style={{
                             padding: "6px 14px", borderRadius: 7, border: "none",
                             background: "rgba(255,255,255,0.15)", color: "#fff",
                             fontSize: 11, fontWeight: 600, cursor: "pointer",
@@ -278,6 +293,7 @@ export default function CampaignImagesPage() {
             )}
           </motion.div>
         )}
+        {viewerSrc && <MediaViewer src={viewerSrc} onClose={() => setViewerSrc(null)} />}
       </div>
 
       <style>{`

@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "dev")
     PROJECT_NAME: str = "Kambeng - GambiaGive API"
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:4200")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://kambeng.hexai.gm")
     BACKEND_PUBLIC_URL: str = os.getenv("BACKEND_PUBLIC_URL", "http://127.0.0.1:8001")
     MEDIA_ROOT: str = os.getenv("MEDIA_ROOT", "uploads")
     MEDIA_URL_PREFIX: str = os.getenv("MEDIA_URL_PREFIX", "/uploads")
@@ -41,11 +41,16 @@ class Settings(BaseSettings):
     DO_SPACES_KEY: str = os.getenv("DO_SPACES_KEY", "")
     DO_SPACES_SECRET: str = os.getenv("DO_SPACES_SECRET", "")
     DO_SPACES_REGION: str = os.getenv("DO_SPACES_REGION", "fra1")
-    DO_SPACES_BUCKET: str = os.getenv("DO_SPACES_BUCKET", "kambeng-media")
+    DO_SPACES_BUCKET: str = os.getenv("DO_SPACES_BUCKET", "hexaistorage")
     DO_SPACES_ENDPOINT: str = os.getenv("DO_SPACES_ENDPOINT", "https://fra1.digitaloceanspaces.com")
+    DO_SPACES_PUBLIC_ENDPOINT: str = os.getenv(
+        "DO_SPACES_PUBLIC_ENDPOINT",
+        "https://hexaistorage.lon1.digitaloceanspaces.com",
+    )
+    DO_SPACES_PREFIX: str = os.getenv("DO_SPACES_PREFIX", "kambeng")
     
     # Storage Strategy ("local" or "do_spaces")
-    STORAGE_STRATEGY: str = os.getenv("STORAGE_STRATEGY", "local")
+    STORAGE_STRATEGY: str = os.getenv("STORAGE_STRATEGY", "do_spaces")
     
     # Withdrawal Fees & Commission
     # HexAI fee: percentage deducted per withdrawal (e.g., 0.01 for 1%)

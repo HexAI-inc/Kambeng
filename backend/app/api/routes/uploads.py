@@ -12,6 +12,7 @@ from app.api.routes.auth import get_current_user_optional
 from app.db.database import get_db
 from app.models.campaign import Campaign
 from app.models.proof import Proof
+from app.models.ledger import TransactionLedger
 from app.models.user import User
 from app.models.donation import Donation
 from app.core.config import settings

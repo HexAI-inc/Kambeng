@@ -95,9 +95,6 @@ async def submit_kyc(
             "kyc_id": kyc_submission.id,
         },
     )
-    return kyc_submission
-
-
     # Notify active admin recipients about the new KYC submission
     try:
         recipients_result = await db.execute(
@@ -124,6 +121,9 @@ async def submit_kyc(
         logger.exception("Failed to fan-out KYC notification emails")
 
     return kyc_submission
+
+
+@router.get("/status", response_model=KYCStatusResponse)
 async def get_kyc_status(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),

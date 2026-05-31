@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_API_BASE = process.env.BACKEND_API_BASE_URL ?? "http://127.0.0.1:8001/api";
+const APP_BASE_URL = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://kambeng.hexai.gm";
 const ACCESS_COOKIE = "kambeng_access_token";
 const REFRESH_COOKIE = "kambeng_refresh_token";
 
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
       if (isJson) {
         return NextResponse.json({ detail: "username and password are required" }, { status: 400 });
       }
-      const errorUrl = new URL("/auth/login", request.url);
+      const errorUrl = new URL("/auth/login", APP_BASE_URL);
       errorUrl.searchParams.set("error", "username and password are required");
       if (nextTarget) {
         errorUrl.searchParams.set("next", nextTarget);
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(payload, { status: backendResponse.status });
       }
 
-      const errorUrl = new URL("/auth/login", request.url);
+      const errorUrl = new URL("/auth/login", APP_BASE_URL);
       errorUrl.searchParams.set("error", payload?.detail ?? "Login failed");
       if (nextTarget) {
         errorUrl.searchParams.set("next", nextTarget);
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isJson) {
-      const response = NextResponse.redirect(new URL(nextTarget, request.url));
+      const response = NextResponse.redirect(new URL(nextTarget, APP_BASE_URL));
 
       response.cookies.set({
         name: ACCESS_COOKIE,

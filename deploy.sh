@@ -68,8 +68,8 @@ After=network.target
 Type=simple
 WorkingDirectory=$FRONTEND_DIR
 Environment=HOST=0.0.0.0
-Environment=PORT=3000
-ExecStart=/usr/bin/npm run start -- --hostname 0.0.0.0 --port 3000
+Environment=PORT=3005
+ExecStart=/usr/bin/npm run start -- --hostname 0.0.0.0 --port 3005
 Restart=always
 RestartSec=5
 StandardOutput=append:$FRONTEND_LOG_FILE
@@ -114,7 +114,7 @@ start_frontend() {
   log "systemd is unavailable; starting frontend with nohup"
   (
     cd "$FRONTEND_DIR"
-    nohup npm run start -- --hostname 0.0.0.0 --port 3000 > "$FRONTEND_LOG_FILE" 2>&1 &
+    nohup npm run start -- --hostname 0.0.0.0 --port 3005 > "$FRONTEND_LOG_FILE" 2>&1 &
     echo $! > "$FRONTEND_DIR/.deploy.pid"
   )
 }

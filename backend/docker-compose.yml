@@ -47,5 +47,23 @@ services:
     volumes:
       - ./uploads:/app/uploads
 
+  frontend:
+    build:
+      context: ./frontend-next
+      dockerfile: Dockerfile
+    container_name: kambeng-frontend
+    restart: unless-stopped
+    env_file:
+      - ./frontend-next/.env
+    environment:
+      NEXTAUTH_URL: https://kambeng.hexai.gm
+      NEXT_PUBLIC_API_BASE_URL: /api/backend
+      BACKEND_API_BASE_URL: http://api:8001/api
+      BACKEND_PUBLIC_URL: http://api:8001
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:3005:3000"
+
 volumes:
   postgres_data:

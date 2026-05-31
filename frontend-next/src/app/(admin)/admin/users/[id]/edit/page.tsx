@@ -8,6 +8,48 @@ import { useAdminUserDetail, useUpdateAdminUserStatus } from "@/hooks/use-fronte
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
 
+function getKycTone(status?: string | null) {
+  const normalized = (status ?? "NOT_SUBMITTED").toUpperCase();
+
+  if (normalized === "APPROVED") {
+    return {
+      label: "Approved",
+      color: GREEN,
+      bg: "rgba(27,191,136,0.1)",
+      border: "rgba(27,191,136,0.25)",
+      note: "This user can receive withdrawals and create campaigns.",
+    };
+  }
+
+  if (normalized === "SUBMITTED" || normalized === "REVIEWING") {
+    return {
+      label: normalized === "SUBMITTED" ? "Submitted" : "In review",
+      color: BLUE,
+      bg: "rgba(29,197,255,0.1)",
+      border: "rgba(29,197,255,0.25)",
+      note: "The user has an active KYC submission in the review queue.",
+    };
+  }
+
+  if (normalized === "REJECTED") {
+    return {
+      label: "Rejected",
+      color: "#ef4444",
+      bg: "rgba(239,68,68,0.1)",
+      border: "rgba(239,68,68,0.25)",
+      note: "The user needs to resubmit documents before approval.",
+    };
+  }
+
+  return {
+    label: "Not submitted",
+    color: "#f97316",
+    bg: "rgba(249,115,22,0.1)",
+    border: "rgba(249,115,22,0.25)",
+    note: "No KYC submission is on file for this user yet.",
+  };
+}
+
 function Field({ label, value, mono }: { label: string; value: string | number | null | undefined; mono?: boolean }) {
   return (
     <div>
@@ -23,6 +65,7 @@ export default function UserEditPage() {
   const userId = Array.isArray(params?.id) ? parseInt(params.id[0]) : parseInt(params?.id as string);
   const { data: user, isLoading, error } = useAdminUserDetail(userId);
   const updateStatus = useUpdateAdminUserStatus();
+  const kycTone = getKycTone(user?.kyc_status);
 
   const [status, setStatus] = useState<"ACTIVE" | "SUSPENDED" | null>(null);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
@@ -86,6 +129,22 @@ export default function UserEditPage() {
             <Field label="Email" value={user.email} mono />
             <Field label="Wave Number" value={user.wave_number} mono />
             <Field label="KYC Status" value={String(user.kyc_status ?? "—")} />
+          </div>
+
+          <div style={{ padding: 20, borderRadius: 14, border: `1px solid ${kycTone.border}`, background: kycTone.bg }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#f0f6ff", marginBottom: 4 }}>KYC</div>
+                <div style={{ fontSize: 13, color: "#6b7a8d" }}>Verification status controls withdrawals and campaign creation.</div>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 20, color: kycTone.color, background: kycTone.bg, border: `1px solid ${kycTone.border}` }}>{kycTone.label}</span>
+            </div>
+            <div style={{ fontSize: 13, color: "#c0ccd8", lineHeight: 1.7, marginBottom: 14 }}>{kycTone.note}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+              <Field label="Can receive withdrawals" value={user.kyc_status === "APPROVED" ? "Yes" : "No"} />
+              <Field label="Can create campaigns" value={user.kyc_status === "APPROVED" ? "Yes" : "No"} />
+              <Field label="Follow-up" value={user.kyc_status === "APPROVED" ? "None" : user.kyc_status === "REJECTED" ? "Request resubmission" : user.kyc_status ? "Review submission" : "Wait for user upload"} />
+            </div>
           </div>
 
           {/* Editable: status */}

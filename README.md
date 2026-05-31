@@ -258,6 +258,28 @@ kambeng-monorepo/
 - `goals.py` - Goal management (public list, owner management)
 - `donations.py` - Donation creation and history
 - `payments.py` - Payment initiation with HexAI
+
+---
+
+## 🚀 CI/CD
+
+The repository includes a GitHub Actions workflow at `.github/workflows/ci-cd.yml`.
+
+What it does:
+- Runs backend tests with `pytest`.
+- Runs frontend linting and production build.
+- Deploys to the VPS only after both checks pass on pushes to `development`.
+- Verifies the public site and backend feed after deployment.
+
+Required GitHub Secrets:
+- `VPS_HOST` - VPS IP or hostname.
+- `VPS_USER` - SSH username, usually `root`.
+- `VPS_SSH_KEY` - Private key allowed to access the VPS.
+
+Deployment notes:
+- The deploy job connects over SSH and runs `/opt/Kambeng/deploy.sh`.
+- The VPS must already have Docker, Node.js, nginx, and the project checked out in `/opt/Kambeng`.
+- The frontend should stay on port `3005` so nginx can proxy to it consistently.
 - `uploads.py` - Campaign images and proof submissions
 - `kyc.py` - KYC document submission
 - `webhooks.py` - HexAI payment callback handler

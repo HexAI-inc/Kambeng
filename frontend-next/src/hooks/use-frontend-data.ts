@@ -20,6 +20,8 @@ import {
   CampaignImage,
   CampaignGoal,
   CampaignReview,
+  CampaignWithdrawalSummaryResponse,
+  CampaignWithdrawalResponse,
   CommissionSummary,
   CommissionSourceItem,
   AdminCommissionWithdrawalResponse,
@@ -168,7 +170,7 @@ export function useCreateCampaignGoal() {
 export function useUpdateCampaignGoal() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ goalId, payload, slug }: { goalId: number; payload: Partial<CampaignGoal>; slug?: string }) => {
+    mutationFn: async ({ goalId, payload }: { goalId: number; payload: Partial<CampaignGoal>; slug?: string }) => {
       const response = await api.put<CampaignGoal>(`/goals/${goalId}`, payload);
       return response.data;
     },
@@ -899,6 +901,35 @@ export function useWithdrawCommissions() {
   });
 }
 
+export function useWithdrawCampaignFunds() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ campaignId, amount }: { campaignId: number; amount: number }) => {
+      const response = await api.post<CampaignWithdrawalResponse>("/payments/withdraw", {
+        campaign_id: campaignId,
+        amount,
+      });
+      return { ...response.data, campaignId };
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["my-campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["session", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["campaign-withdrawal-summary", variables.campaignId] });
+    },
+  });
+}
+
+export function useCampaignWithdrawalSummary(campaignId?: number, enabled = true) {
+  return useQuery({
+    queryKey: ["campaign-withdrawal-summary", campaignId],
+    enabled: enabled && Boolean(campaignId),
+    queryFn: async () => {
+      const response = await api.get<CampaignWithdrawalSummaryResponse>(`/payments/withdraw/summary/${campaignId}`);
+      return response.data;
+    },
+  });
+}
+
 // ===== Admin Global Search =====
 
 export function useAdminGlobalSearch(
@@ -912,7 +943,7 @@ export function useAdminGlobalSearch(
     queryKey: ["admin-global-search", q, models, page, pageSize],
     enabled: enabled && !!q && q.trim().length > 0,
     queryFn: async () => {
-      const params: Record<string, any> = { page, page_size: pageSize };
+      const params: Record<string, unknown> = { page, page_size: pageSize };
       if (q) params.q = q;
       if (models) params.models = models;
       const response = await api.get<AdminSearchResponse>("/search", { params });

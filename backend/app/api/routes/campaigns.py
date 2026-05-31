@@ -42,7 +42,7 @@ async def create_campaign(
     # Frontend URLs (Where the QR codes will point to)
     # We will change localhost to your real domain later
     frontend_url = settings.FRONTEND_URL 
-    page_url = f"{frontend_url}/campaign/{slug}"
+    page_url = f"{frontend_url}/campaigns/{slug}"
     direct_pay_url = f"{frontend_url}/quick-pay/{slug}"
 
     # Generate the two QR Codes

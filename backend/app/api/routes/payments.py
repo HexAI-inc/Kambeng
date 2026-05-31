@@ -8,7 +8,7 @@ from app.models.user import User
 from app.models.ledger import TransactionLedger, TransactionType, TransactionStatus
 from app.models.audit_log import AdminAuditLog, AuditActionType
 from app.api.routes.auth import get_admin_user, get_current_user
-from app.schemas.payout import PayoutRequest
+from app.schemas.payout import PayoutRequest, CampaignWithdrawalSummaryResponse, WithdrawalHistoryItem
 from app.core.config import settings
 from sqlalchemy import func
 
@@ -41,6 +41,21 @@ from app.core.logging_config import get_logger
 router = APIRouter(prefix="/payments", tags=["Payments"])
 hexai_service = HexAIPaymentService()
 logger = get_logger("payments")
+
+
+async def get_campaign_withdrawal_summary(
+    db: AsyncSession,
+    campaign: Campaign,
+) -> tuple[float, float, list[Payout]]:
+    payouts_result = await db.execute(
+        select(Payout)
+        .where(Payout.campaign_id == campaign.id)
+        .order_by(Payout.created_at.desc())
+    )
+    payouts = list(payouts_result.scalars().all())
+    total_gross_withdrawn = sum((payout.gross_amount or 0.0) for payout in payouts if payout.status == "SUCCEEDED")
+    available_balance = campaign.amount_raised - total_gross_withdrawn
+    return available_balance, total_gross_withdrawn, payouts
 
 
 @router.post("/admin/donations/{client_reference}/approve", response_model=DonationReconciliationResponse)
@@ -276,15 +291,7 @@ async def withdraw_funds(
         raise HTTPException(status_code=403, detail="Only the campaign owner can withdraw funds")
 
     # 3. Calculate Available Balance (Updated for new fee structure)
-    # Get all previous successful payouts to calculate total gross withdrawn
-    payouts_result = await db.execute(
-        select(func.sum(Payout.gross_amount)).where(
-            Payout.campaign_id == campaign.id, 
-            Payout.status == "SUCCEEDED"
-        )
-    )
-    total_gross_withdrawn = payouts_result.scalar() or 0.0
-    available_balance = campaign.amount_raised - total_gross_withdrawn
+    available_balance, total_gross_withdrawn, _ = await get_campaign_withdrawal_summary(db, campaign)
 
     if payout_req.amount > available_balance:
         raise HTTPException(
@@ -377,6 +384,45 @@ async def withdraw_funds(
         "net_received": net_amount,
         "wave_number": current_user.wave_number
     }
+
+
+@router.get("/withdraw/summary/{campaign_id}", response_model=CampaignWithdrawalSummaryResponse)
+async def get_withdrawal_summary(
+    campaign_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(Campaign).where(Campaign.id == campaign_id))
+    campaign = result.scalars().first()
+
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if campaign.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the campaign owner can view withdrawal history")
+
+    available_balance, total_gross_withdrawn, payouts = await get_campaign_withdrawal_summary(db, campaign)
+
+    return CampaignWithdrawalSummaryResponse(
+        campaign_id=campaign.id,
+        campaign_title=campaign.title,
+        amount_raised=campaign.amount_raised,
+        total_withdrawn=total_gross_withdrawn,
+        available_balance=available_balance,
+        withdrawal_history=[
+            WithdrawalHistoryItem(
+                id=payout.id,
+                client_reference=payout.client_reference,
+                gross_amount=payout.gross_amount or 0.0,
+                hexai_fee=payout.hexai_fee or 0.0,
+                platform_commission=payout.platform_commission or 0.0,
+                net_amount=payout.net_amount or payout.amount or 0.0,
+                status=payout.status,
+                created_at=payout.created_at,
+            )
+            for payout in payouts
+        ],
+    )
 
 
 # ===== Recurring Donation Endpoints =====

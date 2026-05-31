@@ -344,6 +344,36 @@ export type AdminCommissionWithdrawalResponse = {
   message: string;
 };
 
+export type CampaignWithdrawalResponse = {
+  message: string;
+  client_reference: string;
+  gross_amount: number;
+  hexai_fee: number;
+  platform_commission: number;
+  net_received: number;
+  wave_number: string;
+};
+
+export type WithdrawalHistoryItem = {
+  id: number;
+  client_reference: string;
+  gross_amount: number;
+  hexai_fee: number;
+  platform_commission: number;
+  net_amount: number;
+  status: string;
+  created_at: string;
+};
+
+export type CampaignWithdrawalSummaryResponse = {
+  campaign_id: number;
+  campaign_title: string;
+  amount_raised: number;
+  total_withdrawn: number;
+  available_balance: number;
+  withdrawal_history: WithdrawalHistoryItem[];
+};
+
 // Global admin search result types
 export type AdminSearchResultItem = {
   model: string; // e.g., 'campaign', 'user', 'donation', 'review', 'payout', 'kyc', 'moderation'

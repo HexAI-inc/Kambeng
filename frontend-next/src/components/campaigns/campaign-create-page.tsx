@@ -57,6 +57,14 @@ function getCampaignCreateErrorMessage(error: unknown) {
     return "We could not create the campaign. Please try again.";
   }
 
+  const status = error.response?.status;
+  if (status === 401) {
+    return "You need to sign in again before creating a campaign.";
+  }
+  if (status === 403) {
+    return "Your account is not yet allowed to create campaigns. Complete KYC and try again.";
+  }
+
   const data = error.response?.data as { detail?: string | ValidationErrorItem[] } | undefined;
   const detail = data?.detail;
 

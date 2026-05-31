@@ -8,6 +8,48 @@ const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
 const RED = "#ef4444";
 
+function getKycTone(status?: string | null) {
+  const normalized = (status ?? "NOT_SUBMITTED").toUpperCase();
+
+  if (normalized === "APPROVED") {
+    return {
+      label: "Approved",
+      color: GREEN,
+      bg: "rgba(27,191,136,0.1)",
+      border: "rgba(27,191,136,0.25)",
+      note: "This user can receive withdrawals and use the full campaign flow.",
+    };
+  }
+
+  if (normalized === "SUBMITTED" || normalized === "REVIEWING") {
+    return {
+      label: normalized === "SUBMITTED" ? "Submitted" : "In review",
+      color: BLUE,
+      bg: "rgba(29,197,255,0.1)",
+      border: "rgba(29,197,255,0.25)",
+      note: "The user has uploaded KYC documents and is waiting for admin review.",
+    };
+  }
+
+  if (normalized === "REJECTED") {
+    return {
+      label: "Rejected",
+      color: RED,
+      bg: "rgba(239,68,68,0.1)",
+      border: "rgba(239,68,68,0.25)",
+      note: "The user needs to resubmit documents before they can be approved.",
+    };
+  }
+
+  return {
+    label: "Not submitted",
+    color: "#f97316",
+    bg: "rgba(249,115,22,0.1)",
+    border: "rgba(249,115,22,0.25)",
+    note: "No KYC submission exists yet for this user.",
+  };
+}
+
 function Field({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
     <div>
@@ -49,6 +91,7 @@ export default function UserViewPage() {
   }
 
   const initials = user.full_name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() ?? "?";
+  const kycTone = getKycTone(user.kyc_status);
 
   return (
     <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
@@ -86,6 +129,22 @@ export default function UserViewPage() {
             <Field label="Total Raised" value={<span style={{ fontWeight: 700, color: GREEN }}>{Number(user.total_raised ?? 0).toLocaleString()} GMD</span>} />
             <Field label="Joined" value={new Date(user.created_at).toLocaleString()} />
             {user.last_activity && <Field label="Last Activity" value={new Date(user.last_activity).toLocaleString()} />}
+          </div>
+        </div>
+
+        <div style={{ background: "#0d1120", border: `1px solid ${kycTone.border}`, borderRadius: 16, padding: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#f0f6ff", marginBottom: 4 }}>KYC</div>
+              <div style={{ fontSize: 13, color: "#6b7a8d" }}>Identity verification controls withdrawals and campaign eligibility.</div>
+            </div>
+            <Chip label={kycTone.label} color={kycTone.color} bg={kycTone.bg} border={kycTone.border} />
+          </div>
+          <div style={{ fontSize: 13, color: "#c0ccd8", lineHeight: 1.7 }}>{kycTone.note}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginTop: 18 }}>
+            <Field label="Can receive withdrawals" value={user.kyc_status === "APPROVED" ? "Yes" : "No"} />
+            <Field label="Can create campaigns" value={user.kyc_status === "APPROVED" ? "Yes" : "No"} />
+            <Field label="Next action" value={user.kyc_status === "APPROVED" ? "None" : user.kyc_status === "REJECTED" ? "Ask user to resubmit" : "Review submission"} />
           </div>
         </div>
 

@@ -116,6 +116,13 @@ export default function CampaignImagesPage() {
                   color: "#8899aa", fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Public page ↗</button>
               </Link>
+              <Link href={`/dashboard/my-campaigns/${campaignId}/withdrawals`}>
+                <button style={{
+                  padding: "9px 16px", borderRadius: 9,
+                  border: "1px solid rgba(27,191,136,0.25)", background: "rgba(27,191,136,0.08)",
+                  color: GREEN, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                }}>Withdraw funds</button>
+              </Link>
               <Link href="/dashboard/kyc">
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,

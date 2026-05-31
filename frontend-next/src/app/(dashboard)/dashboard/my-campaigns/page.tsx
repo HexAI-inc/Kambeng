@@ -185,6 +185,7 @@ export default function MyCampaignsPage() {
                           { label: "Uploads", href: `/dashboard/my-campaigns/${c.id}/images`, primary: true },
                           { label: "Goals", href: `/dashboard/my-campaigns/${c.id}/goals`, primary: false },
                           { label: "QR Codes", href: `/dashboard/my-campaigns/${c.id}/qr-codes`, primary: false },
+                          { label: "Withdrawals", href: `/dashboard/my-campaigns/${c.id}/withdrawals`, primary: false },
                           { label: "Public page", href: `/campaigns/${c.slug}`, primary: false },
                         ].map(({ label, href, primary }) => (
                           <Link key={label} href={href}>

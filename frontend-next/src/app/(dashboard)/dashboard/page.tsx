@@ -89,6 +89,7 @@ export default function DashboardPage() {
   const kycApproved   = kycState === "APPROVED";
   const kycPending    = kycState === "SUBMITTED" || kycState === "REVIEWING";
   const kycRejected   = kycState === "REJECTED";
+  const canCreateCampaign = emailVerified && kycApproved;
 
   const totalRaised = (campaigns ?? []).reduce((s, c) => s + c.amount_raised, 0);
   const activeCnt   = (campaigns ?? []).filter((c) => c.status === "ACTIVE").length;
@@ -152,16 +153,28 @@ export default function DashboardPage() {
                 Browse
               </button>
             </Link>
-            <Link href="/dashboard/my-campaigns">
-              <button style={{
-                padding: "9px 18px", borderRadius: 9, border: "none",
-                background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-                color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                boxShadow: "0 4px 16px rgba(29,197,255,0.3)",
-              }}>
-                + New Campaign
-              </button>
-            </Link>
+            {canCreateCampaign ? (
+              <Link href="/dashboard/my-campaigns/new">
+                <button style={{
+                  padding: "9px 18px", borderRadius: 9, border: "none",
+                  background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                  color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  boxShadow: "0 4px 16px rgba(29,197,255,0.3)",
+                }}>
+                  + New Campaign
+                </button>
+              </Link>
+            ) : (
+              <Link href="/dashboard/kyc">
+                <button style={{
+                  padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(29,197,255,0.18)",
+                  background: "rgba(29,197,255,0.06)",
+                  color: "#f0f6ff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                }}>
+                  Complete KYC to create
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -279,16 +292,28 @@ export default function DashboardPage() {
                 <div style={{ fontSize: 13, color: "#6b7a8d", lineHeight: 1.7, marginBottom: 20, maxWidth: 320, margin: "0 auto 20px" }}>
                   Create a campaign, share your Wave QR code, and start collecting donations directly to your wallet.
                 </div>
-                <Link href="/dashboard/my-campaigns">
-                  <button style={{
-                    padding: "11px 24px", borderRadius: 10, border: "none",
-                    background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-                    color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                    boxShadow: "0 4px 16px rgba(29,197,255,0.3)",
-                  }}>
-                    Create campaign
-                  </button>
-                </Link>
+                {canCreateCampaign ? (
+                  <Link href="/dashboard/my-campaigns/new">
+                    <button style={{
+                      padding: "11px 24px", borderRadius: 10, border: "none",
+                      background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                      color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                      boxShadow: "0 4px 16px rgba(29,197,255,0.3)",
+                    }}>
+                      Create campaign
+                    </button>
+                  </Link>
+                ) : (
+                  <Link href="/dashboard/kyc">
+                    <button style={{
+                      padding: "11px 24px", borderRadius: 10, border: "1px solid rgba(29,197,255,0.18)",
+                      background: "rgba(29,197,255,0.06)",
+                      color: "#f0f6ff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                    }}>
+                      Complete KYC first
+                    </button>
+                  </Link>
+                )}
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

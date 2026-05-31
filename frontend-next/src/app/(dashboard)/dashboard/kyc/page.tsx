@@ -181,7 +181,11 @@ export default function KYCPage() {
       } catch (err: any) {
         const detail = err?.response?.data?.detail ?? null;
         const status = err?.response?.status ?? 0;
-        if (status >= 500) {
+        if (status === 401) {
+          message.error("Your session expired. Please sign in again and resubmit.");
+        } else if (status === 403) {
+          message.error("Your account is not allowed to submit KYC yet. Please sign in and try again.");
+        } else if (status >= 500) {
           message.error("Server error — the admin has been notified. Try again later.");
         } else {
           message.error(detail ?? `Failed to submit ${upload.type.replace(/_/g, " ").toLowerCase()}`);

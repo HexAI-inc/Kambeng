@@ -20,8 +20,9 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    network_mode: host
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/kambeng
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/kambeng
       PYTHONUNBUFFERED: "1"
     depends_on:
       - db
@@ -38,8 +39,9 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    network_mode: host
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/kambeng
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/kambeng
       PYTHONUNBUFFERED: "1"
     depends_on:
       - db

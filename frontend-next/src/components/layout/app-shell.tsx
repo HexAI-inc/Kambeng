@@ -193,7 +193,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {navLinks.map((item) => {
             const active = isItemActive(pathname, item.href);
             return (
-              <Link key={item.key} href={item.href} onClick={() => setMobileOpen(false)}>
+              <Link key={item.key} href={item.href} onClick={() => setMobileMenuOpenAt(null)}>
                 <div style={{
                   padding: "16px 20px",
                   borderRadius: 12,
@@ -210,7 +210,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
           <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
             {isLoggedIn ? (
-              <Link href="/auth/logout" onClick={() => setMobileOpen(false)}>
+              <Link href="/auth/logout" onClick={() => setMobileMenuOpenAt(null)}>
                 <div style={{
                   padding: "16px 20px", borderRadius: 12, fontSize: 16, fontWeight: 500,
                   color: "#ff6b6b", background: "rgba(255,107,107,0.08)",
@@ -219,14 +219,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             ) : (
               <>
-                <Link href="/auth/login" onClick={() => setMobileOpen(false)}>
+                <Link href="/auth/login" onClick={() => setMobileMenuOpenAt(null)}>
                   <div style={{
                     padding: "16px 20px", borderRadius: 12, fontSize: 16, fontWeight: 500,
                     color: "#f0f6ff", background: "rgba(255,255,255,0.06)",
                     border: "1px solid rgba(255,255,255,0.1)", textAlign: "center",
                   }}>Login</div>
                 </Link>
-                <Link href="/auth/signup" onClick={() => setMobileOpen(false)}>
+                <Link href="/auth/signup" onClick={() => setMobileMenuOpenAt(null)}>
                   <div style={{
                     padding: "16px 20px", borderRadius: 12, fontSize: 16, fontWeight: 700,
                     color: "#fff", background: "linear-gradient(135deg, #1dc5ff, #079bd4)",

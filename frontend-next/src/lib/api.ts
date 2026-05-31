@@ -8,6 +8,9 @@ export type AuthUser = {
   is_email_verified: boolean;
   role: string;
   is_active: boolean;
+  kyc_status?: string | null;
+  kyc_verified_at?: string | null;
+  kyc_rejection_reason?: string | null;
   created_at: string;
 };
 

@@ -38,6 +38,9 @@ class UserRead(UserBase):
     is_email_verified: bool
     role: str
     is_active: bool
+    kyc_status: Optional[str] = None
+    kyc_verified_at: Optional[datetime] = None
+    kyc_rejection_reason: Optional[str] = None
     created_at: datetime
 
     # This tells Pydantic to read data from SQLAlchemy models

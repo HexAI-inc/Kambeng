@@ -161,7 +161,8 @@ export default function KYCPage() {
   const isPending  = kycStatus?.status === "SUBMITTED" || kycStatus?.status === "REVIEWING";
   const isRejected = kycStatus?.status === "REJECTED";
   const hasFiles   = uploads.some((u) => u.file !== null);
-  const statusVisible = Boolean(kycStatus?.status && kycStatus.status !== "NOT_SUBMITTED");
+  const statusVisible = Boolean((kycStatus?.status && kycStatus.status !== "NOT_SUBMITTED") || (session?.kyc_status && session.kyc_status !== "NOT_SUBMITTED"));
+  const currentStatus = kycStatus?.status ?? session?.kyc_status ?? "NOT_SUBMITTED";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,9 +208,9 @@ export default function KYCPage() {
         {/* Status */}
         {isLoading ? (
           <div style={{ height: 68, borderRadius: 12, background: "rgba(255,255,255,0.05)" }} />
-        ) : statusVisible && kycStatus ? (
+        ) : statusVisible ? (
           <motion.div {...fadeUp(0.06)}>
-            <StatusBanner status={kycStatus.status} reason={kycStatus.rejection_reason ?? undefined} />
+            <StatusBanner status={currentStatus} reason={kycStatus?.rejection_reason ?? session?.kyc_rejection_reason ?? undefined} />
           </motion.div>
         ) : null}
 

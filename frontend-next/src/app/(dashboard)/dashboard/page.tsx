@@ -85,7 +85,7 @@ export default function DashboardPage() {
   const wave          = me?.wave_number ?? "—";
   const role          = me?.role ?? "USER";
   const emailVerified = me?.is_email_verified ?? false;
-  const kycState      = kycStatus?.status ?? "NOT_SUBMITTED";
+  const kycState      = me?.kyc_status ?? kycStatus?.status ?? "NOT_SUBMITTED";
   const kycApproved   = kycState === "APPROVED";
   const kycPending    = kycState === "SUBMITTED" || kycState === "REVIEWING";
   const kycRejected   = kycState === "REJECTED";

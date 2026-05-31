@@ -14,6 +14,11 @@ Kambeng enables community leaders, organizations, and individuals to:
 
 ---
 
+## Documentation
+
+More detailed developer and feature documentation lives in the `docs/` folder. Start with the Getting Started guide: `docs/getting-started.md`.
+
+
 ## 🏗️ Architecture
 
 ### Monorepo Structure

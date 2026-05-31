@@ -13,6 +13,7 @@ FRONTEND_ENV_EXAMPLE="$FRONTEND_DIR/.env.local.example"
 FRONTEND_LOG_FILE="$FRONTEND_DIR/deploy.log"
 FRONTEND_SERVICE_NAME="kambeng-frontend"
 FRONTEND_SERVICE_FILE="/etc/systemd/system/${FRONTEND_SERVICE_NAME}.service"
+COMPOSE_CMD=()
 
 log() {
   printf '\n==> %s\n' "$*"
@@ -25,6 +26,20 @@ die() {
 
 require_command() {
   command -v "$1" >/dev/null 2>&1 || die "Missing required command: $1"
+}
+
+setup_compose_command() {
+  if docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD=(docker compose)
+    return 0
+  fi
+
+  if command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE_CMD=(docker-compose)
+    return 0
+  fi
+
+  die "Missing Docker Compose. Install the Docker Compose plugin or docker-compose"
 }
 
 ensure_env_file() {
@@ -106,6 +121,7 @@ start_frontend() {
 
 require_command docker
 require_command npm
+setup_compose_command
 
 [[ -f "$BACKEND_COMPOSE_FILE" ]] || die "Missing backend compose file: $BACKEND_COMPOSE_FILE"
 [[ -f "$FRONTEND_DIR/package-lock.json" ]] || die "Missing frontend lockfile: $FRONTEND_DIR/package-lock.json"
@@ -120,10 +136,10 @@ log "Building frontend"
 npm run build --prefix "$FRONTEND_DIR"
 
 log "Starting backend stack"
-docker compose -f "$BACKEND_COMPOSE_FILE" up -d --build
+"${COMPOSE_CMD[@]}" -f "$BACKEND_COMPOSE_FILE" up -d --build
 
 log "Running backend migrations"
-docker compose -f "$BACKEND_COMPOSE_FILE" exec -T api alembic upgrade head
+"${COMPOSE_CMD[@]}" -f "$BACKEND_COMPOSE_FILE" exec -T api alembic upgrade head
 
 start_frontend
 

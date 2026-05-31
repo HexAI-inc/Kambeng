@@ -81,6 +81,7 @@ export function useSessionProfile(enabled = true) {
   return useQuery({
     queryKey: ["session", "me"],
     enabled,
+    retry: false,
     queryFn: getMyProfile,
   });
 }

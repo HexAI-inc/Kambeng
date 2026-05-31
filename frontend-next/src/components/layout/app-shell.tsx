@@ -33,9 +33,11 @@ function Logo() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { data: session } = useSessionProfile(true);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const isAuthPage = pathname.startsWith("/auth");
+  const { data: session } = useSessionProfile(!isAuthPage);
+  const [mobileMenuOpenAt, setMobileMenuOpenAt] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const mobileOpen = mobileMenuOpenAt === pathname;
 
   const isLoggedIn = Boolean(session?.id);
   const isAdmin = session?.role === "ADMIN";
@@ -46,8 +48,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   const navLinks = useMemo<NavItem[]>(() => {
     const base: NavItem[] = [
@@ -163,7 +163,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Mobile menu toggle */}
           <button
             className="mobile-nav"
-            onClick={() => setMobileOpen((v) => !v)}
+            onClick={() => setMobileMenuOpenAt((current) => (current === pathname ? null : pathname))}
             style={{
               width: 40, height: 40,
               border: "1px solid rgba(255,255,255,0.12)",

@@ -1,16 +1,5 @@
 name: kambeng
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: kambeng-postgres
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: kambeng
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   api:
     build:
       context: .
@@ -21,10 +10,7 @@ services:
       - .env
     network_mode: host
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/kambeng
       PYTHONUNBUFFERED: "1"
-    depends_on:
-      - db
     ports:
       - "127.0.0.1:8001:8001"
     volumes:
@@ -40,14 +26,7 @@ services:
       - .env
     network_mode: host
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/kambeng
       PYTHONUNBUFFERED: "1"
-    depends_on:
-      - db
     command: ["python", "-m", "app.workers.recurring_donations_worker"]
     volumes:
       - ./uploads:/app/uploads
-
-
-volumes:
-  postgres_data:

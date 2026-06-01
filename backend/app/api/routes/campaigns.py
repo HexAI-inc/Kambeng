@@ -25,7 +25,7 @@ from app.core.logging_config import get_logger
 
 hexai_service = HexAIPaymentService()
 
-router = APIRouter(prefix="/campaigns", tags=["Campaigns"])
+router = APIRouter(prefix="/campaigns", tags=["Campaigns"], redirect_slashes=False)
 logger = get_logger("campaigns")
 
 def generate_slug(title: str) -> str:

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useAdminCommissionsSummary, useAdminCommissionSources, useWithdrawCommissions } from "@/hooks/use-frontend-data";
+import { useAdminCommissionsSummary, useAdminCommissionSources, useWithdrawCommissions, useCommissionPayoutAccount } from "@/hooks/use-frontend-data";
 import type { CommissionSourceItem } from "@/types/frontend";
 
 const BLUE = "#1dc5ff";
@@ -29,6 +29,7 @@ export default function AdminCommissionsPage() {
   const router = useRouter();
   const { data: summary } = useAdminCommissionsSummary(true);
   const { data: sources } = useAdminCommissionSources(0, 100, true);
+  const { data: payoutAccount } = useCommissionPayoutAccount(true);
   const withdrawMutation = useWithdrawCommissions();
 
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -87,17 +88,39 @@ export default function AdminCommissionsPage() {
           </div>
         </motion.div>
 
+        {/* Payout account info */}
+        <motion.div {...fadeUp(0.08)}>
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>Payouts sent to</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", fontFamily: "monospace" }}>
+                {payoutAccount?.wave_number || <span style={{ color: "#ef4444" }}>No Wave number configured</span>}
+              </div>
+              {payoutAccount && (
+                <div style={{ fontSize: 11, color: "#4a5568", marginTop: 2 }}>
+                  {payoutAccount.source === "config" ? "Platform account (ADMIN_COMMISSION_WAVE_NUMBER)" : `${payoutAccount.admin_name}'s profile Wave number`}
+                </div>
+              )}
+            </div>
+            {!payoutAccount?.wave_number && (
+              <div style={{ fontSize: 12, color: "#f97316", padding: "6px 12px", borderRadius: 8, background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)" }}>
+                Set ADMIN_COMMISSION_WAVE_NUMBER in .env or update your profile
+              </div>
+            )}
+          </div>
+        </motion.div>
+
         {/* Withdraw button */}
         <motion.div {...fadeUp(0.1)}>
           <button
             onClick={() => setShowWithdraw(true)}
-            disabled={available <= 0 || withdrawMutation.isPending}
+            disabled={available <= 0 || withdrawMutation.isPending || !payoutAccount?.wave_number}
             style={{
               padding: "11px 24px", borderRadius: 10, border: "none",
-              background: available > 0 ? `linear-gradient(135deg, ${BLUE}, #079bd4)` : "rgba(255,255,255,0.06)",
-              color: available > 0 ? "#fff" : "#4a5568",
-              fontSize: 13, fontWeight: 700, cursor: available > 0 ? "pointer" : "not-allowed",
-              boxShadow: available > 0 ? "0 4px 16px rgba(29,197,255,0.3)" : "none",
+              background: (available > 0 && payoutAccount?.wave_number) ? `linear-gradient(135deg, ${BLUE}, #079bd4)` : "rgba(255,255,255,0.06)",
+              color: (available > 0 && payoutAccount?.wave_number) ? "#fff" : "#4a5568",
+              fontSize: 13, fontWeight: 700, cursor: (available > 0 && payoutAccount?.wave_number) ? "pointer" : "not-allowed",
+              boxShadow: (available > 0 && payoutAccount?.wave_number) ? "0 4px 16px rgba(29,197,255,0.3)" : "none",
             }}
           >
             {withdrawMutation.isPending ? "Processing…" : "Withdraw Available Commissions"}
@@ -108,7 +131,13 @@ export default function AdminCommissionsPage() {
         {showWithdraw && (
           <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ background: "#0d1120", border: "1px solid rgba(29,197,255,0.2)", borderRadius: 14, padding: "22px 24px" }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Withdraw Commissions</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 18 }}>Available: <span style={{ color: GREEN, fontWeight: 700 }}>{available.toFixed(2)} GMD</span></div>
+            <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 6 }}>
+              Available: <span style={{ color: GREEN, fontWeight: 700 }}>{available.toFixed(2)} GMD</span>
+            </div>
+            <div style={{ fontSize: 12, color: "#4a5568", marginBottom: 18 }}>
+              Funds will be sent to <span style={{ color: "#f0f6ff", fontFamily: "monospace" }}>{payoutAccount?.wave_number}</span> via Wave.
+              HexAI deducts a 2% processing fee on the payout.
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
                 <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", display: "block", marginBottom: 6 }}>Amount (GMD)</label>

@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     HEXAI_WITHDRAWAL_FEE_PERCENT: float = float(os.getenv("HEXAI_WITHDRAWAL_FEE_PERCENT", "0.02"))
     # Kambeng fixed commission per withdrawal in GMD
     PLATFORM_FIXED_COMMISSION_GMD: float = float(os.getenv("PLATFORM_FIXED_COMMISSION_GMD", "10.0"))
+    # Wave number that receives admin commission payouts.
+    # If blank, falls back to the requesting admin's own wave_number.
+    ADMIN_COMMISSION_WAVE_NUMBER: str = os.getenv("ADMIN_COMMISSION_WAVE_NUMBER", "")
 
     class Config:
         env_file = ".env"

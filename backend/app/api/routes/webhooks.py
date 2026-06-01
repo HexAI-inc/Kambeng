@@ -107,9 +107,13 @@ async def hexai_webhook(
                     )
 
         # -----------------------------------------
-        # SCENARIO B: A PAYOUT FAILED IN THE BACKGROUND
+        # SCENARIO B: CAMPAIGN PAYOUT OR ADMIN COMMISSION PAYOUT
         # -----------------------------------------
-        elif client_ref.startswith("PAYOUT-") or client_ref.startswith("OUT-"):
+        elif (
+            client_ref.startswith("PAYOUT-")
+            or client_ref.startswith("OUT-")
+            or client_ref.startswith("ADMIN-COMM-")
+        ):
             from app.models.payout import Payout
             result = await db.execute(select(Payout).where(Payout.client_reference == client_ref))
             payout = result.scalars().first()
@@ -118,11 +122,16 @@ async def hexai_webhook(
                 if status == "FAILED":
                     payout.status = "FAILED"
                     await db.commit()
-                    print(f"❌ Payout Failed! Marked as FAILED so funds are restored. Ref: {client_ref}")
-                    
+                    logger.warning(
+                        "Payout failed",
+                        extra={"action": "payout_webhook_failed", "client_reference": client_ref},
+                    )
                 elif status == "SUCCEEDED":
                     payout.status = "SUCCEEDED"
                     await db.commit()
-                    print(f"✅ Payout Successfully delivered by Wave! Ref: {client_ref}")
+                    logger.info(
+                        "Payout confirmed",
+                        extra={"action": "payout_webhook_succeeded", "client_reference": client_ref},
+                    )
                     
     return {"status": "success", "message": "Webhook processed successfully"}

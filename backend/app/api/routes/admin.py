@@ -23,6 +23,9 @@ from app.schemas.audit import AdminAuditLogRead, UserOverviewItem, PayoutOvervie
 from app.schemas.commissions import CommissionSummary, CommissionSourceItem, AdminCommissionWithdrawalRequest, AdminCommissionWithdrawalResponse
 from app.schemas.user import AdminUserUpdate, UserRead
 from app.services.email_service import render_kyc_approved_email, render_kyc_rejected_email, send_email
+from app.services.hexai_service import HexAIPaymentService
+
+hexai_service = HexAIPaymentService()
 from app.core.config import settings
 from sqlalchemy import func
 
@@ -1098,59 +1101,105 @@ async def withdraw_commissions(
     db: AsyncSession = Depends(get_db),
     admin_user: User = Depends(get_admin_user),
 ):
-    """Initiate a commission withdrawal request."""
-    from app.core.config import get_settings
-    
-    settings = get_settings()
-    
-    # Validate amount
+    """Send earned commissions to the platform Wave account via HexAI."""
+    import uuid
+
     if request.amount <= 0:
         raise HTTPException(status_code=400, detail="Withdrawal amount must be positive")
-    
-    # Get current available commissions
+
     commissions = await get_commissions_summary(db=db, _admin_user=admin_user)
     if request.amount > commissions.available_commissions:
         raise HTTPException(
             status_code=400,
-            detail=f"Insufficient available commissions. Available: {commissions.available_commissions}"
+            detail=f"Insufficient available commissions. Available: {commissions.available_commissions:.2f} GMD",
         )
-    
-    # Create a payout record for the admin commission withdrawal
-    # Use a special reference prefix to identify admin withdrawals
-    import uuid
+
+    # Decide destination Wave number:
+    # Use the configured platform account if set; fall back to the requesting admin's number.
+    recipient_wave = settings.ADMIN_COMMISSION_WAVE_NUMBER.strip() or admin_user.wave_number
+    if not recipient_wave:
+        raise HTTPException(
+            status_code=400,
+            detail="No payout Wave number configured. Set ADMIN_COMMISSION_WAVE_NUMBER in .env or update your profile.",
+        )
+
+    # Normalise to +220 format
+    if not recipient_wave.startswith("+220"):
+        recipient_wave = f"+220{recipient_wave.lstrip('0')}"
+
+    # HexAI charges 2% on payouts — deduct before sending
+    hexai_fee = round(request.amount * settings.HEXAI_WITHDRAWAL_FEE_PERCENT, 2)
+    net_amount = round(request.amount - hexai_fee, 2)
+
+    if net_amount <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Amount too small. After HexAI fee ({hexai_fee:.2f} GMD) you would receive {net_amount:.2f} GMD.",
+        )
+
     withdrawal_ref = f"ADMIN-COMM-{uuid.uuid4().hex[:12].upper()}"
-    
-    # Create payout record with campaign_id = NULL to indicate admin withdrawal
+
+    # Call HexAI FIRST — don't write to DB until we know it accepted the request
+    try:
+        await hexai_service.initiate_payout(
+            requested_amount=net_amount,
+            recipient_mobile=recipient_wave,
+            payout_reference=withdrawal_ref,
+            recipient_name=admin_user.full_name or "Kambeng Admin",
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"HexAI payout failed: {exc}") from exc
+
+    # Persist the payout record (PENDING until webhook confirms)
     commission_payout = Payout(
-        campaign_id=None,  # Indicates admin withdrawal
+        campaign_id=None,
         client_reference=withdrawal_ref,
         gross_amount=request.amount,
-        hexai_fee=0.0,  # No HexAI fee for admin withdrawals
+        hexai_fee=hexai_fee,
         platform_commission=request.amount,
-        net_amount=request.amount,
+        net_amount=net_amount,
         status="PENDING",
     )
     db.add(commission_payout)
     await db.flush()
-    
-    # Log the audit action
+
     await _log_audit_action(
         db=db,
         action_type=AuditActionType.COMMISSION_WITHDRAWAL_INITIATED,
         performed_by_admin_id=admin_user.id,
         target_entity_type="COMMISSION_WITHDRAWAL",
         target_entity_id=commission_payout.id,
-        description=f"Admin initiated commission withdrawal of {request.amount}",
+        description=(
+            f"Commission withdrawal of {request.amount:.2f} GMD initiated "
+            f"to {recipient_wave} (net {net_amount:.2f} GMD after {hexai_fee:.2f} GMD HexAI fee)"
+        ),
         details=request.reason or "No reason provided",
-        new_value=withdrawal_ref
+        new_value=withdrawal_ref,
     )
-    
+
     await db.commit()
-    
+
     return AdminCommissionWithdrawalResponse(
         withdrawal_id=withdrawal_ref,
         amount=request.amount,
         status="PENDING",
         created_at=datetime.now(UTC),
-        message=f"Commission withdrawal request created. Reference: {withdrawal_ref}"
+        message=(
+            f"Payout of {net_amount:.2f} GMD initiated to {recipient_wave}. "
+            f"Reference: {withdrawal_ref}"
+        ),
     )
+
+
+@router.get("/commissions/payout-account")
+async def get_commission_payout_account(
+    admin_user: User = Depends(get_admin_user),
+):
+    """Return the Wave number that will receive commission withdrawals."""
+    configured = settings.ADMIN_COMMISSION_WAVE_NUMBER.strip()
+    wave = configured or admin_user.wave_number or ""
+    return {
+        "wave_number": wave,
+        "source": "config" if configured else "admin_profile",
+        "admin_name": admin_user.full_name,
+    }

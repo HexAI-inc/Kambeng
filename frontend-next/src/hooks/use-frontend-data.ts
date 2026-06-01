@@ -881,6 +881,19 @@ export function useUploadCampaignProof() {
 
 // ===== Commissions & Revenue Management =====
 
+export function useCommissionPayoutAccount(enabled = true) {
+  return useQuery({
+    queryKey: ["commission-payout-account"],
+    enabled,
+    queryFn: async () => {
+      const response = await api.get<{ wave_number: string; source: string; admin_name: string }>(
+        "/admin/commissions/payout-account"
+      );
+      return response.data;
+    },
+  });
+}
+
 export function useAdminCommissionsSummary(enabled = true) {
   return useQuery({
     queryKey: ["admin-commissions-summary"],

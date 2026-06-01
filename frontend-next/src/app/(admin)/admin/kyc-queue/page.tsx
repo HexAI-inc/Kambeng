@@ -74,7 +74,7 @@ export default function KYCQueuePage() {
   };
 
   const rows = queue ?? [];
-  const pending = rows.filter((r: any) => r.status === "SUBMITTED" || r.status === "REVIEWING").length;
+  const pending = rows.filter((r) => r.status === "SUBMITTED" || r.status === "REVIEWING").length;
 
   return (
     <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
@@ -155,7 +155,7 @@ export default function KYCQueuePage() {
               </div>
             ) : rows.length === 0 ? (
               <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No KYC submissions</div>
-            ) : rows.map((sub: any, i: number) => {
+            ) : rows.map((sub, i: number) => {
               const isProcessed = sub.status === "APPROVED" || sub.status === "REJECTED";
               return (
                 <motion.div

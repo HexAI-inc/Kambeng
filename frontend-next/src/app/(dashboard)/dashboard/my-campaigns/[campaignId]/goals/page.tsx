@@ -130,7 +130,7 @@ export default function CampaignGoalsPage() {
           <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 4 }}>
             {campaign?.title ?? "Campaign"} — Goals
           </div>
-          <div style={{ fontSize: 13, color: "#6b7a8d" }}>Create milestones to show donors what you're working toward.</div>
+          <div style={{ fontSize: 13, color: "#6b7a8d" }}>Create milestones to show donors what you&apos;re working toward.</div>
         </motion.div>
 
         {/* Create form */}

@@ -66,7 +66,7 @@ export function ForgotPasswordFormCard({ nextTarget = "/auth/login" }: ForgotPas
         <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px", boxShadow: "0 24px 80px rgba(0,0,0,0.5)" }}>
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 6 }}>Reset your password</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d" }}>Enter your email and we'll send you a reset link.</div>
+            <div style={{ fontSize: 13, color: "#6b7a8d" }}>Enter your email and we&apos;ll send you a reset link.</div>
           </div>
 
           {sent ? (

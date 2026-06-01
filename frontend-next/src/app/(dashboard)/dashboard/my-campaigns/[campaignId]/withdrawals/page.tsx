@@ -92,8 +92,9 @@ export default function CampaignWithdrawalsPage() {
       const result = await withdrawMutation.mutateAsync({ campaignId: summary.campaign_id, amount });
       message.success(`Withdrawal successful. Net received: ${fmt(result.net_received)} GMD`);
       setGrossAmount("");
-    } catch (error: any) {
-      const detail = error?.response?.data?.detail ?? error?.response?.data?.message ?? null;
+    } catch (error: unknown) {
+      const axiosErr = error as { response?: { data?: { detail?: string; message?: string } } };
+      const detail = axiosErr?.response?.data?.detail ?? axiosErr?.response?.data?.message ?? null;
       message.error(detail ?? "Failed to withdraw funds");
     }
   };

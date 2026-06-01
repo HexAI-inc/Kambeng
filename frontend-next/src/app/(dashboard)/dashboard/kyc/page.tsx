@@ -178,9 +178,10 @@ export default function KYCPage() {
       try {
         await submitKYC.mutateAsync(fd);
         anySuccess = true;
-      } catch (err: any) {
-        const detail = err?.response?.data?.detail ?? null;
-        const status = err?.response?.status ?? 0;
+      } catch (err: unknown) {
+        const axiosErr = err as { response?: { data?: { detail?: string }; status?: number } };
+        const detail = axiosErr?.response?.data?.detail ?? null;
+        const status = axiosErr?.response?.status ?? 0;
         if (status === 401) {
           message.error("Your session expired. Please sign in again and resubmit.");
         } else if (status === 403) {

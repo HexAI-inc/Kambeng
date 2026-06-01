@@ -126,7 +126,7 @@ export default function KYCReviewPage() {
         {canDecide && (
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "24px" }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Make a Decision</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 20 }}>This will update the user's KYC status immediately.</div>
+            <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 20 }}>This will update the user&apos;s KYC status immediately.</div>
 
             {!showApproveConfirm && !showRejectForm && (
               <div style={{ display: "flex", gap: 12 }}>
@@ -143,7 +143,7 @@ export default function KYCReviewPage() {
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                 <div style={{ padding: "16px 20px", borderRadius: 10, background: "rgba(27,191,136,0.06)", border: "1px solid rgba(27,191,136,0.2)", marginBottom: 16 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: GREEN, marginBottom: 4 }}>Confirm Approval</div>
-                  <div style={{ fontSize: 13, color: "#6b7a8d" }}>This will mark the user's KYC as APPROVED and allow them to create campaigns.</div>
+                  <div style={{ fontSize: 13, color: "#6b7a8d" }}>This will mark the user&apos;s KYC as APPROVED and allow them to create campaigns.</div>
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
                   <button onClick={() => void handleApprove()} disabled={approve.isPending} style={{ padding: "10px 24px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${GREEN}, #15a374)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>

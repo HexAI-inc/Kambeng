@@ -103,7 +103,7 @@ export function ResetPasswordFormCard({ token }: { token: string }) {
             </div>
 
             <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(29,197,255,0.06)", border: "1px solid rgba(29,197,255,0.15)", fontSize: 12, color: "#6b7a8d" }}>
-              Your password will be updated immediately. You'll need to log in again.
+              Your password will be updated immediately. You&apos;ll need to log in again.
             </div>
 
             {submitError && (

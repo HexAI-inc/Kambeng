@@ -84,7 +84,7 @@ export function RecurringDonationForm({
               Support {campaign_title} Every Month
             </AppTitle>
             <AppText type="secondary">
-              Set up an automated donation to provide consistent support. You'll get a reminder email each month with a payment link.
+              Set up an automated donation to provide consistent support. You&apos;ll get a reminder email each month with a payment link.
             </AppText>
             <AppButton
               type="primary"
@@ -188,13 +188,13 @@ export function RecurringDonationForm({
                   }}
                 >
                   <AppText strong style={{ marginBottom: 4 }}>
-                    You'll donate:
+                    You&apos;ll donate:
                   </AppText>
                   <AppText style={{ fontSize: 16, color: "#1dc5ff", marginBottom: 8 }}>
                     {form.watch("amount")} GMD {form.watch("frequency").toLowerCase()}
                   </AppText>
                   <AppText type="secondary" style={{ fontSize: 12 }}>
-                    You'll receive a reminder email each {form.watch("frequency").toLowerCase()} with a payment button to complete the donation.
+                    You&apos;ll receive a reminder email each {form.watch("frequency").toLowerCase()} with a payment button to complete the donation.
                   </AppText>
                 </div>
 

@@ -38,8 +38,9 @@ export default function CampaignAliasesPage() {
       await createAlias.mutateAsync({ campaignId, shortCode: shortCode.toLowerCase() });
       message.success("Short code created");
       setShortCode("");
-    } catch (err: any) {
-      message.error(err?.response?.data?.detail ?? "Failed to create short code");
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      message.error(axiosErr?.response?.data?.detail ?? "Failed to create short code");
     }
   };
 

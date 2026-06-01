@@ -154,14 +154,14 @@ export default function AdminReportsPage() {
           cols="52px 80px 120px 110px 100px 100px 140px 90px"
           rows={txRows}
           renderRow={(t: AdminTransaction) => [
-            <span style={{ fontSize: 12, color: "#4a5568" }}>#{t.id}</span>,
-            <Link href={`/admin/reports/campaign/${t.campaign_id}`} style={{ color: BLUE, fontSize: 12, fontWeight: 600, textDecoration: "none" }}>#{t.campaign_id}</Link>,
-            <TypeChip type={String(t.transaction_type)} />,
-            <StatusChip status={String(t.status)} />,
-            <span style={{ fontSize: 13, color: "#f0f6ff" }}>{t.gross_amount}</span>,
-            <span style={{ fontSize: 13, color: GREEN }}>{t.net_amount}</span>,
-            <span style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{t.external_reference || "—"}</span>,
-            <span style={{ fontSize: 11, color: "#4a5568" }}>{new Date(t.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
+            <span key="id" style={{ fontSize: 12, color: "#4a5568" }}>#{t.id}</span>,
+            <Link key="campaign" href={`/admin/reports/campaign/${t.campaign_id}`} style={{ color: BLUE, fontSize: 12, fontWeight: 600, textDecoration: "none" }}>#{t.campaign_id}</Link>,
+            <TypeChip key="type" type={String(t.transaction_type)} />,
+            <StatusChip key="status" status={String(t.status)} />,
+            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{t.gross_amount}</span>,
+            <span key="net" style={{ fontSize: 13, color: GREEN }}>{t.net_amount}</span>,
+            <span key="ref" style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{t.external_reference || "—"}</span>,
+            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(t.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
           ]}
           page={txPage}
           totalPages={txPages}
@@ -176,13 +176,13 @@ export default function AdminReportsPage() {
           cols="80px 1fr 140px 110px 110px 110px 90px"
           rows={payRows}
           renderRow={(p: AdminPayoutOverview) => [
-            <span style={{ fontSize: 12, color: "#4a5568" }}>#{p.payout_id}</span>,
-            <span style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600 }}>{p.campaign_title}</span>,
-            <span style={{ fontSize: 12, color: "#8899aa" }}>{p.user_name}</span>,
-            <span style={{ fontSize: 13, color: "#f0f6ff" }}>{p.gross_amount}</span>,
-            <span style={{ fontSize: 13, color: GREEN }}>{p.net_amount}</span>,
-            <StatusChip status={String(p.status)} />,
-            <span style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
+            <span key="id" style={{ fontSize: 12, color: "#4a5568" }}>#{p.payout_id}</span>,
+            <span key="campaign" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600 }}>{p.campaign_title}</span>,
+            <span key="user" style={{ fontSize: 12, color: "#8899aa" }}>{p.user_name}</span>,
+            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{p.gross_amount}</span>,
+            <span key="net" style={{ fontSize: 13, color: GREEN }}>{p.net_amount}</span>,
+            <StatusChip key="status" status={String(p.status)} />,
+            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
           ]}
           page={payPage}
           totalPages={payPages}
@@ -197,11 +197,11 @@ export default function AdminReportsPage() {
           cols="52px 140px 120px 1fr 100px"
           rows={auditRows}
           renderRow={(a: AdminAuditLog) => [
-            <span style={{ fontSize: 12, color: "#4a5568" }}>#{a.id}</span>,
-            <span style={{ fontSize: 12, fontWeight: 700, color: BLUE }}>{a.action_type}</span>,
-            <span style={{ fontSize: 12, color: "#8899aa" }}>{a.target_entity_type}</span>,
-            <span style={{ fontSize: 12, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.description}</span>,
-            <span style={{ fontSize: 11, color: "#4a5568" }}>{new Date(a.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
+            <span key="id" style={{ fontSize: 12, color: "#4a5568" }}>#{a.id}</span>,
+            <span key="action" style={{ fontSize: 12, fontWeight: 700, color: BLUE }}>{a.action_type}</span>,
+            <span key="entity" style={{ fontSize: 12, color: "#8899aa" }}>{a.target_entity_type}</span>,
+            <span key="desc" style={{ fontSize: 12, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.description}</span>,
+            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(a.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
           ]}
           page={auditPage}
           totalPages={auditPages}

@@ -154,7 +154,7 @@ export function LoginFormCard({ nextTarget, errorMessage, successMessage }: Logi
           </form>
 
           <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
-            <span style={{ fontSize: 13, color: "#4a5568" }}>Don't have an account? </span>
+            <span style={{ fontSize: 13, color: "#4a5568" }}>Don&apos;t have an account? </span>
             <Link href="/auth/signup" style={{ fontSize: 13, color: BLUE, fontWeight: 600 }}>Create one</Link>
           </div>
 

@@ -57,12 +57,14 @@ function KPI({
 }
 
 // ── Chart tooltip ───────────────────────────────────────────────────────────
-function DarkTooltip({ active, payload, label, prefix = "", suffix = "" }: any) {
+type TooltipPayloadItem = { dataKey: string; name: string; value: number | string; color: string };
+type DarkTooltipProps = { active?: boolean; payload?: TooltipPayloadItem[]; label?: string; prefix?: string; suffix?: string };
+function DarkTooltip({ active, payload, label, prefix = "", suffix = "" }: DarkTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 14px", fontSize: 12 }}>
       {label && <div style={{ color: "#8899aa", marginBottom: 6, fontWeight: 600 }}>{label}</div>}
-      {payload.map((p: any) => (
+      {payload.map((p) => (
         <div key={p.dataKey} style={{ color: p.color, fontWeight: 700 }}>{p.name}: {prefix}{typeof p.value === "number" ? p.value.toFixed(2) : p.value}{suffix}</div>
       ))}
     </div>
@@ -88,6 +90,9 @@ function ActivityRow({ log }: { log: AdminAuditLog }) {
   );
 }
 
+// ── Module-level timestamp (avoids calling Date.now() during render) ─────────
+const MODULE_LOAD_TIME = Date.now();
+
 // ── Main page ────────────────────────────────────────────────────────────────
 export default function AdminOverviewPage() {
   const { data: stats, isLoading: statsLoading } = useAdminSystemStats();
@@ -105,7 +110,7 @@ export default function AdminOverviewPage() {
   const donationTimeline = useMemo(() => {
     const donations = txList.filter((t) => t.transaction_type === "DONATION" && t.status === "SUCCEEDED");
     const byDay: Record<string, number> = {};
-    const now = Date.now();
+    const now = MODULE_LOAD_TIME;
     // seed last 14 days with 0
     for (let i = 13; i >= 0; i--) {
       const d = new Date(now - i * 86400000);
@@ -130,9 +135,9 @@ export default function AdminOverviewPage() {
   // ── Campaign status breakdown (bar) ──────────────────────────────────────
   const campaignStatusData = useMemo(() => {
     const arr = campaigns ?? [];
-    const active = arr.filter((c: any) => c.status === "ACTIVE").length;
-    const suspended = arr.filter((c: any) => c.status === "SUSPENDED").length;
-    const closed = arr.filter((c: any) => c.status === "CLOSED").length;
+    const active = arr.filter((c) => c.status === "ACTIVE").length;
+    const suspended = arr.filter((c) => c.status === "SUSPENDED").length;
+    const closed = arr.filter((c) => c.status === "CLOSED").length;
     return [
       { status: "Active", count: active, fill: GREEN },
       { status: "Suspended", count: suspended, fill: ORANGE },
@@ -142,7 +147,7 @@ export default function AdminOverviewPage() {
 
   // ── KYC breakdown ────────────────────────────────────────────────────────
   const kycBreakdown = useMemo(() => {
-    const pending = (kycQueue ?? []).filter((k: any) => k.status === "SUBMITTED" || k.status === "REVIEWING").length;
+    const pending = (kycQueue ?? []).filter((k) => k.status === "SUBMITTED" || k.status === "REVIEWING").length;
     const approved = stats?.kyc_approved_count ?? 0;
     const rejected = stats?.kyc_rejected_count ?? 0;
     return [
@@ -161,7 +166,7 @@ export default function AdminOverviewPage() {
     const arr = campaigns ?? [];
     return Object.entries(map)
       .map(([cid, rev]) => {
-        const c = arr.find((x: any) => x.id === Number(cid));
+        const c = arr.find((x) => x.id === Number(cid));
         return { name: c ? (c.title.length > 18 ? c.title.slice(0, 18) + "…" : c.title) : `#${cid}`, revenue: rev };
       })
       .sort((a, b) => b.revenue - a.revenue)
@@ -169,7 +174,7 @@ export default function AdminOverviewPage() {
   }, [txList, campaigns]);
 
   const totalRaised = txList.filter((t) => t.transaction_type === "DONATION" && t.status === "SUCCEEDED").reduce((s, t) => s + Number(t.gross_amount), 0);
-  const openModReports = (modReports ?? []).filter((r: any) => r.status?.toLowerCase() === "open").length;
+  const openModReports = (modReports ?? []).filter((r) => r.status?.toLowerCase() === "open").length;
   const recentLogs: AdminAuditLog[] = ((auditLogs ?? []) as AdminAuditLog[]).slice(0, 12);
 
   const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);

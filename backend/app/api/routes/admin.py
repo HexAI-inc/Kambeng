@@ -21,6 +21,7 @@ from app.schemas.kyc import AdminKYCRead, KYCRead, KYCRejectRequest
 from app.schemas.review import ReviewRead
 from app.schemas.audit import AdminAuditLogRead, UserOverviewItem, PayoutOverviewItem, AdminSystemStats
 from app.schemas.commissions import CommissionSummary, CommissionSourceItem, AdminCommissionWithdrawalRequest, AdminCommissionWithdrawalResponse
+from app.schemas.user import AdminUserUpdate, UserRead
 from app.services.email_service import render_kyc_approved_email, render_kyc_rejected_email, send_email
 from app.core.config import settings
 from sqlalchemy import func
@@ -714,6 +715,78 @@ async def update_user_status(
         total_raised=total_raised,
         last_activity=last_activity,
     )
+
+
+@router.patch("/users/{user_id}", response_model=UserRead)
+async def admin_update_user(
+    user_id: int,
+    payload: AdminUserUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(get_admin_user),
+):
+    """Admin: update any field on a user account."""
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    changes: dict = {}
+
+    if payload.full_name is not None:
+        changes["full_name"] = (user.full_name, payload.full_name.strip())
+        user.full_name = payload.full_name.strip()
+
+    if payload.email is not None and payload.email != user.email:
+        existing = await db.execute(select(User).where(User.email == payload.email, User.id != user_id))
+        if existing.scalars().first():
+            raise HTTPException(status_code=409, detail="Email already in use by another account.")
+        changes["email"] = (user.email, payload.email)
+        user.email = payload.email
+
+    if payload.wave_number is not None and payload.wave_number != user.wave_number:
+        existing = await db.execute(select(User).where(User.wave_number == payload.wave_number, User.id != user_id))
+        if existing.scalars().first():
+            raise HTTPException(status_code=409, detail="Wave number already in use by another account.")
+        changes["wave_number"] = (user.wave_number, payload.wave_number.strip())
+        user.wave_number = payload.wave_number.strip()
+
+    if payload.role is not None:
+        if payload.role not in ("USER", "ADMIN"):
+            raise HTTPException(status_code=400, detail="Role must be USER or ADMIN.")
+        changes["role"] = (user.role, payload.role)
+        user.role = payload.role
+
+    if payload.is_active is not None:
+        changes["is_active"] = (user.is_active, payload.is_active)
+        user.is_active = payload.is_active
+
+    if payload.kyc_status is not None:
+        valid_kyc = ("NOT_SUBMITTED", "SUBMITTED", "REVIEWING", "APPROVED", "REJECTED")
+        if payload.kyc_status not in valid_kyc:
+            raise HTTPException(status_code=400, detail=f"kyc_status must be one of: {', '.join(valid_kyc)}")
+        changes["kyc_status"] = (user.kyc_status, payload.kyc_status)
+        user.kyc_status = payload.kyc_status
+        if payload.kyc_status == "APPROVED":
+            user.kyc_verified_at = datetime.now(UTC)
+            user.kyc_rejection_reason = None
+        elif payload.kyc_status == "REJECTED":
+            user.kyc_verified_at = None
+
+    await db.commit()
+    await db.refresh(user)
+
+    change_desc = ", ".join(f"{k}: {v[0]!r} → {v[1]!r}" for k, v in changes.items()) or "no changes"
+    await _log_audit_action(
+        db=db,
+        action_type=AuditActionType.USER_ENABLED,  # reuse closest action type
+        performed_by_admin_id=admin_user.id,
+        target_entity_type="User",
+        target_entity_id=user_id,
+        target_user_id=user_id,
+        description=f"Admin updated user #{user_id} ({user.full_name}): {change_desc}",
+    )
+
+    return user
 
 
 @router.get("/payouts/overview", response_model=List[PayoutOverviewItem])

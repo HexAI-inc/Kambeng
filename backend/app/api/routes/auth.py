@@ -11,6 +11,7 @@ from app.models.user import User
 from app.schemas.user import (
     UserCreate,
     UserRead,
+    UserProfileUpdate,
     PasswordResetRequest,
     PasswordResetConfirm,
     EmailVerifyRequest,
@@ -324,6 +325,44 @@ async def refresh_access_token(payload: dict):
 async def get_my_profile(current_user: User = Depends(get_current_user)):
     """Get the currently logged-in user's details"""
     return current_user
+
+
+@router.patch("/me", response_model=UserRead)
+async def update_my_profile(
+    payload: UserProfileUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update the current user's own profile details."""
+    if payload.full_name is not None:
+        current_user.full_name = payload.full_name.strip()
+
+    if payload.email is not None and payload.email != current_user.email:
+        existing = await db.execute(select(User).where(User.email == payload.email, User.id != current_user.id))
+        if existing.scalars().first():
+            raise HTTPException(status_code=409, detail="Email already in use by another account.")
+        current_user.email = payload.email
+
+    if payload.wave_number is not None and payload.wave_number != current_user.wave_number:
+        existing = await db.execute(select(User).where(User.wave_number == payload.wave_number, User.id != current_user.id))
+        if existing.scalars().first():
+            raise HTTPException(status_code=409, detail="Wave number already in use by another account.")
+        current_user.wave_number = payload.wave_number.strip()
+
+    if payload.new_password:
+        if not payload.current_password:
+            raise HTTPException(status_code=400, detail="current_password is required to set a new password.")
+        if not verify_password(payload.current_password, current_user.password_hash):
+            raise HTTPException(status_code=400, detail="Current password is incorrect.")
+        if len(payload.new_password) < 8:
+            raise HTTPException(status_code=400, detail="New password must be at least 8 characters.")
+        current_user.password_hash = get_password_hash(payload.new_password)
+
+    await db.commit()
+    await db.refresh(current_user)
+    logger.info("Profile updated", extra={"action": "update_profile", "user_id": current_user.id})
+    return current_user
+
 
 @router.post("/request-password-reset")
 async def request_password_reset(payload: PasswordResetRequest, db: AsyncSession = Depends(get_db)):

@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { api, getMyProfile } from "@/lib/api";
+import type { AuthUser } from "@/lib/api";
 import {
   AdminAuditLog,
   AdminCampaign,
@@ -270,6 +271,53 @@ export function useUpdateAdminUserStatus() {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       queryClient.invalidateQueries({ queryKey: ["admin-system-stats"] });
       queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
+    },
+  });
+}
+
+export function useAdminUpdateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      payload,
+    }: {
+      userId: number;
+      payload: {
+        full_name?: string;
+        email?: string;
+        wave_number?: string;
+        role?: string;
+        is_active?: boolean;
+        kyc_status?: string;
+      };
+    }) => {
+      const response = await api.patch<AuthUser>(`/admin/users/${userId}`, payload);
+      return response.data;
+    },
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-detail", userId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
+    },
+  });
+}
+
+export function useUpdateMyProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      full_name?: string;
+      email?: string;
+      wave_number?: string;
+      current_password?: string;
+      new_password?: string;
+    }) => {
+      const response = await api.patch<AuthUser>("/auth/me", payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["session-profile"] });
     },
   });
 }

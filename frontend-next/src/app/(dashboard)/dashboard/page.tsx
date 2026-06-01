@@ -438,7 +438,7 @@ export default function DashboardPage() {
               {[
                 { label: "Manage campaigns", href: "/dashboard/my-campaigns", color: BLUE },
                 { label: "Upload KYC docs", href: "/dashboard/kyc", color: GREEN },
-                { label: "Upload proofs", href: "/dashboard/my-campaigns", color: "#a855f7" },
+                { label: "Edit my profile",  href: "/dashboard/profile",      color: "#a855f7" },
                 { label: "Browse campaigns", href: "/campaigns", color: "#6b7a8d" },
               ].map(({ label, href, color }, i, arr) => (
                 <Link key={label} href={href} style={{ textDecoration: "none" }}>

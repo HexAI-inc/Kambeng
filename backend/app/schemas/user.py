@@ -32,6 +32,29 @@ class EmailVerificationResendRequest(BaseModel):
     wave_number: str | None = None
     code: str | None = None
 
+class UserProfileUpdate(BaseModel):
+    """Fields a user can update on their own account."""
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    wave_number: Optional[str] = None
+    current_password: Optional[str] = None
+    new_password: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AdminUserUpdate(BaseModel):
+    """Fields an admin can update on any user account."""
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    wave_number: Optional[str] = None
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+    kyc_status: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserRead(UserBase):
     id: int
     email: str

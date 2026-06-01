@@ -376,6 +376,26 @@ export type CampaignWithdrawalSummaryResponse = {
   withdrawal_history: WithdrawalHistoryItem[];
 };
 
+// Campaign Update Types
+export type CampaignUpdateAttachment = {
+  id: number;
+  file_url: string;
+  file_name: string | null;
+  content_type: string | null;
+};
+
+export type CampaignUpdate = {
+  id: number;
+  campaign_id: number;
+  title: string | null;
+  text: string;
+  category: string | null;
+  amount_spent: number | null;
+  created_at: string;
+  author_name: string | null;
+  attachments: CampaignUpdateAttachment[];
+};
+
 // Global admin search result types
 export type AdminSearchResultItem = {
   model: string; // e.g., 'campaign', 'user', 'donation', 'review', 'payout', 'kyc', 'moderation'

@@ -10,10 +10,12 @@ class CampaignUpdate(Base):
     id = Column(Integer, primary_key=True, index=True)
     campaign_id = Column(Integer, ForeignKey("campaigns.id"), index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    title = Column(String, nullable=True)
     text = Column(String)
     category = Column(String, nullable=True)
     amount_spent = Column(Float, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     campaign = relationship("Campaign", back_populates="updates")
+    author = relationship("User")
     attachments = relationship("UpdateAttachment", back_populates="update", cascade="all, delete-orphan")

@@ -37,7 +37,9 @@ def _to_public_media_url(path_or_url: str | None) -> str | None:
     return f"{base}/{path_or_url}"
 
 
-def _resolve_campaign_cover_image_url(campaign_id: int) -> str | None:
+def _resolve_campaign_cover_image_url(campaign_id: int, explicit_url: str | None = None) -> str | None:
+    if explicit_url:
+        return _to_public_media_url(explicit_url)
     images = storage_strategy.list_campaign_images(campaign_id=campaign_id)
     if not images:
         return None
@@ -55,6 +57,7 @@ async def _build_home_feed_payload(db: AsyncSession, featured_limit: int, recent
             Campaign.amount_raised,
             Campaign.target_amount,
             Campaign.created_at,
+            Campaign.cover_image_url,
         )
         .where(cast(Campaign.status, String) == CampaignStatus.ACTIVE.value)
         .order_by(Campaign.amount_raised.desc(), Campaign.created_at.desc())
@@ -71,7 +74,7 @@ async def _build_home_feed_payload(db: AsyncSession, featured_limit: int, recent
             "amount_raised": row.amount_raised,
             "target_amount": row.target_amount,
             "created_at": row.created_at,
-            "cover_image_url": _resolve_campaign_cover_image_url(row.id),
+            "cover_image_url": _resolve_campaign_cover_image_url(row.id, row.cover_image_url),
         }
         for row in featured_result.all()
     ]
@@ -152,6 +155,7 @@ async def _build_campaign_cards_payload(db: AsyncSession, limit: int, q: str | N
             Campaign.amount_raised,
             cast(Campaign.status, String).label("status"),
             Campaign.created_at,
+            Campaign.cover_image_url,
         )
         .where(cast(Campaign.status, String) == CampaignStatus.ACTIVE.value)
     )
@@ -181,7 +185,7 @@ async def _build_campaign_cards_payload(db: AsyncSession, limit: int, q: str | N
             "amount_raised": row.amount_raised,
             "status": row.status,
             "created_at": row.created_at,
-            "cover_image_url": _resolve_campaign_cover_image_url(row.id),
+            "cover_image_url": _resolve_campaign_cover_image_url(row.id, row.cover_image_url),
         }
         for row in rows
     ]

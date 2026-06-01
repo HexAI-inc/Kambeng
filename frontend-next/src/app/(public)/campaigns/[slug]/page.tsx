@@ -19,9 +19,10 @@ import {
   useSubmitModerationReport,
   useSessionProfile,
   useCampaignQRCode,
+  useCampaignUpdates,
 } from "@/hooks/use-frontend-data";
 import { api } from "@/lib/api";
-import type { CampaignDiscoveryItem, CampaignGoal, CampaignReview, PublicCampaignImage } from "@/types/frontend";
+import type { CampaignDiscoveryItem, CampaignGoal, CampaignReview, CampaignUpdate, PublicCampaignImage } from "@/types/frontend";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -119,6 +120,14 @@ function IconFlag() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 22V4" />
       <path d="M4 4h13l-2 4 2 4H4" />
+    </svg>
+  );
+}
+function IconBell() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 01-3.46 0"/>
     </svg>
   );
 }
@@ -833,6 +842,7 @@ export default function CampaignDetailPage() {
   const { data: images = [], isLoading: imagesLoading } = usePublicCampaignImages(slug, Boolean(slug));
   const { data: goals = [] } = useCampaignGoals(slug, Boolean(slug));
   const { data: proofs = [], isLoading: proofsLoading } = useCampaignProofs(slug, Boolean(slug));
+  const { data: updates = [], isLoading: updatesLoading } = useCampaignUpdates(slug, Boolean(slug));
 
   const progress = campaign?.target_amount
     ? Math.min((campaign.amount_raised / campaign.target_amount) * 100, 100)
@@ -1090,6 +1100,116 @@ export default function CampaignDetailPage() {
                 <div style={{ textAlign: "center", padding: "28px 16px", color: "#4a5568" }}>
                   <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, opacity: 0.5 }}><IconDoc /></div>
                   <p style={{ fontSize: 13 }}>No proof documents uploaded yet</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Campaign Updates */}
+          <motion.div {...fadeUp(0.18)}>
+            <div style={{
+              background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 16, padding: "22px 22px 26px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: 9,
+                  background: "rgba(29,197,255,0.1)", border: "1px solid rgba(29,197,255,0.18)",
+                  display: "flex", alignItems: "center", justifyContent: "center", color: BLUE,
+                }}>
+                  <IconBell />
+                </div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0f6ff", margin: 0 }}>Campaign Updates</h3>
+                {!updatesLoading && (
+                  <span style={{
+                    padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700,
+                    background: "rgba(29,197,255,0.1)", color: BLUE,
+                    border: "1px solid rgba(29,197,255,0.2)",
+                  }}>{updates.length}</span>
+                )}
+              </div>
+
+              {updatesLoading ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {[1, 2].map((i) => (
+                    <div key={i} style={{ borderRadius: 11, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", padding: 16, height: 88 }} />
+                  ))}
+                </div>
+              ) : updates.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "28px 16px", color: "#4a5568" }}>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, opacity: 0.4 }}><IconBell /></div>
+                  <p style={{ fontSize: 13 }}>The campaigner hasn&apos;t posted any updates yet</p>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {updates.map((update: CampaignUpdate) => (
+                    <div key={update.id} style={{
+                      padding: 16, borderRadius: 11,
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(255,255,255,0.07)",
+                    }}>
+                      {/* Author + date */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                        <div style={{
+                          width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
+                          background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 12, fontWeight: 700, color: "#fff",
+                        }}>
+                          {(update.author_name ?? "U")[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#f0f6ff" }}>
+                            {update.author_name ?? "Campaign owner"}
+                          </div>
+                          <div style={{ fontSize: 11, color: "#4a5568" }}>
+                            {new Date(update.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Title */}
+                      {update.title && (
+                        <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>
+                          {update.title}
+                        </div>
+                      )}
+
+                      {/* Body */}
+                      <p style={{ color: "#8899aa", fontSize: 13, lineHeight: 1.7, margin: 0, whiteSpace: "pre-wrap",
+                        marginBottom: update.attachments.length > 0 ? 12 : 0 }}>
+                        {update.text}
+                      </p>
+
+                      {/* Attachments row */}
+                      {update.attachments.length > 0 && (
+                        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+                          {update.attachments.map((att) => (
+                            <div
+                              key={att.id}
+                              onClick={() => setViewerSrc(att.file_url)}
+                              style={{
+                                flexShrink: 0, width: 100, height: 80, borderRadius: 8,
+                                overflow: "hidden", cursor: "zoom-in",
+                                border: "1px solid rgba(255,255,255,0.07)",
+                                background: "rgba(255,255,255,0.04)",
+                                position: "relative",
+                              }}
+                            >
+                              <Image
+                                src={att.file_url}
+                                alt={att.file_name ?? "attachment"}
+                                fill
+                                unoptimized
+                                sizes="100px"
+                                style={{ objectFit: "cover" }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

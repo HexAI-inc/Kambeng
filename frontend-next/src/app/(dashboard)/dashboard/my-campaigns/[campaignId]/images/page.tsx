@@ -9,6 +9,7 @@ import {
   useUploadCampaignImage,
   useDeleteCampaignImage,
   useMyCampaigns,
+  useUploadCampaignCover,
 } from "@/hooks/use-frontend-data";
 import { ProofUploadForm } from "@/components/ProofUploadForm";
 import { useAppFeedback } from "@/components/ui";
@@ -47,7 +48,11 @@ export default function CampaignImagesPage() {
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [activeTab, setActiveTab] = useState<"images" | "proof">("images");
+  const uploadCover = useUploadCampaignCover();
+  const [activeTab, setActiveTab] = useState<"images" | "proof" | "cover">("images");
+  const [coverDragging, setCoverDragging] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
   const [viewer, setViewer] = useState<{ src: string; type: string } | null>(null);
 
   const handleFiles = async (files: FileList | null) => {
@@ -87,6 +92,30 @@ export default function CampaignImagesPage() {
     }
   };
 
+  const handleCoverFile = async (files: FileList | null) => {
+    if (!files || !campaignSlug) return;
+    const file = files[0];
+    if (!file) return;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      message.error("Only PNG, JPEG, WebP allowed.");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      message.error("Max file size is 8MB.");
+      return;
+    }
+    setCoverUploading(true);
+    try {
+      await uploadCover.mutateAsync({ slug: campaignSlug, file });
+      message.success("Cover image updated");
+    } catch {
+      message.error("Failed to upload cover image");
+    } finally {
+      setCoverUploading(false);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+    }
+  };
+
   if (!campaignId) return <div style={{ color: "#f0f6ff", padding: 32 }}>Invalid campaign ID</div>;
 
   return (
@@ -108,13 +137,20 @@ export default function CampaignImagesPage() {
           </div>
 
           {campaignSlug && (
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Link href={`/campaigns/${campaignSlug}`}>
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
                   border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
                   color: "#8899aa", fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Public page ↗</button>
+              </Link>
+              <Link href={`/dashboard/my-campaigns/${campaignId}/updates`}>
+                <button style={{
+                  padding: "9px 16px", borderRadius: 9,
+                  border: `1px solid rgba(29,197,255,0.25)`, background: "rgba(29,197,255,0.08)",
+                  color: BLUE, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                }}>Updates</button>
               </Link>
               <Link href={`/dashboard/my-campaigns/${campaignId}/withdrawals`}>
                 <button style={{
@@ -136,7 +172,7 @@ export default function CampaignImagesPage() {
 
         {/* Tabs */}
         <motion.div {...fadeUp(0.05)} style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: 3, width: "fit-content" }}>
-          {(["images", "proof"] as const).map((tab) => (
+          {(["images", "proof", "cover"] as const).map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               padding: "8px 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
               background: activeTab === tab ? `linear-gradient(135deg, ${BLUE}, #079bd4)` : "transparent",
@@ -144,7 +180,7 @@ export default function CampaignImagesPage() {
               boxShadow: activeTab === tab ? "0 2px 10px rgba(29,197,255,0.25)" : "none",
               transition: "all 0.2s",
             }}>
-              {tab === "images" ? "Campaign Images" : "Proof & Evidence"}
+              {tab === "images" ? "Campaign Images" : tab === "proof" ? "Proof & Evidence" : "Cover Image"}
             </button>
           ))}
         </motion.div>
@@ -276,7 +312,7 @@ export default function CampaignImagesPage() {
               )}
             </motion.div>
           </>
-        ) : (
+        ) : activeTab === "proof" ? (
           /* Proof tab */
           <motion.div {...fadeUp(0.08)}>
             {campaignSlug ? (
@@ -293,6 +329,92 @@ export default function CampaignImagesPage() {
             ) : (
               <div style={{ fontSize: 13, color: "#4a5568", padding: 24 }}>Loading campaign…</div>
             )}
+          </motion.div>
+        ) : (
+          /* Cover Image tab */
+          <motion.div {...fadeUp(0.08)}>
+            <div style={{
+              background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 14, padding: "24px", display: "flex", flexDirection: "column", gap: 20,
+            }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Cover Image</div>
+                <div style={{ fontSize: 13, color: "#6b7a8d" }}>
+                  This image appears at the top of your public campaign page and in campaign cards.
+                </div>
+              </div>
+
+              {/* Current cover preview */}
+              {campaign?.cover_image_url && (
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10 }}>
+                    Current cover
+                  </div>
+                  <div style={{
+                    position: "relative", borderRadius: 12, overflow: "hidden",
+                    border: "1px solid rgba(255,255,255,0.09)",
+                    maxWidth: 480, aspectRatio: "16/9",
+                  }}>
+                    <Image
+                      src={campaign.cover_image_url}
+                      alt="Current cover"
+                      fill
+                      unoptimized
+                      sizes="480px"
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Upload zone */}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10 }}>
+                  {campaign?.cover_image_url ? "Replace cover" : "Upload cover"}
+                </div>
+                <div
+                  onClick={() => coverInputRef.current?.click()}
+                  onDragEnter={() => setCoverDragging(true)}
+                  onDragLeave={() => setCoverDragging(false)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => { e.preventDefault(); setCoverDragging(false); void handleCoverFile(e.dataTransfer.files); }}
+                  style={{
+                    padding: "36px 24px", borderRadius: 14, textAlign: "center", cursor: "pointer",
+                    border: `2px dashed ${coverDragging ? BLUE : "rgba(255,255,255,0.1)"}`,
+                    background: coverDragging ? "rgba(29,197,255,0.05)" : "rgba(255,255,255,0.02)",
+                    transition: "all 0.2s",
+                    maxWidth: 480,
+                  }}
+                >
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={(e) => void handleCoverFile(e.target.files)}
+                    style={{ display: "none" }}
+                  />
+                  <div style={{
+                    width: 52, height: 52, borderRadius: 12,
+                    background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.15)",
+                    display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
+                  }}>
+                    {coverUploading ? (
+                      <div style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${BLUE}`, borderTopColor: "transparent", animation: "spin 0.7s linear infinite" }} />
+                    ) : (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke={BLUE} strokeWidth="1.8" strokeLinecap="round"/>
+                        <polyline points="17 8 12 3 7 8" stroke={BLUE} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <line x1="12" y1="3" x2="12" y2="15" stroke={BLUE} strokeWidth="1.8" strokeLinecap="round"/>
+                      </svg>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>
+                    {coverUploading ? "Uploading…" : coverDragging ? "Drop to upload" : "Click to upload or drag & drop"}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#6b7a8d" }}>PNG, JPEG, WebP · max 8MB</div>
+                </div>
+              </div>
+            </div>
           </motion.div>
         )}
         {viewer && <MediaViewer src={viewer.src} type={viewer.type} onClose={() => setViewer(null)} />}

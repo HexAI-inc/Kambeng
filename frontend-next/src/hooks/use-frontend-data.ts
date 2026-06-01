@@ -20,6 +20,7 @@ import {
   CampaignImage,
   CampaignGoal,
   CampaignReview,
+  CampaignUpdate,
   CampaignWithdrawalSummaryResponse,
   CampaignWithdrawalResponse,
   CommissionSummary,
@@ -921,6 +922,65 @@ export function useAdminGlobalSearch(
       if (models) params.models = models;
       const response = await api.get<AdminSearchResponse>("/search", { params });
       return response.data;
+    },
+  });
+}
+
+// ===== Campaign Updates =====
+
+export function useCampaignUpdates(slug?: string, enabled = true) {
+  return useQuery({
+    queryKey: ["campaign-updates", slug],
+    enabled: enabled && Boolean(slug),
+    queryFn: async () => {
+      const response = await api.get<CampaignUpdate[]>(`/campaigns/${slug}/updates`);
+      return response.data;
+    },
+  });
+}
+
+export function usePostCampaignUpdate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ slug, formData }: { slug: string; formData: FormData }) => {
+      const response = await api.post<CampaignUpdate>(`/campaigns/${slug}/updates`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    },
+    onSuccess: (_, { slug }) => {
+      queryClient.invalidateQueries({ queryKey: ["campaign-updates", slug] });
+    },
+  });
+}
+
+export function useDeleteCampaignUpdate() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ slug, updateId }: { slug: string; updateId: number }) => {
+      await api.delete(`/campaigns/${slug}/updates/${updateId}`);
+    },
+    onSuccess: (_, { slug }) => {
+      queryClient.invalidateQueries({ queryKey: ["campaign-updates", slug] });
+    },
+  });
+}
+
+export function useUploadCampaignCover() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ slug, file }: { slug: string; file: File }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await api.post<{ cover_image_url: string }>(
+        `/campaigns/${slug}/cover`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-campaigns"] });
     },
   });
 }

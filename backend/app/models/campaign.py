@@ -30,7 +30,8 @@ class Campaign(Base):
     
     qr_code_page_url = Column(String, nullable=True)
     qr_code_direct_url = Column(String, nullable=True)
-    
+    cover_image_url = Column(String, nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
@@ -41,3 +42,4 @@ class Campaign(Base):
     proofs = relationship("Proof", back_populates="campaign")
     goals = relationship("CampaignGoal", back_populates="campaign", cascade="all, delete-orphan")
     recurring_donations = relationship("RecurringDonation", back_populates="campaign")
+    updates = relationship("CampaignUpdate", back_populates="campaign", cascade="all, delete-orphan", order_by="CampaignUpdate.created_at.desc()")

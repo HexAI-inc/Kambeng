@@ -65,14 +65,24 @@ export default function MyCampaignsPage() {
             <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 4 }}>My Campaigns</div>
             <div style={{ fontSize: 13, color: "#6b7a8d" }}>Manage images, proofs, goals, and QR codes for each campaign.</div>
           </div>
-          <Link href="/campaigns">
-            <button style={{
-              padding: "9px 18px", borderRadius: 9, border: "none",
-              background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-              color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(29,197,255,0.3)",
-            }}>Browse campaigns</button>
-          </Link>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Link href="/campaigns">
+              <button style={{
+                padding: "9px 18px", borderRadius: 9,
+                border: "1px solid rgba(255,255,255,0.1)",
+                background: "rgba(255,255,255,0.04)",
+                color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer",
+              }}>Browse campaigns</button>
+            </Link>
+            <Link href="/dashboard/my-campaigns/new">
+              <button style={{
+                padding: "9px 18px", borderRadius: 9, border: "none",
+                background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                boxShadow: "0 4px 14px rgba(29,197,255,0.3)",
+              }}>+ Create campaign</button>
+            </Link>
+          </div>
         </motion.div>
 
         {/* Error */}
@@ -223,17 +233,27 @@ export default function MyCampaignsPage() {
               </svg>
             </div>
             <div style={{ fontSize: 16, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>No campaigns yet</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 24, maxWidth: 340, margin: "0 auto 24px" }}>
-              Campaigns are created by the admin on your behalf. Contact support to get started.
+            <div style={{ fontSize: 13, color: "#6b7a8d", maxWidth: 340, margin: "0 auto 24px" }}>
+              Start your first campaign and begin raising funds for your cause.
             </div>
-            <Link href="/campaigns">
-              <button style={{
-                padding: "11px 24px", borderRadius: 10, border: "none",
-                background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-                color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                boxShadow: "0 4px 16px rgba(29,197,255,0.3)",
-              }}>Browse campaigns</button>
-            </Link>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+              <Link href="/dashboard/my-campaigns/new">
+                <button style={{
+                  padding: "11px 24px", borderRadius: 10, border: "none",
+                  background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                  color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  boxShadow: "0 4px 16px rgba(29,197,255,0.3)",
+                }}>+ Create campaign</button>
+              </Link>
+              <Link href="/campaigns">
+                <button style={{
+                  padding: "11px 24px", borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  background: "rgba(255,255,255,0.04)",
+                  color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                }}>Browse campaigns</button>
+              </Link>
+            </div>
           </motion.div>
         )}
       </div>

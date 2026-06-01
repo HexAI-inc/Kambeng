@@ -204,14 +204,19 @@ async def initiate_donation(donation_in: DonationCreate, db: AsyncSession = Depe
     client_reference = f"DON-{uuid.uuid4().hex[:10].upper()}"
 
     # 3. Call HexAI Gateway FIRST (Don't touch the database yet!)
+    frontend_base = settings.FRONTEND_URL.rstrip("/")
+    success_url = f"{frontend_base}/payment/success?ref={client_reference}&slug={campaign.slug}"
+    error_url = f"{frontend_base}/payment/failed?ref={client_reference}&slug={campaign.slug}"
+
     try:
         hexai_response = await hexai_service.initiate_donation(
             amount=donation_in.amount,
             client_reference=client_reference,
-            customer_name=donation_in.donor_name or "Anonymous Donor"
+            customer_name=donation_in.donor_name or "Anonymous Donor",
+            success_url=success_url,
+            error_url=error_url,
         )
     except Exception as e:
-        # If HexAI is down or rejects it, we just throw the error. No DB cleanup needed!
         raise HTTPException(status_code=500, detail=str(e))
 
     # 4. If HexAI succeeds, NOW we save the PENDING donation to the DB
@@ -256,10 +261,10 @@ async def initiate_donation(donation_in: DonationCreate, db: AsyncSession = Depe
         },
     )
 
-    # 5. Return the redirect URL to Angular
     return {
         "client_reference": client_reference,
-        "redirect_url": hexai_response["data"]["redirect_url"]
+        "redirect_url": hexai_response["data"]["redirect_url"],
+        "campaign_slug": campaign.slug,
     }
     
     
@@ -383,6 +388,30 @@ async def withdraw_funds(
         "platform_commission": platform_commission,
         "net_received": net_amount,
         "wave_number": current_user.wave_number
+    }
+
+
+@router.get("/donations/{client_reference}/status")
+async def get_donation_status(
+    client_reference: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Public endpoint — lets the payment success/failed page poll for confirmation."""
+    result = await db.execute(select(Donation).where(Donation.client_reference == client_reference))
+    donation = result.scalars().first()
+    if not donation:
+        raise HTTPException(status_code=404, detail="Donation not found")
+
+    campaign_result = await db.execute(select(Campaign).where(Campaign.id == donation.campaign_id))
+    campaign = campaign_result.scalars().first()
+
+    return {
+        "client_reference": client_reference,
+        "status": donation.status,
+        "amount": donation.amount,
+        "campaign_id": donation.campaign_id,
+        "campaign_slug": campaign.slug if campaign else None,
+        "campaign_title": campaign.title if campaign else None,
     }
 
 

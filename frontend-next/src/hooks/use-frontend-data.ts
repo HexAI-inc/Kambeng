@@ -545,37 +545,10 @@ export function useUploadCampaignImage() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ slug, formData }: { slug: string; formData: FormData }) => {
-      // Extract file from FormData (key used in uploader is 'files')
-      const file = formData.get("files") as File | null;
-      if (!file) throw new Error("No file provided");
-
-      // Request presigned POST data from backend
-      const presignResp = await api.post(`/uploads/campaigns/${slug}/images/presign`, {
-        filename: file.name,
-        content_type: file.type,
+      const response = await api.post(`/uploads/campaigns/${slug}/images`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-
-      const { url, fields } = presignResp.data as {
-        url: string;
-        fields: Record<string, string>;
-      };
-
-      // Build form data for direct upload to Spaces
-      const uploadForm = new FormData();
-      Object.entries(fields || {}).forEach(([k, v]) => uploadForm.append(k, v));
-      uploadForm.append("file", file);
-
-      const res = await fetch(url, {
-        method: "POST",
-        body: uploadForm,
-      });
-
-      if (!res.ok) {
-        throw new Error("Direct upload to storage failed");
-      }
-
-      // Return presign metadata so callers can refresh lists
-      return presignResp.data;
+      return response.data;
     },
     onSuccess: (_, { slug }) => {
       queryClient.invalidateQueries({ queryKey: ["campaign-images", slug] });

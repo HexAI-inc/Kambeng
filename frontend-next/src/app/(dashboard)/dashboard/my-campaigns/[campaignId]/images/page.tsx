@@ -48,7 +48,7 @@ export default function CampaignImagesPage() {
   const [uploading, setUploading] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [activeTab, setActiveTab] = useState<"images" | "proof">("images");
-  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
+  const [viewer, setViewer] = useState<{ src: string; type: string } | null>(null);
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || !campaignSlug) return;
@@ -213,13 +213,21 @@ export default function CampaignImagesPage() {
                     {images.length} image{images.length !== 1 ? "s" : ""} uploaded
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
-                    {images.map((img) => (
+                    {images.map((img, imgIdx) => (
                       <div key={img.file_name} style={{
                         borderRadius: 10, overflow: "hidden",
                         background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
                         position: "relative", aspectRatio: "1",
                       }}>
                         <Image src={img.url} alt={img.original_name ?? img.file_name} fill unoptimized sizes="180px" style={{ objectFit: "cover" }} />
+                        {imgIdx === 0 && (
+                          <div style={{
+                            position: "absolute", top: 7, left: 7, zIndex: 2,
+                            padding: "2px 8px", borderRadius: 6,
+                            background: "rgba(29,197,255,0.9)", color: "#fff",
+                            fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+                          }}>Cover</div>
+                        )}
                         {/* Hover overlay */}
                         <div className="img-overlay" style={{
                           position: "absolute", inset: 0,
@@ -230,20 +238,7 @@ export default function CampaignImagesPage() {
                           onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = "1"; }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = "0"; }}
                         >
-                          <button onClick={async () => {
-                            try {
-                              const q = new URLSearchParams({ url: img.url });
-                              const res = await fetch(`/api/backend/media/presign?${q.toString()}`);
-                              if (res.ok) {
-                                const body = await res.json();
-                                setViewerSrc(body.url);
-                              } else {
-                                setViewerSrc(img.url);
-                              }
-                            } catch {
-                              setViewerSrc(img.url);
-                            }
-                          }} style={{
+                          <button onClick={() => setViewer({ src: img.url, type: img.content_type ?? "image/jpeg" })} style={{
                             padding: "6px 14px", borderRadius: 7, border: "none",
                             background: "rgba(255,255,255,0.15)", color: "#fff",
                             fontSize: 11, fontWeight: 600, cursor: "pointer",
@@ -300,7 +295,7 @@ export default function CampaignImagesPage() {
             )}
           </motion.div>
         )}
-        {viewerSrc && <MediaViewer src={viewerSrc} onClose={() => setViewerSrc(null)} />}
+        {viewer && <MediaViewer src={viewer.src} type={viewer.type} onClose={() => setViewer(null)} />}
       </div>
 
       <style>{`

@@ -13,22 +13,12 @@ from app.models.campaign import Campaign
 from app.models.campaign_update import CampaignUpdate
 from app.models.update_attachment import UpdateAttachment
 from app.models.user import User
-from app.services.storage_service import StorageService
-from app.core.config import settings
+from app.services.storage_strategy import get_storage_strategy
 from app.core.logging_config import get_logger
 
 router = APIRouter(tags=["Campaign Updates"])
 logger = get_logger("campaign_updates")
-storage = StorageService()
-
-
-def _media_url(path: str | None) -> str | None:
-    if not path:
-        return None
-    if path.startswith("http://") or path.startswith("https://"):
-        return path
-    base = settings.BACKEND_PUBLIC_URL.rstrip("/")
-    return f"{base}/{path.lstrip('/')}"
+storage_strategy = get_storage_strategy()
 
 
 class AttachmentOut(BaseModel):
@@ -131,17 +121,21 @@ async def create_campaign_update(
         content = await file.read()
         if not content:
             continue
-        file_url = storage.upload_file(content, file.filename, file.content_type or "application/octet-stream")
-        if file_url:
-            attachment = UpdateAttachment(
-                update_id=update.id,
-                campaign_id=campaign.id,
-                file_url=file_url,
-                file_name=file.filename,
-                content_type=file.content_type,
-                uploaded_by_user_id=current_user.id,
-            )
-            db.add(attachment)
+        stored = storage_strategy.save_campaign_image(
+            campaign_id=campaign.id,
+            original_filename=file.filename,
+            content=content,
+            content_type=file.content_type or "image/jpeg",
+        )
+        attachment = UpdateAttachment(
+            update_id=update.id,
+            campaign_id=campaign.id,
+            file_url=stored["url"],
+            file_name=file.filename,
+            content_type=file.content_type,
+            uploaded_by_user_id=current_user.id,
+        )
+        db.add(attachment)
 
     await db.commit()
 
@@ -208,11 +202,13 @@ async def upload_campaign_cover(
     if len(content) > 8 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Cover image must be 8MB or smaller")
 
-    file_url = storage.upload_file(content, file.filename or "cover.jpg", file.content_type or "image/jpeg")
-    if not file_url:
-        raise HTTPException(status_code=500, detail="Failed to store cover image")
-
-    campaign.cover_image_url = _media_url(file_url) or file_url
+    stored = storage_strategy.save_campaign_image(
+        campaign_id=campaign.id,
+        original_filename=f"cover_{file.filename or 'cover.jpg'}",
+        content=content,
+        content_type=file.content_type or "image/jpeg",
+    )
+    campaign.cover_image_url = stored["url"]
     await db.commit()
 
     logger.info("Campaign cover updated", extra={"campaign_id": campaign.id, "user_id": current_user.id})

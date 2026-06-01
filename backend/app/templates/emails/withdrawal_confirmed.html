@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block preheader %}{{ net_amount }} GMD has been delivered to your Wave account {{ wave_number }}.{% endblock %}
+{% block eyebrow %}Withdrawal confirmed{% endblock %}
+{% block heading %}Funds delivered, {{ full_name }}!{% endblock %}
+{% block intro %}Your withdrawal has been confirmed by Wave. The money is now in your Wave account.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div style="display:flex;gap:12px;">
+      <div class="detail" style="flex:1;">
+        <div class="detail-label">Amount received</div>
+        <div class="detail-value" style="color:#1bbf88;">{{ net_amount }} GMD</div>
+      </div>
+      <div class="detail" style="flex:1;">
+        <div class="detail-label">Campaign</div>
+        <div class="detail-value">{{ campaign_title }}</div>
+      </div>
+    </div>
+    <div style="height:10px"></div>
+    <div class="detail">
+      <div class="detail-label">Wave number</div>
+      <div class="detail-value" style="font-family:'Courier New',monospace;">{{ wave_number }}</div>
+    </div>
+    <div style="height:10px"></div>
+    <div class="detail">
+      <div class="detail-label">Reference</div>
+      <div class="detail-value" style="font-family:'Courier New',monospace;font-size:13px;">{{ reference }}</div>
+    </div>
+    <div style="height:20px"></div>
+    <div style="text-align:center;">
+      <a class="button" href="{{ dashboard_link }}">Go to your dashboard</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}Keep this email as your withdrawal receipt.{% endblock %}

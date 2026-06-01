@@ -55,6 +55,22 @@ class HexAIPaymentService:
 
             return response.json()
 
+    async def get_payout_status(self, client_reference: str) -> dict:
+        """Check the current status of a payout using the client reference."""
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/payouts/status/{client_reference}",
+                headers=self.headers,
+            )
+
+            if response.status_code == 404:
+                raise Exception(f"Payout {client_reference!r} not found at HexAI")
+
+            if response.status_code not in (200, 201):
+                raise Exception(f"HexAI Error ({response.status_code}): {response.text}")
+
+            return response.json()
+
     async def initiate_payout(
         self,
         requested_amount: float,

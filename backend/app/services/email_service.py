@@ -151,3 +151,64 @@ def render_kyc_rejected_email(full_name: str, rejection_reason: str, kyc_link: s
         rejection_reason=rejection_reason,
         kyc_link=kyc_link,
     )
+
+
+def render_withdrawal_initiated_email(
+    full_name: str,
+    campaign_title: str,
+    gross_amount: float,
+    hexai_fee: float,
+    platform_fee: float,
+    net_amount: float,
+    wave_number: str,
+    reference: str,
+) -> str:
+    return render_template(
+        "withdrawal_initiated.html",
+        full_name=full_name,
+        campaign_title=campaign_title,
+        gross_amount=f"{gross_amount:,.2f}",
+        hexai_fee=f"{hexai_fee:,.2f}",
+        platform_fee=f"{platform_fee:,.2f}",
+        net_amount=f"{net_amount:,.2f}",
+        wave_number=wave_number,
+        reference=reference,
+    )
+
+
+def render_withdrawal_confirmed_email(
+    full_name: str,
+    campaign_title: str,
+    net_amount: float,
+    wave_number: str,
+    reference: str,
+    dashboard_link: str,
+) -> str:
+    return render_template(
+        "withdrawal_confirmed.html",
+        full_name=full_name,
+        campaign_title=campaign_title,
+        net_amount=f"{net_amount:,.2f}",
+        wave_number=wave_number,
+        reference=reference,
+        dashboard_link=dashboard_link,
+    )
+
+
+def render_withdrawal_failed_email(
+    full_name: str,
+    campaign_title: str,
+    gross_amount: float,
+    wave_number: str,
+    reference: str,
+    dashboard_link: str,
+) -> str:
+    return render_template(
+        "withdrawal_failed.html",
+        full_name=full_name,
+        campaign_title=campaign_title,
+        gross_amount=f"{gross_amount:,.2f}",
+        wave_number=wave_number,
+        reference=reference,
+        dashboard_link=dashboard_link,
+    )

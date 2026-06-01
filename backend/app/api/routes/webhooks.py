@@ -14,6 +14,11 @@ from app.services.payment_reconciliation import (
     DonationTransitionConflictError,
     reconcile_donation_status,
 )
+from app.services.email_service import (
+    send_email,
+    render_withdrawal_confirmed_email,
+    render_withdrawal_failed_email,
+)
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 logger = get_logger("webhooks")
@@ -183,20 +188,73 @@ async def hexai_webhook(
             payout = result.scalars().first()
 
             if payout:
-                if status == "FAILED":
+                if status == "FAILED" and payout.status != "FAILED":
                     payout.status = "FAILED"
                     await db.commit()
                     logger.warning(
                         "Payout failed",
                         extra={"action": "payout_webhook_failed", "client_reference": client_ref},
                     )
-                elif status == "SUCCEEDED":
+                    # Send failure email if this is a campaign payout
+                    if payout.campaign_id:
+                        try:
+                            from app.models.campaign import Campaign
+                            from app.models.user import User
+                            camp_r = await db.execute(select(Campaign).where(Campaign.id == payout.campaign_id))
+                            camp = camp_r.scalars().first()
+                            if camp:
+                                user_r = await db.execute(select(User).where(User.id == camp.user_id))
+                                user = user_r.scalars().first()
+                                if user and user.email:
+                                    dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard"
+                                    send_email(
+                                        user.email,
+                                        f"Withdrawal failed — {camp.title}",
+                                        render_withdrawal_failed_email(
+                                            full_name=user.full_name or user.email,
+                                            campaign_title=camp.title,
+                                            gross_amount=payout.gross_amount or 0.0,
+                                            wave_number=user.wave_number,
+                                            reference=client_ref,
+                                            dashboard_link=dashboard_link,
+                                        ),
+                                    )
+                        except Exception:
+                            pass
+
+                elif status == "SUCCEEDED" and payout.status != "SUCCEEDED":
                     payout.status = "SUCCEEDED"
                     await db.commit()
                     logger.info(
                         "Payout confirmed",
                         extra={"action": "payout_webhook_succeeded", "client_reference": client_ref},
                     )
+                    # Send confirmation email if this is a campaign payout
+                    if payout.campaign_id:
+                        try:
+                            from app.models.campaign import Campaign
+                            from app.models.user import User
+                            camp_r = await db.execute(select(Campaign).where(Campaign.id == payout.campaign_id))
+                            camp = camp_r.scalars().first()
+                            if camp:
+                                user_r = await db.execute(select(User).where(User.id == camp.user_id))
+                                user = user_r.scalars().first()
+                                if user and user.email:
+                                    dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard"
+                                    send_email(
+                                        user.email,
+                                        f"Withdrawal confirmed — {payout.net_amount:,.2f} GMD sent",
+                                        render_withdrawal_confirmed_email(
+                                            full_name=user.full_name or user.email,
+                                            campaign_title=camp.title,
+                                            net_amount=payout.net_amount or 0.0,
+                                            wave_number=user.wave_number,
+                                            reference=client_ref,
+                                            dashboard_link=dashboard_link,
+                                        ),
+                                    )
+                        except Exception:
+                            pass
             else:
                 logger.warning(
                     "Payout webhook reference not found",

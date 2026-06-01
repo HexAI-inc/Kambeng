@@ -30,7 +30,13 @@ from app.schemas.recurring_donation import (
     RecurringDonationListResponse,
 )
 from app.services.hexai_service import HexAIPaymentService
-from app.services.email_service import send_email, render_recurring_donation_confirmation_email
+from app.services.email_service import (
+    send_email,
+    render_recurring_donation_confirmation_email,
+    render_withdrawal_initiated_email,
+    render_withdrawal_confirmed_email,
+    render_withdrawal_failed_email,
+)
 from app.services.payment_reconciliation import (
     DonationNotFoundError,
     DonationTransitionConflictError,
@@ -339,7 +345,7 @@ async def withdraw_funds(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Payout Gateway Error: {str(e)}")
 
-    # 7. Save Successful Payout to Database with fee breakdown
+    # 7. Save payout as PENDING — webhook/poll will mark it SUCCEEDED or FAILED
     new_payout = Payout(
         campaign_id=campaign.id,
         client_reference=client_reference,
@@ -347,16 +353,16 @@ async def withdraw_funds(
         hexai_fee=hexai_fee,
         platform_commission=platform_commission,
         net_amount=net_amount,
-        amount=net_amount,  # Legacy field for backward compatibility
-        status="SUCCEEDED"
+        amount=net_amount,
+        status="PENDING",
     )
     db.add(new_payout)
-    
-    # 8. Record transaction in ledger
+
+    # 8. Record in ledger as PENDING
     ledger_entry = TransactionLedger(
         campaign_id=campaign.id,
         transaction_type=TransactionType.WITHDRAWAL,
-        status=TransactionStatus.SUCCEEDED,
+        status=TransactionStatus.PENDING,
         gross_amount=gross_amount,
         hexai_fee=hexai_fee,
         platform_commission=platform_commission,
@@ -364,13 +370,13 @@ async def withdraw_funds(
         external_reference=client_reference,
         description=f"Withdrawal to {formatted_mobile}",
         created_by_user_id=current_user.id,
-        confirmed_at=datetime.now(UTC)
+        confirmed_at=None,
     )
     db.add(ledger_entry)
-    
+
     await db.commit()
     logger.info(
-        "Withdrawal completed",
+        "Withdrawal initiated",
         extra={
             "action": "withdraw_funds",
             "user_id": current_user.id,
@@ -382,14 +388,36 @@ async def withdraw_funds(
             "client_reference": client_reference,
         },
     )
+
+    # 9. Send initiation email (fire-and-forget)
+    try:
+        dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard/my-campaigns/{campaign.id}/withdrawals"
+        send_email(
+            current_user.email,
+            f"Withdrawal of {gross_amount:,.2f} GMD initiated — {campaign.title}",
+            render_withdrawal_initiated_email(
+                full_name=current_user.full_name or current_user.email,
+                campaign_title=campaign.title,
+                gross_amount=gross_amount,
+                hexai_fee=hexai_fee,
+                platform_fee=platform_commission,
+                net_amount=net_amount,
+                wave_number=current_user.wave_number,
+                reference=client_reference,
+            ),
+        )
+    except Exception:
+        pass
+
     return {
-        "message": "Withdrawal successful! Funds sent to your Wave app.",
+        "message": "Withdrawal initiated. Funds are on their way to your Wave account.",
         "client_reference": client_reference,
         "gross_amount": gross_amount,
         "hexai_fee": hexai_fee,
         "platform_commission": platform_commission,
         "net_received": net_amount,
-        "wave_number": current_user.wave_number
+        "wave_number": current_user.wave_number,
+        "status": "PENDING",
     }
 
 
@@ -476,6 +504,120 @@ async def get_donation_status(
         "amount": donation.amount,
         "campaign_id": donation.campaign_id,
         "campaign_slug": campaign.slug if campaign else None,
+        "campaign_title": campaign.title if campaign else None,
+    }
+
+
+@router.get("/withdraw/status/{client_reference}")
+async def get_payout_status(
+    client_reference: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Check withdrawal status. If still PENDING, polls HexAI directly and
+    reconciles + sends email if the payout has reached a terminal state.
+    """
+    result = await db.execute(select(Payout).where(Payout.client_reference == client_reference))
+    payout = result.scalars().first()
+    if not payout:
+        raise HTTPException(status_code=404, detail="Payout not found")
+
+    # Ownership check — only the campaign owner can query their payout
+    if payout.campaign_id:
+        campaign_result = await db.execute(select(Campaign).where(Campaign.id == payout.campaign_id))
+        campaign = campaign_result.scalars().first()
+        if campaign and campaign.user_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Not authorised to view this payout")
+    else:
+        campaign = None
+
+    if payout.status == "PENDING":
+        try:
+            hexai_data = await hexai_service.get_payout_status(client_reference)
+            hexai_status = (
+                hexai_data.get("data", {}).get("status")
+                or hexai_data.get("status")
+                or ""
+            ).upper()
+
+            new_status: str | None = None
+            if hexai_status in ("SUCCEEDED", "SUCCESS", "COMPLETED", "DELIVERED"):
+                new_status = "SUCCEEDED"
+            elif hexai_status in ("FAILED", "CANCELLED", "REJECTED", "EXPIRED"):
+                new_status = "FAILED"
+
+            if new_status:
+                payout.status = new_status
+                # Also update the ledger entry
+                ledger_result = await db.execute(
+                    select(TransactionLedger).where(TransactionLedger.external_reference == client_reference)
+                )
+                ledger = ledger_result.scalars().first()
+                if ledger:
+                    ledger.status = TransactionStatus.SUCCEEDED if new_status == "SUCCEEDED" else TransactionStatus.FAILED
+                    if new_status == "SUCCEEDED":
+                        ledger.confirmed_at = datetime.now(UTC)
+                await db.commit()
+
+                # Send email
+                dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard"
+                if new_status == "SUCCEEDED" and campaign:
+                    try:
+                        send_email(
+                            current_user.email,
+                            f"Withdrawal confirmed — {payout.net_amount:,.2f} GMD sent to your Wave",
+                            render_withdrawal_confirmed_email(
+                                full_name=current_user.full_name or current_user.email,
+                                campaign_title=campaign.title,
+                                net_amount=payout.net_amount or 0.0,
+                                wave_number=current_user.wave_number,
+                                reference=client_reference,
+                                dashboard_link=dashboard_link,
+                            ),
+                        )
+                    except Exception:
+                        pass
+                elif new_status == "FAILED" and campaign:
+                    try:
+                        send_email(
+                            current_user.email,
+                            f"Withdrawal failed — {campaign.title}",
+                            render_withdrawal_failed_email(
+                                full_name=current_user.full_name or current_user.email,
+                                campaign_title=campaign.title,
+                                gross_amount=payout.gross_amount or 0.0,
+                                wave_number=current_user.wave_number,
+                                reference=client_reference,
+                                dashboard_link=dashboard_link,
+                            ),
+                        )
+                    except Exception:
+                        pass
+
+                logger.info(
+                    "Payout poll reconciled",
+                    extra={
+                        "action": "payout_poll",
+                        "client_reference": client_reference,
+                        "hexai_status": hexai_status,
+                        "new_status": new_status,
+                    },
+                )
+        except Exception as exc:
+            logger.warning(
+                "Payout poll failed",
+                extra={"action": "payout_poll_error", "client_reference": client_reference, "error": str(exc)},
+            )
+
+    return {
+        "client_reference": client_reference,
+        "status": payout.status,
+        "gross_amount": payout.gross_amount,
+        "net_amount": payout.net_amount,
+        "hexai_fee": payout.hexai_fee,
+        "platform_commission": payout.platform_commission,
+        "campaign_id": payout.campaign_id,
         "campaign_title": campaign.title if campaign else None,
     }
 

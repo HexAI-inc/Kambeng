@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block preheader %}Your withdrawal of {{ gross_amount }} GMD could not be completed. No funds have been deducted.{% endblock %}
+{% block eyebrow %}Withdrawal failed{% endblock %}
+{% block heading %}Withdrawal not completed{% endblock %}
+{% block intro %}Hi {{ full_name }}, your withdrawal request could not be processed by Wave. No funds have been deducted from your campaign balance.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div style="display:flex;gap:12px;">
+      <div class="detail" style="flex:1;">
+        <div class="detail-label">Amount requested</div>
+        <div class="detail-value">{{ gross_amount }} GMD</div>
+      </div>
+      <div class="detail" style="flex:1;">
+        <div class="detail-label">Campaign</div>
+        <div class="detail-value">{{ campaign_title }}</div>
+      </div>
+    </div>
+    <div style="height:10px"></div>
+    <div class="detail">
+      <div class="detail-label">Reference</div>
+      <div class="detail-value" style="font-family:'Courier New',monospace;font-size:13px;">{{ reference }}</div>
+    </div>
+    <div style="height:10px"></div>
+    <p style="font-size:13px;color:#8899aa;line-height:1.7;">
+      Please check that your Wave number ({{ wave_number }}) is correct and your account is active, then try again from your dashboard.
+      If the problem persists, reply to this email and our team will help.
+    </p>
+    <div style="height:16px"></div>
+    <div style="text-align:center;">
+      <a class="button" href="{{ dashboard_link }}">Try again</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}If you did not request this withdrawal, reply to this email immediately.{% endblock %}

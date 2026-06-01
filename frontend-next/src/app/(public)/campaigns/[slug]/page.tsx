@@ -1049,8 +1049,131 @@ export default function CampaignDetailPage() {
         {/* Left column */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20, minWidth: 0 }}>
 
-          {/* Gallery */}
+          {/* Campaign Updates — first because it builds the most trust */}
           <motion.div {...fadeUp(0.1)}>
+            <div style={{
+              background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 16, overflow: "hidden",
+            }}>
+              {/* Header */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "18px 22px 16px",
+                borderBottom: updates.length > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
+              }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: 9,
+                  background: "rgba(29,197,255,0.1)", border: "1px solid rgba(29,197,255,0.18)",
+                  display: "flex", alignItems: "center", justifyContent: "center", color: BLUE, flexShrink: 0,
+                }}><IconBell /></div>
+                <div>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", margin: 0, lineHeight: 1.2 }}>Campaign Updates</h3>
+                  <div style={{ fontSize: 12, color: "#4a5568", marginTop: 2 }}>
+                    {updatesLoading ? "Loading…" : updates.length === 0 ? "No updates yet" : `${updates.length} update${updates.length !== 1 ? "s" : ""} from the campaigner`}
+                  </div>
+                </div>
+              </div>
+
+              {updatesLoading ? (
+                <div style={{ padding: "16px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
+                  {[1, 2].map((i) => (
+                    <div key={i} style={{ borderRadius: 10, background: "rgba(255,255,255,0.03)", height: 80 }} />
+                  ))}
+                </div>
+              ) : updates.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "32px 24px", color: "#4a5568" }}>
+                  <div style={{ opacity: 0.35, display: "flex", justifyContent: "center", marginBottom: 10 }}><IconBell /></div>
+                  <p style={{ fontSize: 13, lineHeight: 1.6 }}>
+                    The campaigner hasn&apos;t posted any updates yet.<br />Check back soon.
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  {updates.map((update: CampaignUpdate, ui) => (
+                    <div key={update.id} style={{
+                      padding: "20px 22px",
+                      borderBottom: ui < updates.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
+                    }}>
+                      {/* Author row */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                        <div style={{
+                          width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+                          background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 14, fontWeight: 800, color: "#fff",
+                        }}>
+                          {(update.author_name ?? "C")[0].toUpperCase()}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", lineHeight: 1.2 }}>
+                            {update.author_name ?? "Campaign owner"}
+                          </div>
+                          <div style={{ fontSize: 11, color: "#4a5568", marginTop: 1 }}>
+                            {new Date(update.created_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Title */}
+                      {update.title && (
+                        <div style={{ fontSize: 16, fontWeight: 800, color: "#f0f6ff", marginBottom: 8, lineHeight: 1.3, letterSpacing: "-0.02em" }}>
+                          {update.title}
+                        </div>
+                      )}
+
+                      {/* Body text */}
+                      <p style={{ color: "#a0aec0", fontSize: 14, lineHeight: 1.75, margin: 0, whiteSpace: "pre-wrap" }}>
+                        {update.text}
+                      </p>
+
+                      {/* Photo grid — like an Instagram post */}
+                      {update.attachments.length > 0 && (
+                        <div style={{ marginTop: 14 }}>
+                          {update.attachments.length === 1 ? (
+                            <div
+                              onClick={() => setViewerSrc(update.attachments[0].file_url)}
+                              style={{ position: "relative", width: "100%", aspectRatio: "16/9", borderRadius: 10, overflow: "hidden", cursor: "zoom-in", background: "rgba(255,255,255,0.04)" }}
+                            >
+                              <Image src={update.attachments[0].file_url} alt={update.attachments[0].file_name ?? "photo"} fill unoptimized sizes="600px" style={{ objectFit: "cover" }} />
+                            </div>
+                          ) : update.attachments.length === 2 ? (
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+                              {update.attachments.map((att) => (
+                                <div key={att.id} onClick={() => setViewerSrc(att.file_url)} style={{ position: "relative", aspectRatio: "1", borderRadius: 8, overflow: "hidden", cursor: "zoom-in", background: "rgba(255,255,255,0.04)" }}>
+                                  <Image src={att.file_url} alt={att.file_name ?? "photo"} fill unoptimized sizes="300px" style={{ objectFit: "cover" }} />
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gridTemplateRows: "auto auto", gap: 4 }}>
+                              <div onClick={() => setViewerSrc(update.attachments[0].file_url)} style={{ position: "relative", aspectRatio: "4/3", borderRadius: 8, overflow: "hidden", cursor: "zoom-in", gridRow: "1 / 3", background: "rgba(255,255,255,0.04)" }}>
+                                <Image src={update.attachments[0].file_url} alt={update.attachments[0].file_name ?? "photo"} fill unoptimized sizes="400px" style={{ objectFit: "cover" }} />
+                              </div>
+                              {update.attachments.slice(1, 3).map((att, i) => (
+                                <div key={att.id} onClick={() => setViewerSrc(att.file_url)} style={{ position: "relative", aspectRatio: "1", borderRadius: 8, overflow: "hidden", cursor: "zoom-in", background: "rgba(255,255,255,0.04)" }}>
+                                  <Image src={att.file_url} alt={att.file_name ?? "photo"} fill unoptimized sizes="200px" style={{ objectFit: "cover" }} />
+                                  {i === 1 && update.attachments.length > 3 && (
+                                    <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 18, fontWeight: 800 }}>
+                                      +{update.attachments.length - 3}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {viewerSrc && <MediaViewer src={viewerSrc} onClose={() => setViewerSrc(null)} />}
+
+          {/* Gallery */}
+          <motion.div {...fadeUp(0.15)}>
             <div style={{
               background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
               borderRadius: 16, padding: "22px 22px 26px",
@@ -1083,10 +1206,8 @@ export default function CampaignDetailPage() {
             </div>
           </motion.div>
 
-          {viewerSrc && <MediaViewer src={viewerSrc} onClose={() => setViewerSrc(null)} />}
-
           {/* Proof */}
-          <motion.div {...fadeUp(0.15)}>
+          <motion.div {...fadeUp(0.2)}>
             <div style={{
               background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
               borderRadius: 16, padding: "22px 22px 26px",
@@ -1100,116 +1221,6 @@ export default function CampaignDetailPage() {
                 <div style={{ textAlign: "center", padding: "28px 16px", color: "#4a5568" }}>
                   <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, opacity: 0.5 }}><IconDoc /></div>
                   <p style={{ fontSize: 13 }}>No proof documents uploaded yet</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Campaign Updates */}
-          <motion.div {...fadeUp(0.18)}>
-            <div style={{
-              background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: 16, padding: "22px 22px 26px",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-                <div style={{
-                  width: 34, height: 34, borderRadius: 9,
-                  background: "rgba(29,197,255,0.1)", border: "1px solid rgba(29,197,255,0.18)",
-                  display: "flex", alignItems: "center", justifyContent: "center", color: BLUE,
-                }}>
-                  <IconBell />
-                </div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0f6ff", margin: 0 }}>Campaign Updates</h3>
-                {!updatesLoading && (
-                  <span style={{
-                    padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700,
-                    background: "rgba(29,197,255,0.1)", color: BLUE,
-                    border: "1px solid rgba(29,197,255,0.2)",
-                  }}>{updates.length}</span>
-                )}
-              </div>
-
-              {updatesLoading ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {[1, 2].map((i) => (
-                    <div key={i} style={{ borderRadius: 11, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", padding: 16, height: 88 }} />
-                  ))}
-                </div>
-              ) : updates.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "28px 16px", color: "#4a5568" }}>
-                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, opacity: 0.4 }}><IconBell /></div>
-                  <p style={{ fontSize: 13 }}>The campaigner hasn&apos;t posted any updates yet</p>
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  {updates.map((update: CampaignUpdate) => (
-                    <div key={update.id} style={{
-                      padding: 16, borderRadius: 11,
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.07)",
-                    }}>
-                      {/* Author + date */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                        <div style={{
-                          width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
-                          background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 12, fontWeight: 700, color: "#fff",
-                        }}>
-                          {(update.author_name ?? "U")[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#f0f6ff" }}>
-                            {update.author_name ?? "Campaign owner"}
-                          </div>
-                          <div style={{ fontSize: 11, color: "#4a5568" }}>
-                            {new Date(update.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Title */}
-                      {update.title && (
-                        <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>
-                          {update.title}
-                        </div>
-                      )}
-
-                      {/* Body */}
-                      <p style={{ color: "#8899aa", fontSize: 13, lineHeight: 1.7, margin: 0, whiteSpace: "pre-wrap",
-                        marginBottom: update.attachments.length > 0 ? 12 : 0 }}>
-                        {update.text}
-                      </p>
-
-                      {/* Attachments row */}
-                      {update.attachments.length > 0 && (
-                        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
-                          {update.attachments.map((att) => (
-                            <div
-                              key={att.id}
-                              onClick={() => setViewerSrc(att.file_url)}
-                              style={{
-                                flexShrink: 0, width: 100, height: 80, borderRadius: 8,
-                                overflow: "hidden", cursor: "zoom-in",
-                                border: "1px solid rgba(255,255,255,0.07)",
-                                background: "rgba(255,255,255,0.04)",
-                                position: "relative",
-                              }}
-                            >
-                              <Image
-                                src={att.file_url}
-                                alt={att.file_name ?? "attachment"}
-                                fill
-                                unoptimized
-                                sizes="100px"
-                                style={{ objectFit: "cover" }}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
                 </div>
               )}
             </div>

@@ -65,7 +65,7 @@ def _serialize_update(u: CampaignUpdate) -> dict:
         "attachments": [
             {
                 "id": a.id,
-                "file_url": _media_url(a.file_url) or a.file_url,
+                "file_url": a.file_url,
                 "file_name": a.file_name,
                 "content_type": a.content_type,
             }

@@ -20,6 +20,7 @@ class CampaignRead(CampaignBase):
     status: CampaignStatus
     qr_code_page_url: Optional[str] = None
     qr_code_direct_url: Optional[str] = None
+    cover_image_url: Optional[str] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

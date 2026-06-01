@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -16,7 +16,7 @@ type DonationStatus = {
   campaign_title: string | null;
 };
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const ref = searchParams?.get("ref");
   const slug = searchParams?.get("slug");
@@ -45,7 +45,6 @@ export default function PaymentSuccessPage() {
     <div style={{ minHeight: "100vh", background: "#0a0f1a", display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 16px" }}>
       <div style={{ width: "100%", maxWidth: 460, textAlign: "center" }}>
 
-        {/* Icon */}
         <div style={{
           width: 72, height: 72, borderRadius: "50%", margin: "0 auto 24px",
           background: `rgba(${isConfirmed ? "27,191,136" : isFailed ? "239,68,68" : "29,197,255"},0.1)`,
@@ -124,5 +123,13 @@ export default function PaymentSuccessPage() {
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }

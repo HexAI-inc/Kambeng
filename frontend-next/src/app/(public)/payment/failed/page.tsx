@@ -1,12 +1,13 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 const BLUE = "#1dc5ff";
 const RED = "#ef4444";
 
-export default function PaymentFailedPage() {
+function PaymentFailedContent() {
   const searchParams = useSearchParams();
   const ref = searchParams?.get("ref");
   const slug = searchParams?.get("slug");
@@ -63,5 +64,13 @@ export default function PaymentFailedPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PaymentFailedPage() {
+  return (
+    <Suspense>
+      <PaymentFailedContent />
+    </Suspense>
   );
 }

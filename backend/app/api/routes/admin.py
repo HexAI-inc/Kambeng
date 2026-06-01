@@ -906,17 +906,20 @@ async def get_commissions_summary(
     _admin_user: User = Depends(get_admin_user),
 ):
     """Get platform commissions summary and breakdown by source."""
-    # Count only campaign payouts as earned commissions.
+    # Count only SUCCEEDED campaign payouts — failed payouts earned nothing.
+    # Avoid NULL > 0 trap by using isnot(None) alongside the positivity check.
     payouts_result = await db.execute(
         select(Payout).where(
             and_(
-                Payout.platform_commission > 0,
                 Payout.campaign_id.isnot(None),
+                Payout.platform_commission.isnot(None),
+                Payout.platform_commission > 0,
+                cast(Payout.status, String) == "SUCCEEDED",
             )
         ).order_by(Payout.created_at.desc())
     )
     payouts = payouts_result.scalars().all()
-    
+
     total_commissions = sum((p.platform_commission or 0.0) for p in payouts)
     
     # Get already withdrawn commissions (admin withdrawal payouts with SUCCEEDED status)
@@ -978,8 +981,10 @@ async def get_commission_sources(
     payouts_result = await db.execute(
         select(Payout).where(
             and_(
-                Payout.platform_commission > 0,
                 Payout.campaign_id.isnot(None),
+                Payout.platform_commission.isnot(None),
+                Payout.platform_commission > 0,
+                cast(Payout.status, String) == "SUCCEEDED",
             )
         ).order_by(Payout.created_at.desc()).offset(skip).limit(limit)
     )

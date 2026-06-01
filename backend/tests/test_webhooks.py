@@ -6,7 +6,7 @@ import pytest
 
 import app.models.proof  # noqa: F401
 from app.api.routes.webhooks import WebhookPayload, hexai_webhook
-from app.api.routes.webhooks import verify_hexai_signature
+from app.api.routes.webhooks import _verify_signature as verify_hexai_signature
 from app.models.campaign import Campaign, CampaignMode, CampaignStatus
 from app.models.donation import Donation
 
@@ -53,8 +53,10 @@ class FakeDB:
 
 
 class FakeRequest:
-    def __init__(self, payload_bytes):
+    def __init__(self, payload_bytes, signature: str = ""):
         self._payload = payload_bytes
+        # Expose headers as a dict-like object; use the primary header name
+        self.headers = {"x-hexai-signature": signature}
 
     async def body(self):
         return self._payload
@@ -82,8 +84,7 @@ async def test_hexai_webhook_marks_donation_success():
 
     response = await hexai_webhook(
         payload=WebhookPayload(**payload_dict),
-        request=FakeRequest(payload_bytes),
-        wave_signature=signature,
+        request=FakeRequest(payload_bytes, signature=signature),
         db=db,
     )
 

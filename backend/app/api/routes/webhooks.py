@@ -1,6 +1,6 @@
 import hmac
 import hashlib
-from fastapi import APIRouter, Request, HTTPException, Header, Depends
+from fastapi import APIRouter, Request, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from pydantic import BaseModel
@@ -18,40 +18,104 @@ from app.services.payment_reconciliation import (
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 logger = get_logger("webhooks")
 
-# 1. We create a schema so Swagger UI shows the body!
+
 class WebhookPayload(BaseModel):
     event: str
     transaction: Dict[str, Any]
 
-def verify_hexai_signature(payload_body: bytes, signature_header: str) -> bool:
-    if not signature_header:
+
+# HexAI may use any of these header names for the HMAC signature.
+# We try all of them so we work regardless of which one they use.
+_SIGNATURE_HEADERS = [
+    "x-hexai-signature",
+    "x-wave-signature",
+    "wave-signature",
+    "x-signature",
+    "x-hub-signature-256",
+]
+
+
+def _extract_signature(request: Request) -> str | None:
+    """Try all known header names; return the first non-empty value found."""
+    for name in _SIGNATURE_HEADERS:
+        val = request.headers.get(name, "")
+        if val:
+            return val
+    return None
+
+
+def _verify_signature(payload_body: bytes, signature: str) -> bool:
+    """
+    Verify HMAC-SHA256 signature.
+    Handles both raw hex ('abcd...') and prefixed ('sha256=abcd...') formats.
+    """
+    secret = settings.HEXAI_WEBHOOK_SECRET
+    if not secret or not signature:
         return False
-    expected_signature = hmac.new(
-        settings.HEXAI_WEBHOOK_SECRET.encode('utf-8'),
+
+    # Strip common prefixes
+    sig = signature
+    for prefix in ("sha256=", "hmac-sha256=", "HMAC-SHA256="):
+        if sig.startswith(prefix):
+            sig = sig[len(prefix):]
+            break
+
+    expected = hmac.new(
+        secret.encode("utf-8"),
         payload_body,
-        hashlib.sha256
+        hashlib.sha256,
     ).hexdigest()
-    return hmac.compare_digest(expected_signature, signature_header)
+
+    try:
+        return hmac.compare_digest(expected, sig)
+    except (TypeError, ValueError):
+        return False
+
 
 @router.post("/hexai")
 async def hexai_webhook(
-    payload: WebhookPayload, 
-    request: Request, 
-    wave_signature: str = Header(None),
-    db: AsyncSession = Depends(get_db)
+    payload: WebhookPayload,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
 ):
     if not settings.HEXAI_WEBHOOK_SECRET:
         raise HTTPException(status_code=500, detail="HEXAI_WEBHOOK_SECRET is not configured")
 
     raw_body = await request.body()
-    if not verify_hexai_signature(raw_body, wave_signature):
-        logger.warning("Webhook signature validation failed", extra={"action": "hexai_webhook_invalid_signature"})
+    received_sig = _extract_signature(request)
+
+    # Log which signature header was found (or none) to help diagnose issues
+    found_header = next(
+        (h for h in _SIGNATURE_HEADERS if request.headers.get(h)),
+        None,
+    )
+    logger.info(
+        "Webhook signature check",
+        extra={
+            "action": "hexai_webhook_signature_check",
+            "signature_header_found": found_header,
+            "has_signature": bool(received_sig),
+            "body_length": len(raw_body),
+        },
+    )
+
+    if not _verify_signature(raw_body, received_sig or ""):
+        logger.warning(
+            "Webhook signature validation failed",
+            extra={
+                "action": "hexai_webhook_invalid_signature",
+                "signature_header_found": found_header,
+                "has_signature": bool(received_sig),
+                # Log first 8 chars of received sig to aid debugging without exposing full secret
+                "sig_preview": (received_sig or "")[:8] or "(empty)",
+            },
+        )
         raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
     data = payload.model_dump()
     event = data.get("event")
     transaction = data.get("transaction", {})
-    client_ref = transaction.get("client_reference", "") 
+    client_ref = transaction.get("client_reference", "")
     status = transaction.get("status")
 
     logger.info(
@@ -66,9 +130,9 @@ async def hexai_webhook(
 
     if event == "transaction.completed":
         # -----------------------------------------
-        # SCENARIO A: A DONATION CAME IN
+        # SCENARIO A: DONATION
         # -----------------------------------------
-        if client_ref.startswith("DON-"):
+        if client_ref.startswith("DON-") or client_ref.startswith("REC-"):
             if status in {"SUCCEEDED", "FAILED"}:
                 try:
                     result = await reconcile_donation_status(
@@ -133,5 +197,16 @@ async def hexai_webhook(
                         "Payout confirmed",
                         extra={"action": "payout_webhook_succeeded", "client_reference": client_ref},
                     )
-                    
+            else:
+                logger.warning(
+                    "Payout webhook reference not found",
+                    extra={"action": "payout_webhook_reference_not_found", "client_reference": client_ref},
+                )
+
+        else:
+            logger.info(
+                "Webhook event ignored — unrecognised reference prefix",
+                extra={"action": "hexai_webhook_ignored", "client_reference": client_ref, "event": event},
+            )
+
     return {"status": "success", "message": "Webhook processed successfully"}

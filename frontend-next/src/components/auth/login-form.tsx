@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -30,7 +29,6 @@ type LoginFormCardProps = {
 };
 
 export function LoginFormCard({ nextTarget, errorMessage, successMessage }: LoginFormCardProps) {
-  const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<LoginFormValues>({
@@ -42,8 +40,10 @@ export function LoginFormCard({ nextTarget, errorMessage, successMessage }: Logi
     setSubmitError(null);
     try {
       await loginWithCredentials(values.username, values.password);
-      router.replace(nextTarget || "/dashboard");
-      router.refresh();
+      // Hard navigation so the browser commits the Set-Cookie header before the
+      // server reads cookies() in the dashboard layout's requireUser() call.
+      // router.replace + router.refresh races against cookie commitment on mobile.
+      window.location.href = nextTarget || "/dashboard";
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to sign in. Please try again.");
     }
@@ -52,7 +52,7 @@ export function LoginFormCard({ nextTarget, errorMessage, successMessage }: Logi
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "11px 14px", borderRadius: 10,
     border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
-    color: "#f0f6ff", fontSize: 14, outline: "none", boxSizing: "border-box",
+    color: "#f0f6ff", fontSize: 16, outline: "none", boxSizing: "border-box",
     transition: "border-color 0.2s",
   };
 

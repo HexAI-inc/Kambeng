@@ -7,7 +7,7 @@ export function useCreateCampaign() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
-      const res = await api.post("/campaigns", payload);
+      const res = await api.post("/campaigns/", payload);
       return res.data;
     },
     onSuccess: () => {

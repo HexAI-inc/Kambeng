@@ -398,11 +398,74 @@ async def get_donation_status(
     client_reference: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """Public endpoint — lets the payment success/failed page poll for confirmation."""
+    """
+    Public endpoint — lets the payment success page check donation state.
+
+    If the donation is still PENDING, this also queries HexAI directly
+    and reconciles immediately if HexAI considers it terminal (SUCCEEDED
+    or FAILED). This is the fallback for when the webhook is delayed or
+    was never delivered.
+    """
+    from app.services.payment_reconciliation import (
+        reconcile_donation_status,
+        DonationNotFoundError,
+        DonationTransitionConflictError,
+    )
+
     result = await db.execute(select(Donation).where(Donation.client_reference == client_reference))
     donation = result.scalars().first()
     if not donation:
         raise HTTPException(status_code=404, detail="Donation not found")
+
+    # If still PENDING, ask HexAI for the real status and reconcile on the spot
+    if donation.status == "PENDING":
+        try:
+            hexai_data = await hexai_service.get_collection_status(client_reference)
+            # HexAI returns status inside data.status or top-level status
+            hexai_status = (
+                hexai_data.get("data", {}).get("status")
+                or hexai_data.get("status")
+                or ""
+            ).upper()
+
+            if hexai_status in ("SUCCEEDED", "SUCCESS", "COMPLETED"):
+                await reconcile_donation_status(
+                    db,
+                    client_reference=client_reference,
+                    target_status="SUCCEEDED",
+                    source="WEBHOOK",
+                    reason="hexai_poll_confirmed",
+                )
+                await db.refresh(donation)
+            elif hexai_status in ("FAILED", "CANCELLED", "REJECTED", "EXPIRED"):
+                await reconcile_donation_status(
+                    db,
+                    client_reference=client_reference,
+                    target_status="FAILED",
+                    source="WEBHOOK",
+                    reason=f"hexai_poll_{hexai_status.lower()}",
+                )
+                await db.refresh(donation)
+
+            logger.info(
+                "HexAI poll completed",
+                extra={
+                    "action": "hexai_poll",
+                    "client_reference": client_reference,
+                    "hexai_status": hexai_status,
+                    "donation_status": donation.status,
+                },
+            )
+        except DonationNotFoundError:
+            pass  # edge case; leave donation as PENDING
+        except DonationTransitionConflictError:
+            pass  # already terminal — refresh to pick it up
+        except Exception as exc:
+            # HexAI unreachable — log and fall through; return current DB state
+            logger.warning(
+                "HexAI poll failed",
+                extra={"action": "hexai_poll_error", "client_reference": client_reference, "error": str(exc)},
+            )
 
     campaign_result = await db.execute(select(Campaign).where(Campaign.id == donation.campaign_id))
     campaign = campaign_result.scalars().first()

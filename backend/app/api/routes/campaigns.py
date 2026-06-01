@@ -25,7 +25,7 @@ from app.core.logging_config import get_logger
 
 hexai_service = HexAIPaymentService()
 
-router = APIRouter(prefix="/campaigns", tags=["Campaigns"], redirect_slashes=False)
+router = APIRouter(prefix="/campaigns", tags=["Campaigns"])
 logger = get_logger("campaigns")
 
 def generate_slug(title: str) -> str:
@@ -34,6 +34,7 @@ def generate_slug(title: str) -> str:
     return slug
 
 @router.post("/", response_model=CampaignRead, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=CampaignRead, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 async def create_campaign(
     campaign_in: CampaignCreate, 
     db: AsyncSession = Depends(get_db),

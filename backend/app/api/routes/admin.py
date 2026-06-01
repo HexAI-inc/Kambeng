@@ -17,7 +17,7 @@ from app.models.payout import Payout
 from app.models.ledger import TransactionLedger, TransactionType, TransactionStatus
 from app.models.donation import Donation
 from app.schemas.campaign import CampaignRead
-from app.schemas.kyc import KYCRead, KYCRejectRequest
+from app.schemas.kyc import AdminKYCRead, KYCRead, KYCRejectRequest
 from app.schemas.review import ReviewRead
 from app.schemas.audit import AdminAuditLogRead, UserOverviewItem, PayoutOverviewItem, AdminSystemStats
 from app.schemas.commissions import CommissionSummary, CommissionSourceItem, AdminCommissionWithdrawalRequest, AdminCommissionWithdrawalResponse
@@ -146,7 +146,7 @@ async def delete_review_as_admin(
 
 # ===== KYC Management Endpoints =====
 
-@router.get("/kyc/queue", response_model=List[KYCRead])
+@router.get("/kyc/queue", response_model=List[AdminKYCRead])
 async def list_kyc_queue(
     status: Optional[str] = Query(default=None),
     skip: int = 0,
@@ -156,20 +156,41 @@ async def list_kyc_queue(
 ):
     """List pending KYC submissions for admin review."""
     query = select(KYC)
-    
-    # Filter by status if provided
+
     if status:
         if status not in [s.value for s in KYCStatus]:
             raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {', '.join([s.value for s in KYCStatus])}")
         query = query.where(cast(KYC.status, String) == status)
     else:
-        # Default to pending statuses if not specified
         query = query.where(
             cast(KYC.status, String).in_([KYCStatus.SUBMITTED.value, KYCStatus.REVIEWING.value])
         )
-    
+
     result = await db.execute(query.order_by(KYC.created_at.asc()).offset(skip).limit(limit))
-    return result.scalars().all()
+    submissions = result.scalars().all()
+
+    user_ids = list({s.user_id for s in submissions})
+    users_result = await db.execute(select(User).where(User.id.in_(user_ids)))
+    users_by_id = {u.id: u for u in users_result.scalars().all()}
+
+    rows = []
+    for s in submissions:
+        user = users_by_id.get(s.user_id)
+        rows.append(AdminKYCRead(
+            id=s.id,
+            user_id=s.user_id,
+            document_type=s.document_type,
+            document_file_url=s.document_file_url,
+            status=s.status,
+            reviewed_by_admin_id=s.reviewed_by_admin_id,
+            reviewed_at=s.reviewed_at,
+            rejection_reason=s.rejection_reason,
+            created_at=s.created_at,
+            updated_at=s.updated_at,
+            user_name=user.full_name if user else None,
+            user_email=user.email if user else None,
+        ))
+    return rows
 
 
 @router.get("/kyc/{submission_id}", response_model=KYCRead)

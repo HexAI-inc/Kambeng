@@ -26,6 +26,11 @@ class KYCRead(KYCBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class AdminKYCRead(KYCRead):
+    user_name: Optional[str] = None
+    user_email: Optional[str] = None
+
+
 class KYCReview(BaseModel):
     """Admin request to approve or reject KYC submission."""
     approved: bool

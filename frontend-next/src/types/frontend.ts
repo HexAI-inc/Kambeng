@@ -249,6 +249,8 @@ export type KYCStatusResponse = {
 export type AdminKYCSubmission = {
   id: number;
   user_id: number;
+  user_name: string | null;
+  user_email: string | null;
   document_type: string;
   document_file_url: string;
   status: string;

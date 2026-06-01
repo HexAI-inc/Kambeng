@@ -177,8 +177,8 @@ export default function KYCQueuePage() {
                     <div style={{ fontSize: 11, color: "#4a5568" }}>{sub.user_email}</div>
                   </div>
                   <div><StatusChip status={sub.status} /></div>
-                  <div style={{ fontSize: 12, color: "#8899aa" }}>{new Date(sub.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
-                  <div style={{ fontSize: 13, color: "#8899aa", fontWeight: 600 }}>{(sub.documents ?? []).length} doc{(sub.documents ?? []).length !== 1 ? "s" : ""}</div>
+                  <div style={{ fontSize: 12, color: "#8899aa" }}>{new Date(sub.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
+                  <div style={{ fontSize: 13, color: "#8899aa", fontWeight: 600 }}>{sub.document_file_url ? "1 doc" : "0 docs"}</div>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                     <button onClick={() => router.push(`/admin/kyc-queue/${sub.id}/review`)} style={btnStyle("blue")}>Review</button>
                     <button onClick={() => router.push(`/admin/kyc-queue/${sub.id}/view`)} style={btnStyle("default")}>View</button>

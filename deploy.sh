@@ -131,6 +131,9 @@ setup_compose_command
 ensure_env_file "$BACKEND_ENV_FILE" "$BACKEND_ENV_EXAMPLE"
 ensure_env_file "$FRONTEND_ENV_FILE" "$FRONTEND_ENV_EXAMPLE"
 
+log "Stopping backend stack to free memory for frontend build"
+"${COMPOSE_CMD[@]}" -f "$BACKEND_COMPOSE_FILE" stop 2>/dev/null || true
+
 log "Installing frontend dependencies"
 npm ci --prefix "$FRONTEND_DIR"
 

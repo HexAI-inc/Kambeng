@@ -69,6 +69,8 @@ Type=simple
 WorkingDirectory=$FRONTEND_DIR
 Environment=HOST=0.0.0.0
 Environment=PORT=3005
+Environment=BACKEND_API_BASE_URL=http://127.0.0.1:8001/api
+Environment=NEXT_PUBLIC_API_BASE_URL=/api/backend
 ExecStart=/usr/bin/npm run start -- --hostname 0.0.0.0 --port 3005
 Restart=always
 RestartSec=5

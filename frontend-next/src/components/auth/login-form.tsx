@@ -43,7 +43,7 @@ export function LoginFormCard({ nextTarget, errorMessage, successMessage }: Logi
       // Hard navigation so the browser commits the Set-Cookie header before the
       // server reads cookies() in the dashboard layout's requireUser() call.
       // router.replace + router.refresh races against cookie commitment on mobile.
-      window.location.href = nextTarget || "/dashboard";
+      window.location.replace(nextTarget || "/dashboard");
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to sign in. Please try again.");
     }

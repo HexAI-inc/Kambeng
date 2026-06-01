@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -25,7 +24,6 @@ function FieldError({ msg }: { msg?: string }) {
 }
 
 export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
-  const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(errorMessage ?? null);
 
   const form = useForm<SignupFormValues>({
@@ -62,13 +60,13 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
       wave_number: payload.wave_number ?? values.waveNumber.trim(),
       message: "signup_success",
     });
-    router.replace(`/auth/onboarding?${searchParams.toString()}`);
+    window.location.replace(`/auth/onboarding?${searchParams.toString()}`);
   });
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "11px 14px", borderRadius: 10,
     border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
-    color: "#f0f6ff", fontSize: 14, outline: "none", boxSizing: "border-box",
+    color: "#f0f6ff", fontSize: 16, outline: "none", boxSizing: "border-box",
     transition: "border-color 0.2s",
   };
 

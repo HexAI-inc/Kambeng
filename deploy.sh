@@ -148,6 +148,15 @@ log "Running backend migrations"
 
 start_frontend
 
+log "Waiting for frontend to become ready"
+for i in $(seq 1 24); do
+  if curl -fsS http://127.0.0.1:3005/ >/dev/null 2>&1; then
+    log "Frontend is ready"
+    break
+  fi
+  sleep 5
+done
+
 log "Deployment complete"
 printf 'Frontend log: %s\n' "$FRONTEND_LOG_FILE"
 printf 'Nginx config: %s\n' "$ROOT_DIR/deploy/nginx/kambeng.conf"

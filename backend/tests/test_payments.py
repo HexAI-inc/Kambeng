@@ -42,10 +42,12 @@ async def test_initiate_donation_success(monkeypatch):
     campaign = Campaign(id=1, status=CampaignStatus.ACTIVE)
     db = FakeDB(campaign)
 
-    async def fake_initiate_donation(amount, client_reference, customer_name):
+    async def fake_initiate_donation(amount, client_reference, customer_name, success_url, error_url):
         assert amount == 100.0
         assert client_reference.startswith("DON-")
         assert customer_name == "Alice"
+        assert "success" in success_url
+        assert "failed" in error_url
         return {"data": {"redirect_url": "https://pay.example/redirect"}}
 
     from app.api.routes import payments

@@ -117,3 +117,63 @@ async def reconcile_donation_status(
         "reconciled_by_admin_id": donation.reconciled_by_admin_id,
         "reconciled_at": donation.reconciled_at,
     }
+
+
+async def build_campaign_amount_reconciliation(
+    db: AsyncSession,
+    *,
+    threshold: float = 0.01,
+) -> dict:
+    """Compare campaign.amount_raised against net-of-fee donation sums.
+
+    Used by scripts/reconcile_campaign_totals.py to audit the financial state.
+    Returns a report dict with summary + per-campaign discrepancies.
+    """
+    fee_rate = settings.HEXAI_COLLECTION_FEE_PERCENT
+
+    campaigns_result = await db.execute(select(Campaign))
+    campaigns = campaigns_result.scalars().all()
+
+    donations_result = await db.execute(
+        select(Donation).where(Donation.status == "SUCCEEDED")
+    )
+    succeeded = donations_result.scalars().all()
+
+    donation_net_by_campaign: dict[int, float] = {}
+    for d in succeeded:
+        net = round(d.amount * (1 - fee_rate), 2)
+        donation_net_by_campaign[d.campaign_id] = round(
+            donation_net_by_campaign.get(d.campaign_id, 0.0) + net, 2
+        )
+
+    discrepancies = []
+    total_campaign_raised = 0.0
+    total_donation_sum = 0.0
+
+    for campaign in campaigns:
+        raised = round(campaign.amount_raised or 0.0, 2)
+        expected = round(donation_net_by_campaign.get(campaign.id, 0.0), 2)
+        diff = round(raised - expected, 2)
+        total_campaign_raised += raised
+        total_donation_sum += expected
+        if abs(diff) > threshold:
+            discrepancies.append({
+                "campaign_id": campaign.id,
+                "slug": campaign.slug,
+                "amount_raised": raised,
+                "donation_sum": expected,
+                "difference": diff,
+            })
+
+    return {
+        "summary": {
+            "total_campaigns": len(campaigns),
+            "matched_campaigns": len(campaigns) - len(discrepancies),
+            "mismatched_campaigns": len(discrepancies),
+            "total_campaign_amount_raised": round(total_campaign_raised, 2),
+            "total_donation_sum": round(total_donation_sum, 2),
+            "difference": round(total_campaign_raised - total_donation_sum, 2),
+            "fee_rate_applied": fee_rate,
+        },
+        "discrepancies": discrepancies,
+    }

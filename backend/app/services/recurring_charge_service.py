@@ -150,11 +150,17 @@ async def process_single_recurring_charge(
     client_reference = f"REC-{uuid.uuid4().hex[:10].upper()}"
     
     # 3. Initiate payment with HexAI
+    frontend_base = settings.FRONTEND_URL.rstrip("/")
+    success_url = f"{frontend_base}/payment/success?ref={client_reference}&slug={campaign.slug}"
+    error_url = f"{frontend_base}/payment/failed?ref={client_reference}&slug={campaign.slug}"
+
     try:
         hexai_response = await hexai_service.initiate_donation(
             amount=recurring_donation.amount,
             client_reference=client_reference,
             customer_name=user.full_name or "Recurring Donor",
+            success_url=success_url,
+            error_url=error_url,
         )
     except Exception as e:
         logger.error(

@@ -87,8 +87,9 @@ async def test_hexai_webhook_marks_donation_success():
         db=db,
     )
 
+    # HexAI deducts 2% collection fee: net = 50.0 * 0.98 = 49.0
     assert response["status"] == "success"
     assert donation.status == "SUCCEEDED"
-    assert campaign.amount_raised == 150.0
+    assert campaign.amount_raised == 149.0
     assert campaign.status == CampaignStatus.CLOSED
     assert db.commits == 1

@@ -16,6 +16,7 @@ export default async function VerifyEmailPage({
         userEmail={resolvedSearchParams.email ?? session?.email}
         waveNumber={resolvedSearchParams.wave_number}
         initialCodeSent={resolvedSearchParams.message === "signup_success"}
+        isLoggedIn={!!session}
       />
     </main>
   );

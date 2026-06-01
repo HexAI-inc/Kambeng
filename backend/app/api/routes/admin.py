@@ -21,6 +21,8 @@ from app.schemas.kyc import AdminKYCRead, KYCRead, KYCRejectRequest
 from app.schemas.review import ReviewRead
 from app.schemas.audit import AdminAuditLogRead, UserOverviewItem, PayoutOverviewItem, AdminSystemStats
 from app.schemas.commissions import CommissionSummary, CommissionSourceItem, AdminCommissionWithdrawalRequest, AdminCommissionWithdrawalResponse
+from app.services.email_service import render_kyc_approved_email, render_kyc_rejected_email, send_email
+from app.core.config import settings
 from sqlalchemy import func
 
 
@@ -247,6 +249,15 @@ async def approve_kyc(
     )
     
     await db.refresh(submission)
+
+    if user and user.email:
+        try:
+            dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard"
+            html = render_kyc_approved_email(full_name=user.full_name or user.email, dashboard_link=dashboard_link)
+            send_email(user.email, "Your identity has been verified — KYC Approved", html)
+        except Exception:
+            pass  # never block the approval on email failure
+
     return submission
 
 
@@ -297,6 +308,19 @@ async def reject_kyc(
     )
     
     await db.refresh(submission)
+
+    if user and user.email:
+        try:
+            kyc_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard/kyc"
+            html = render_kyc_rejected_email(
+                full_name=user.full_name or user.email,
+                rejection_reason=rejection_reason,
+                kyc_link=kyc_link,
+            )
+            send_email(user.email, "Action required: KYC submission not approved", html)
+        except Exception:
+            pass  # never block the rejection on email failure
+
     return {"message": "KYC submission rejected", "submission_id": submission.id, "rejection_reason": rejection_reason}
 
 

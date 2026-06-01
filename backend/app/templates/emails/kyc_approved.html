@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block preheader %}Your identity has been verified — you can now withdraw funds from your campaigns.{% endblock %}
+{% block eyebrow %}Identity Verified{% endblock %}
+{% block heading %}You&rsquo;re verified, {{ full_name }}!{% endblock %}
+{% block intro %}Your identity documents have been reviewed and approved. You can now withdraw funds from your campaigns directly to your Wave account.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="detail">
+      <div class="detail-label">Account</div>
+      <div class="detail-value">{{ full_name }}</div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div class="detail">
+      <div class="detail-label">Status</div>
+      <div class="detail-value" style="color:#1bbf88;">&#10003;&nbsp; KYC Approved</div>
+    </div>
+
+    <div style="height:20px"></div>
+
+    <div style="text-align:center;">
+      <a class="button" href="{{ dashboard_link }}">Go to your dashboard</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}If you have any questions about your verification, reply to this email and our team will help.{% endblock %}

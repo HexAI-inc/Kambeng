@@ -134,3 +134,20 @@ def render_kyc_submission_review(full_name: str, user_email: str, document_type:
         document_type=document_type,
         review_link=review_link,
     )
+
+
+def render_kyc_approved_email(full_name: str, dashboard_link: str) -> str:
+    return render_template(
+        "kyc_approved.html",
+        full_name=full_name,
+        dashboard_link=dashboard_link,
+    )
+
+
+def render_kyc_rejected_email(full_name: str, rejection_reason: str, kyc_link: str) -> str:
+    return render_template(
+        "kyc_rejected.html",
+        full_name=full_name,
+        rejection_reason=rejection_reason,
+        kyc_link=kyc_link,
+    )

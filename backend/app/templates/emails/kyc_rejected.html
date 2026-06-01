@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block preheader %}Your KYC submission was not approved. You can resubmit with the correct documents.{% endblock %}
+{% block eyebrow %}Identity Verification{% endblock %}
+{% block heading %}Submission not approved{% endblock %}
+{% block intro %}Hi {{ full_name }}, unfortunately your identity submission could not be approved at this time. Please review the reason below and resubmit.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="detail">
+      <div class="detail-label">Reason for rejection</div>
+      <div class="detail-value" style="color:#fca5a5;">{{ rejection_reason }}</div>
+    </div>
+
+    <div style="height:16px"></div>
+
+    <p style="font-size:13px; color:#8899aa; line-height:1.7;">
+      Common fixes: make sure the document is clear and readable, not expired, and matches the name on your account.
+      If you believe this is an error, reply to this email.
+    </p>
+
+    <div style="height:20px"></div>
+
+    <div style="text-align:center;">
+      <a class="button" href="{{ kyc_link }}">Resubmit documents</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}If you need help with your submission, reply to this email and our team will assist you.{% endblock %}

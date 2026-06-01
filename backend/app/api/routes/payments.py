@@ -53,9 +53,11 @@ async def get_campaign_withdrawal_summary(
         .order_by(Payout.created_at.desc())
     )
     payouts = list(payouts_result.scalars().all())
-    total_gross_withdrawn = sum((payout.gross_amount or 0.0) for payout in payouts if payout.status == "SUCCEEDED")
-    available_balance = campaign.amount_raised - total_gross_withdrawn
-    return available_balance, total_gross_withdrawn, payouts
+    # Use net_amount (what actually left our HexAI account) to stay consistent
+    # with amount_raised which is already net of the 2% HexAI collection fee.
+    total_net_withdrawn = sum((payout.net_amount or payout.amount or 0.0) for payout in payouts if payout.status == "SUCCEEDED")
+    available_balance = campaign.amount_raised - total_net_withdrawn
+    return available_balance, total_net_withdrawn, payouts
 
 
 @router.post("/admin/donations/{client_reference}/approve", response_model=DonationReconciliationResponse)
@@ -430,13 +432,13 @@ async def get_withdrawal_summary(
     if campaign.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the campaign owner can view withdrawal history")
 
-    available_balance, total_gross_withdrawn, payouts = await get_campaign_withdrawal_summary(db, campaign)
+    available_balance, total_net_withdrawn, payouts = await get_campaign_withdrawal_summary(db, campaign)
 
     return CampaignWithdrawalSummaryResponse(
         campaign_id=campaign.id,
         campaign_title=campaign.title,
         amount_raised=campaign.amount_raised,
-        total_withdrawn=total_gross_withdrawn,
+        total_withdrawn=total_net_withdrawn,
         available_balance=available_balance,
         withdrawal_history=[
             WithdrawalHistoryItem(

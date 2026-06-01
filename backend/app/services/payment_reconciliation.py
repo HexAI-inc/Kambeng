@@ -8,6 +8,7 @@ from app.models.campaign import Campaign, CampaignMode, CampaignStatus
 from app.models.campaign_goal import CampaignGoal, GoalStatus
 from app.models.donation import Donation
 from app.models.ledger import TransactionLedger, TransactionStatus
+from app.core.config import settings
 
 ResolutionSource = Literal["WEBHOOK", "MANUAL_ADMIN"]
 TerminalDonationStatus = Literal["SUCCEEDED", "FAILED"]
@@ -76,10 +77,21 @@ async def reconcile_donation_status(
             )
 
         if target_status == "SUCCEEDED":
+            # HexAI deducts their collection fee before crediting our account.
+            # Record net_received (what actually lands in our HexAI wallet) so that
+            # available_balance = amount_raised - net_payouts is accurate.
+            collection_fee = round(donation.amount * settings.HEXAI_COLLECTION_FEE_PERCENT, 2)
+            net_received = round(donation.amount - collection_fee, 2)
+
+            # Update ledger to reflect the actual net amount and fee breakdown
+            if ledger is not None:
+                ledger.hexai_fee = collection_fee
+                ledger.net_amount = net_received
+
             campaign_result = await db.execute(select(Campaign).where(Campaign.id == donation.campaign_id).with_for_update())
             campaign = campaign_result.scalars().first()
             if campaign is not None:
-                campaign.amount_raised += donation.amount
+                campaign.amount_raised += net_received
                 if campaign.mode == CampaignMode.TARGET and campaign.target_amount:
                     if campaign.amount_raised >= campaign.target_amount:
                         campaign.status = CampaignStatus.CLOSED
@@ -88,7 +100,7 @@ async def reconcile_donation_status(
                 goal_result = await db.execute(select(CampaignGoal).where(CampaignGoal.id == donation.goal_id).with_for_update())
                 goal = goal_result.scalars().first()
                 if goal is not None:
-                    goal.amount_raised += donation.amount
+                    goal.amount_raised += net_received
                     if goal.amount_raised >= goal.target_amount:
                         goal.status = GoalStatus.COMPLETED
 

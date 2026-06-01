@@ -52,10 +52,11 @@ class Settings(BaseSettings):
     # Storage Strategy ("local" or "do_spaces")
     STORAGE_STRATEGY: str = os.getenv("STORAGE_STRATEGY", "do_spaces")
     
-    # Withdrawal Fees & Commission
-    # HexAI fee: percentage deducted per withdrawal (e.g., 0.01 for 1%)
-    HEXAI_WITHDRAWAL_FEE_PERCENT: float = float(os.getenv("HEXAI_WITHDRAWAL_FEE_PERCENT", "0.01"))
-    # Platform fixed commission per withdrawal in GMD
+    # Fees & Commission
+    # HexAI charges 2% on all transactions (collections and payouts)
+    HEXAI_COLLECTION_FEE_PERCENT: float = float(os.getenv("HEXAI_COLLECTION_FEE_PERCENT", "0.02"))
+    HEXAI_WITHDRAWAL_FEE_PERCENT: float = float(os.getenv("HEXAI_WITHDRAWAL_FEE_PERCENT", "0.02"))
+    # Kambeng fixed commission per withdrawal in GMD
     PLATFORM_FIXED_COMMISSION_GMD: float = float(os.getenv("PLATFORM_FIXED_COMMISSION_GMD", "10.0"))
 
     class Config:

@@ -195,7 +195,7 @@ async def list_kyc_queue(
     return rows
 
 
-@router.get("/kyc/{submission_id}", response_model=KYCRead)
+@router.get("/kyc/{submission_id}", response_model=AdminKYCRead)
 async def get_kyc_detail(
     submission_id: int,
     db: AsyncSession = Depends(get_db),
@@ -206,7 +206,22 @@ async def get_kyc_detail(
     submission = result.scalars().first()
     if not submission:
         raise HTTPException(status_code=404, detail="KYC submission not found")
-    return submission
+    user_result = await db.execute(select(User).where(User.id == submission.user_id))
+    user = user_result.scalars().first()
+    return AdminKYCRead(
+        id=submission.id,
+        user_id=submission.user_id,
+        document_type=submission.document_type,
+        document_file_url=submission.document_file_url,
+        status=submission.status,
+        reviewed_by_admin_id=submission.reviewed_by_admin_id,
+        reviewed_at=submission.reviewed_at,
+        rejection_reason=submission.rejection_reason,
+        created_at=submission.created_at,
+        updated_at=submission.updated_at,
+        user_name=user.full_name if user else None,
+        user_email=user.email if user else None,
+    )
 
 
 @router.post("/kyc/{submission_id}/approve", response_model=KYCRead)

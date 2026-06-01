@@ -42,7 +42,7 @@ def send_email(to_email: str, subject: str, html_content: str) -> bool:
     Sends an email using the Resend service.
     In testing/dev without a verified domain, 'to_email' must be the email address your Resend account is registered with.
     """
-    if not settings.RESEND_API_KEY:
+    if not settings.RESEND_API_KEY or settings.ENVIRONMENT == "test":
         logger.warning(f"MOCK EMAIL to {to_email}: {subject} | {html_content}")
         return True
 

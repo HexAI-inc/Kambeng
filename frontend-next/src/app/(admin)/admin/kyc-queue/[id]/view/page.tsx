@@ -71,7 +71,8 @@ export default function KYCViewPage() {
 
         <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "24px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-            <Field label="User ID" value={`#${submission.user_id}`} />
+            <Field label="Name" value={submission.user_name ?? `User #${submission.user_id}`} />
+            <Field label="Email" value={submission.user_email ?? "—"} />
             <Field label="Document Type" value={submission.document_type} />
             <Field label="Status" value={<StatusChip status={submission.status} />} />
             <Field label="Submitted At" value={new Date(submission.created_at).toLocaleString()} />

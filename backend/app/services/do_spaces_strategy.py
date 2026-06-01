@@ -172,11 +172,20 @@ class DOSpacesStrategy(StorageStrategy):
 
         try:
             self._ensure_bucket_exists()
+            _mime_map = {
+                "pdf": "application/pdf",
+                "png": "image/png",
+                "jpg": "image/jpeg",
+                "jpeg": "image/jpeg",
+                "webp": "image/webp",
+                "gif": "image/gif",
+            }
+            content_type = _mime_map.get(file_extension.lstrip(".").lower(), "application/octet-stream") if file_extension else "application/octet-stream"
             self.s3_client.put_object(
                 Bucket=self.bucket,
                 Key=key,
                 Body=file_content,
-                ContentType= f"image/{file_extension.lstrip('.')}" if file_extension else "application/octet-stream",
+                ContentType=content_type,
                 ACL='public-read',
             )
             return self._public_url(key)

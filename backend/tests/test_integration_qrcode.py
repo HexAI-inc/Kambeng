@@ -1,14 +1,13 @@
 """Integration tests for QR code generation endpoints."""
 import base64
 import pytest
-from httpx import AsyncClient as TestClient
 
 
 @pytest.mark.asyncio
-async def test_campaign_qr_code_endpoint(client: TestClient, db_session, sample_campaign):
+async def test_campaign_qr_code_endpoint(async_client, db_session, sample_campaign):
     """Test generating QR code for a campaign."""
     # Campaign created via fixture - use its slug
-    response = await client.get(
+    response = await async_client.get(
         f"/api/utils/qrcode/campaign/{sample_campaign.slug}",
     )
     
@@ -19,9 +18,9 @@ async def test_campaign_qr_code_endpoint(client: TestClient, db_session, sample_
 
 
 @pytest.mark.asyncio
-async def test_campaign_qr_code_base64_endpoint(client: TestClient, db_session, sample_campaign):
+async def test_campaign_qr_code_base64_endpoint(async_client, db_session, sample_campaign):
     """Test generating QR code for a campaign as base64."""
-    response = await client.get(
+    response = await async_client.get(
         f"/api/utils/qrcode/campaign/{sample_campaign.slug}/base64",
     )
     
@@ -41,9 +40,9 @@ async def test_campaign_qr_code_base64_endpoint(client: TestClient, db_session, 
 
 
 @pytest.mark.asyncio
-async def test_donation_qr_code_endpoint(client: TestClient, db_session, sample_campaign):
+async def test_donation_qr_code_endpoint(async_client, db_session, sample_campaign):
     """Test generating QR code for a donation page."""
-    response = await client.get(
+    response = await async_client.get(
         f"/api/utils/qrcode/donation/{sample_campaign.slug}",
     )
     
@@ -53,11 +52,11 @@ async def test_donation_qr_code_endpoint(client: TestClient, db_session, sample_
 
 
 @pytest.mark.asyncio
-async def test_short_code_qr_endpoint(client: TestClient, db_session, sample_campaign_with_alias):
+async def test_short_code_qr_endpoint(async_client, db_session, sample_campaign_with_alias):
     """Test generating QR code for a campaign short code."""
     campaign, alias = sample_campaign_with_alias
-    
-    response = await client.get(
+
+    response = await async_client.get(
         f"/api/utils/qrcode/short/{alias.short_code}",
     )
     
@@ -67,9 +66,9 @@ async def test_short_code_qr_endpoint(client: TestClient, db_session, sample_cam
 
 
 @pytest.mark.asyncio
-async def test_qr_code_not_found(client: TestClient, db_session):
+async def test_qr_code_not_found(async_client, db_session):
     """Test QR code generation with non-existent campaign."""
-    response = await client.get("/api/utils/qrcode/campaign/nonexistent-slug")
+    response = await async_client.get("/api/utils/qrcode/campaign/nonexistent-slug")
     
     assert response.status_code == 404
     data = response.json()
@@ -78,9 +77,9 @@ async def test_qr_code_not_found(client: TestClient, db_session):
 
 
 @pytest.mark.asyncio
-async def test_short_code_qr_not_found(client: TestClient, db_session):
+async def test_short_code_qr_not_found(async_client, db_session):
     """Test QR code generation with non-existent short code."""
-    response = await client.get("/api/utils/qrcode/short/nonexistent")
+    response = await async_client.get("/api/utils/qrcode/short/nonexistent")
     
     assert response.status_code == 404
     data = response.json()

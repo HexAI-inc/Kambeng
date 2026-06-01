@@ -692,3 +692,42 @@ async def get_campaign_qr_code_base64(
         "qr_code_base64": f"data:image/png;base64,{b64_qr}",
         "qr_code_url": f"{settings.BACKEND_PUBLIC_URL.rstrip('/')}/utils/qrcode/campaign/{slug}",
     }
+
+
+@router.post("/qrcode/campaign/{slug}/regenerate")
+async def regenerate_campaign_qr_codes(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Regenerate and persist QR codes for a campaign."""
+    import base64
+
+    result = await db.execute(select(Campaign).where(Campaign.slug == slug))
+    campaign = result.scalar_one_or_none()
+    if not campaign:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="Not authorized to regenerate QR codes for this campaign")
+
+    frontend_url = settings.FRONTEND_URL
+    page_url = f"{frontend_url}/campaigns/{slug}"
+    direct_pay_url = f"{frontend_url}/quick-pay/{slug}"
+
+    page_qr_bytes = QRCodeService._generate_qr_code_bytes(page_url)
+    direct_qr_bytes = QRCodeService._generate_qr_code_bytes(direct_pay_url)
+
+    campaign.qr_code_page_url = f"data:image/png;base64,{base64.b64encode(page_qr_bytes).decode()}"
+    campaign.qr_code_direct_url = f"data:image/png;base64,{base64.b64encode(direct_qr_bytes).decode()}"
+
+    await db.commit()
+    await db.refresh(campaign)
+
+    return {
+        "slug": campaign.slug,
+        "qr_code_page_url": campaign.qr_code_page_url,
+        "qr_code_direct_url": campaign.qr_code_direct_url,
+    }

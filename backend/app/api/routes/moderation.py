@@ -182,3 +182,57 @@ async def get_moderation_stats(
         "resolved_reports": resolved_reports,
         "dismissed_reports": dismissed_reports,
     }
+
+
+from app.models.fraud_report import FraudReport  # noqa: E402
+from fastapi import Query  # noqa: E402
+
+
+@router.get("/fraud-reports/queue")
+async def list_fraud_reports(
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """List all fraud reports for admin review."""
+    result = await db.execute(select(FraudReport).order_by(FraudReport.created_at.desc()))
+    reports = result.scalars().all()
+    return [
+        {
+            "id": r.id,
+            "campaign_id": r.campaign_id,
+            "reported_by_user_id": r.reported_by_user_id,
+            "reason": r.reason,
+            "details": r.details,
+            "status": r.status,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in reports
+    ]
+
+
+@router.post("/fraud-reports/{report_id}/resolve")
+async def resolve_fraud_report(
+    report_id: int,
+    action: str = Query(...),
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Resolve a fraud report with the given action."""
+    result = await db.execute(select(FraudReport).where(FraudReport.id == report_id))
+    report = result.scalars().first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Fraud report not found")
+
+    report.status = "ACTIONED" if action in ("suspend_campaign", "ban_user", "remove_content") else "REVIEWED"
+    await db.commit()
+    await db.refresh(report)
+
+    return {
+        "id": report.id,
+        "campaign_id": report.campaign_id,
+        "reported_by_user_id": report.reported_by_user_id,
+        "reason": report.reason,
+        "details": report.details,
+        "status": report.status,
+        "created_at": report.created_at.isoformat() if report.created_at else None,
+    }

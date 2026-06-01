@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
+from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
@@ -19,6 +20,7 @@ os.environ.setdefault("SECRET_KEY", "test-secret-key")
 os.environ.setdefault("HEXAI_WEBHOOK_SECRET", "test-webhook-secret")
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///./kambeng_test.db")
 os.environ.setdefault("MEDIA_ROOT", "media_test")
+os.environ.setdefault("STORAGE_STRATEGY", "local")
 
 from app.db.database import Base, get_db  # noqa: E402
 from app.main import app as fastapi_app  # noqa: E402
@@ -105,3 +107,63 @@ def auth_headers(client):
         return {"Authorization": f"Bearer {token}"}
 
     return _auth_headers
+
+
+@pytest_asyncio.fixture
+async def db_session(integration_session_factory):
+    async with integration_session_factory() as session:
+        yield session
+
+
+@pytest_asyncio.fixture
+async def async_client(integration_session_factory):
+    async def _override_get_db():
+        async with integration_session_factory() as session:
+            yield session
+
+    fastapi_app.dependency_overrides[get_db] = _override_get_db
+    transport = ASGITransport(app=fastapi_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
+    fastapi_app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def sample_campaign(db_session):
+    from app.models.user import User
+    from app.models.campaign import Campaign, CampaignMode
+
+    user = User(
+        full_name="Sample User",
+        email="sampleuser@example.com",
+        wave_number="+2207099001",
+        password_hash="x",
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    campaign = Campaign(
+        user_id=user.id,
+        title="Sample Campaign",
+        slug="sample-campaign",
+        description="A test campaign",
+        mode=CampaignMode.ONGOING,
+    )
+    db_session.add(campaign)
+    await db_session.commit()
+    await db_session.refresh(campaign)
+
+    return campaign
+
+
+@pytest_asyncio.fixture
+async def sample_campaign_with_alias(sample_campaign, db_session):
+    from app.models.alias import CampaignAlias
+
+    alias = CampaignAlias(campaign_id=sample_campaign.id, short_code="testcode")
+    db_session.add(alias)
+    await db_session.commit()
+    await db_session.refresh(alias)
+
+    return sample_campaign, alias

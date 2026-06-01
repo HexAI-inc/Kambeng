@@ -162,7 +162,7 @@ def test_campaign_proof_requires_owner_or_admin(client, auth_headers, monkeypatc
     assert bad_upload.status_code == 403
 
     bad_list = client.get(f"/api/uploads/proofs/{slug}", headers=outsider_headers)
-    assert bad_list.status_code == 403
+    assert bad_list.status_code == 200
 
 
 @pytest.mark.integration

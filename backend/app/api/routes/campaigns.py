@@ -3,18 +3,27 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
 import re
+import time
 import uuid
 
 from app.db.database import get_db
 from app.models.campaign import Campaign
 from app.models.donation import Donation
+from app.models.fraud_report import FraudReport
+from app.models.fraud_report_notification_email import FraudReportNotificationEmail
+from app.models.payout import Payout
 from app.models.user import User
 from app.schemas.campaign import CampaignCreate, CampaignRead
 from app.schemas.donation import DonationRead
+from app.schemas.fraud_report import FraudReportCreate, FraudReportRead
 from app.api.routes.auth import get_current_user
+from app.services.email_service import send_email
+from app.services.hexai_service import HexAIPaymentService
 from app.services.qrcode_service import generate_and_upload_qr
 from app.core.config import settings
 from app.core.logging_config import get_logger
+
+hexai_service = HexAIPaymentService()
 
 router = APIRouter(prefix="/campaigns", tags=["Campaigns"])
 logger = get_logger("campaigns")
@@ -187,10 +196,10 @@ async def get_campaign_donations(slug: str, skip: int = 0, limit: int = 100, db:
     """Get successful donations for a specific campaign"""
     result = await db.execute(select(Campaign).where(Campaign.slug == slug))
     campaign = result.scalars().first()
-    
+
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
-        
+
     donations_result = await db.execute(
         select(Donation)
         .where(Donation.campaign_id == campaign.id)
@@ -200,3 +209,147 @@ async def get_campaign_donations(slug: str, skip: int = 0, limit: int = 100, db:
         .limit(limit)
     )
     return donations_result.scalars().all()
+
+
+@router.post("/{slug}/report", response_model=FraudReportRead)
+async def report_campaign_fraud(
+    slug: str,
+    body: FraudReportCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Submit a fraud report for a campaign"""
+    result = await db.execute(select(Campaign).where(Campaign.slug == slug))
+    campaign = result.scalars().first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    report = FraudReport(
+        campaign_id=campaign.id,
+        reported_by_user_id=current_user.id,
+        reason=body.reason,
+        details=body.details,
+    )
+    db.add(report)
+    await db.commit()
+    await db.refresh(report)
+
+    emails_result = await db.execute(
+        select(FraudReportNotificationEmail).where(FraudReportNotificationEmail.is_active.is_(True))
+    )
+    for email_record in emails_result.scalars().all():
+        send_email(
+            email_record.email,
+            f"Fraud Report: {campaign.title}",
+            f"<p>A fraud report was submitted for campaign <b>{campaign.title}</b>.</p>"
+            f"<p>Reason: {body.reason}</p>"
+            f"<p>Details: {body.details or 'N/A'}</p>",
+        )
+
+    return report
+
+
+class _WithdrawBody:
+    pass
+
+
+from pydantic import BaseModel as _BaseModel
+
+
+class _WithdrawRequest(_BaseModel):
+    amount: float
+
+
+@router.post("/{slug}/withdraw")
+async def withdraw_campaign_funds(
+    slug: str,
+    body: _WithdrawRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Withdraw funds from a campaign to the owner's Wave account"""
+    result = await db.execute(select(Campaign).where(Campaign.slug == slug))
+    campaign = result.scalars().first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if campaign.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the campaign owner can withdraw funds")
+
+    gross_amount = body.amount
+    hexai_fee = gross_amount * settings.HEXAI_WITHDRAWAL_FEE_PERCENT
+    platform_commission = settings.PLATFORM_FIXED_COMMISSION_GMD
+    net_amount = gross_amount - hexai_fee - platform_commission
+
+    if net_amount <= 0:
+        raise HTTPException(status_code=400, detail="Withdrawal amount too small after fees")
+
+    client_reference = f"PAYOUT-{int(time.time() * 1000)}"
+
+    try:
+        await hexai_service.initiate_payout(
+            requested_amount=net_amount,
+            recipient_mobile=current_user.wave_number,
+            payout_reference=client_reference,
+            recipient_name=current_user.full_name,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Payout Gateway Error: {str(e)}")
+
+    new_payout = Payout(
+        campaign_id=campaign.id,
+        client_reference=client_reference,
+        gross_amount=gross_amount,
+        hexai_fee=hexai_fee,
+        platform_commission=platform_commission,
+        net_amount=net_amount,
+        amount=net_amount,
+        status="PENDING",
+    )
+    db.add(new_payout)
+    await db.commit()
+    await db.refresh(new_payout)
+
+    return {
+        "id": new_payout.id,
+        "client_reference": new_payout.client_reference,
+        "gross_amount": new_payout.gross_amount,
+        "hexai_fee": new_payout.hexai_fee,
+        "platform_commission": new_payout.platform_commission,
+        "net_amount": new_payout.net_amount,
+        "status": new_payout.status,
+    }
+
+
+@router.get("/{slug}/withdrawals")
+async def list_campaign_withdrawals(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """List all withdrawals for a campaign"""
+    result = await db.execute(select(Campaign).where(Campaign.slug == slug))
+    campaign = result.scalars().first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Not authorized to view withdrawals for this campaign")
+
+    payouts_result = await db.execute(
+        select(Payout).where(Payout.campaign_id == campaign.id).order_by(Payout.created_at.desc())
+    )
+    payouts = payouts_result.scalars().all()
+    return [
+        {
+            "id": p.id,
+            "client_reference": p.client_reference,
+            "gross_amount": p.gross_amount,
+            "hexai_fee": p.hexai_fee,
+            "platform_commission": p.platform_commission,
+            "net_amount": p.net_amount,
+            "status": p.status,
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+        }
+        for p in payouts
+    ]

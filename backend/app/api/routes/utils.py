@@ -694,7 +694,7 @@ async def get_campaign_qr_code_base64(
     return {
         "campaign_slug": slug,
         "qr_code_base64": f"data:image/png;base64,{b64_qr}",
-        "qr_code_url": f"{settings.BACKEND_PUBLIC_URL.rstrip('/')}/utils/qrcode/campaign/{slug}",
+        "qr_code_url": f"{settings.FRONTEND_URL.rstrip('/')}/campaigns/{slug}",
     }
 
 

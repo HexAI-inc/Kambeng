@@ -27,7 +27,7 @@ class QRCodeService:
             PNG image bytes
         """
         # Create campaign URL
-        campaign_url = f"{settings.BACKEND_PUBLIC_URL.rstrip('/')}/campaigns/{campaign_slug}"
+        campaign_url = f"{settings.FRONTEND_URL.rstrip('/')}/campaigns/{campaign_slug}"
 
         return QRCodeService._generate_qr_code_bytes(
             data=campaign_url,
@@ -52,7 +52,7 @@ class QRCodeService:
         Returns:
             PNG image bytes
         """
-        short_url = f"{settings.BACKEND_PUBLIC_URL.rstrip('/')}/c/{short_code}"
+        short_url = f"{settings.FRONTEND_URL.rstrip('/')}/c/{short_code}"
 
         return QRCodeService._generate_qr_code_bytes(
             data=short_url,
@@ -77,7 +77,7 @@ class QRCodeService:
         Returns:
             PNG image bytes
         """
-        donation_url = f"{settings.BACKEND_PUBLIC_URL.rstrip('/')}/quick-pay/{campaign_slug}"
+        donation_url = f"{settings.FRONTEND_URL.rstrip('/')}/quick-pay/{campaign_slug}"
 
         return QRCodeService._generate_qr_code_bytes(
             data=donation_url,

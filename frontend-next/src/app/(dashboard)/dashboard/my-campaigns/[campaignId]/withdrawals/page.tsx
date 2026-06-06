@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -46,6 +46,14 @@ function StatusChip({ status }: { status: string }) {
 }
 
 export default function CampaignWithdrawalsPage() {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const params = useParams();
   const { message } = useAppFeedback();
   const withdrawMutation = useWithdrawCampaignFunds();
@@ -111,7 +119,7 @@ export default function CampaignWithdrawalsPage() {
               Withdraw Funds
             </div>
             <div style={{ fontSize: 13, color: "#6b7a8d" }}>
-              Request a campaign withdrawal. The backend subtracts HexAI fee and platform commission before sending the net amount to your Wave wallet.
+              Request a campaign withdrawal. A Wave processing fee and platform fee are automatically deducted, and the net amount is sent to your Wave wallet.
             </div>
           </div>
 
@@ -151,11 +159,11 @@ export default function CampaignWithdrawalsPage() {
               </div>
             </motion.div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 320px", gap: 16, alignItems: "start" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "minmax(0, 1fr) 320px" : "1fr", gap: 16, alignItems: "start" }}>
               <motion.div {...fadeUp(0.1)} style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: 24 }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: "#f0f6ff", marginBottom: 4 }}>Request Withdrawal</div>
                 <div style={{ fontSize: 13, color: "#6b7a8d", lineHeight: 1.7, marginBottom: 20 }}>
-                  Enter the gross amount to withdraw. The backend will subtract the HexAI fee and platform commission, then send the net amount to your Wave account.
+                  Enter the amount to withdraw. A Wave processing fee and platform fee are deducted automatically — the net amount goes straight to your Wave account.
                 </div>
 
                 <div style={{ display: "grid", gap: 14 }}>
@@ -204,9 +212,9 @@ export default function CampaignWithdrawalsPage() {
                 <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: 20 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 8 }}>Notes</div>
                   <ul style={{ margin: 0, paddingLeft: 18, color: "#6b7a8d", fontSize: 12, lineHeight: 1.75 }}>
-                    <li>KYC must be approved before any payout can be processed.</li>
-                    <li>The withdrawal amount is entered as gross, not net.</li>
-                    <li>If a previous withdrawal already used some of the balance, the backend will reject an overdraw request.</li>
+                    <li>Your verified identity (KYC) is required before any payout.</li>
+                    <li>Enter the total amount — fees are deducted automatically.</li>
+                    <li>You can only withdraw what remains after previous payouts.</li>
                   </ul>
                 </div>
 
@@ -228,41 +236,76 @@ export default function CampaignWithdrawalsPage() {
 
               {withdrawalHistory.length === 0 ? (
                 <div style={{ padding: 28, color: "#6b7a8d", fontSize: 13 }}>No withdrawals yet.</div>
-              ) : (
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
-                    <thead>
-                      <tr style={{ textAlign: "left", color: "#4a5568", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>
-                        <th style={{ padding: "14px 20px" }}>Date</th>
-                        <th style={{ padding: "14px 20px" }}>Reference</th>
-                        <th style={{ padding: "14px 20px" }}>Gross</th>
-                        <th style={{ padding: "14px 20px" }}>Fees</th>
-                        <th style={{ padding: "14px 20px" }}>Net</th>
-                        <th style={{ padding: "14px 20px" }}>Status</th>
+              ) : isDesktop ? (
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ textAlign: "left", color: "#4a5568", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>
+                      <th style={{ padding: "14px 20px" }}>Date</th>
+                      <th style={{ padding: "14px 20px" }}>Reference</th>
+                      <th style={{ padding: "14px 20px" }}>Gross</th>
+                      <th style={{ padding: "14px 20px" }}>Fees</th>
+                      <th style={{ padding: "14px 20px" }}>Net</th>
+                      <th style={{ padding: "14px 20px" }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {withdrawalHistory.map((item, index) => (
+                      <tr
+                        key={item.id}
+                        style={{
+                          borderTop: index === 0 ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(255,255,255,0.05)",
+                          color: "#c0ccd8",
+                          fontSize: 13,
+                        }}
+                      >
+                        <td style={{ padding: "14px 20px", whiteSpace: "nowrap" }}>{new Date(item.created_at).toLocaleString()}</td>
+                        <td style={{ padding: "14px 20px", fontFamily: "monospace", fontSize: 12 }}>{item.client_reference}</td>
+                        <td style={{ padding: "14px 20px" }}>{fmt(item.gross_amount)} GMD</td>
+                        <td style={{ padding: "14px 20px" }}>{fmt(item.hexai_fee + item.platform_commission)} GMD</td>
+                        <td style={{ padding: "14px 20px", color: GREEN, fontWeight: 700 }}>{fmt(item.net_amount)} GMD</td>
+                        <td style={{ padding: "14px 20px" }}>
+                          <StatusChip status={item.status} />
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {withdrawalHistory.map((item, index) => (
-                        <tr
-                          key={item.id}
-                          style={{
-                            borderTop: index === 0 ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(255,255,255,0.05)",
-                            color: "#c0ccd8",
-                            fontSize: 13,
-                          }}
-                        >
-                          <td style={{ padding: "14px 20px", whiteSpace: "nowrap" }}>{new Date(item.created_at).toLocaleString()}</td>
-                          <td style={{ padding: "14px 20px", fontFamily: "monospace", fontSize: 12 }}>{item.client_reference}</td>
-                          <td style={{ padding: "14px 20px" }}>{fmt(item.gross_amount)} GMD</td>
-                          <td style={{ padding: "14px 20px" }}>{fmt(item.hexai_fee + item.platform_commission)} GMD</td>
-                          <td style={{ padding: "14px 20px", color: GREEN, fontWeight: 700 }}>{fmt(item.net_amount)} GMD</td>
-                          <td style={{ padding: "14px 20px" }}>
-                            <StatusChip status={item.status} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  {withdrawalHistory.map((item) => (
+                    <div key={item.id} style={{
+                      padding: "16px 20px",
+                      borderTop: "1px solid rgba(255,255,255,0.05)",
+                      display: "flex", flexDirection: "column", gap: 10,
+                    }}>
+                      {/* Top row: status + date */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                        <StatusChip status={item.status} />
+                        <span style={{ fontSize: 11, color: "#4a5568" }}>
+                          {new Date(item.created_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+                        </span>
+                      </div>
+                      {/* Reference */}
+                      <div style={{ fontSize: 11, color: "#6b7a8d", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {item.client_reference}
+                      </div>
+                      {/* Amounts row */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 3 }}>Gross</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#c0ccd8" }}>{fmt(item.gross_amount)}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 3 }}>Fees</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#c0ccd8" }}>{fmt(item.hexai_fee + item.platform_commission)}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 10, color: GREEN, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 3 }}>Net</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{fmt(item.net_amount)} GMD</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </motion.div>

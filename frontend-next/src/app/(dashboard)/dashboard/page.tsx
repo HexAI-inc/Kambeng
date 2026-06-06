@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -16,22 +17,6 @@ function fadeUp(delay = 0) {
   };
 }
 
-function Avatar({ name, size = 52 }: { name: string; size?: number }) {
-  const initials = name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: "50%",
-      background: "linear-gradient(135deg, #0d2340, #0a3d5c)",
-      border: `2px solid rgba(29,197,255,0.35)`,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: size * 0.36, fontWeight: 800, color: BLUE,
-      flexShrink: 0, letterSpacing: "-0.02em",
-      boxShadow: `0 0 0 4px rgba(29,197,255,0.07), 0 4px 16px rgba(0,0,0,0.4)`,
-    }}>
-      {initials}
-    </div>
-  );
-}
 
 function CampaignStatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
@@ -45,7 +30,7 @@ function CampaignStatusChip({ status }: { status: string }) {
   return (
     <span style={{
       fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const,
-      padding: "2px 7px", borderRadius: 20, color: s.color, background: s.bg,
+      padding: "2px 7px", borderRadius: 20, color: s.color, background: s.bg, flexShrink: 0,
     }}>
       {status}
     </span>
@@ -76,6 +61,14 @@ function KYCStatusChip({ status }: { status: string }) {
 }
 
 export default function DashboardPage() {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const { data: me, isLoading: meLoading } = useSessionProfile(true);
   const { data: campaigns, isLoading: campaignsLoading } = useMyCampaigns(true);
   const { data: kycStatus, isLoading: kycLoading } = useKYCStatus(me?.id);
@@ -101,85 +94,50 @@ export default function DashboardPage() {
     : n.toLocaleString();
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh" }}>
+    <div style={{ background: "#0a0f1a", minHeight: "100vh", overflowX: "hidden" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px clamp(16px, 4vw, 48px)", display: "flex", flexDirection: "column", gap: 20 }}>
 
-      {/* ── Top profile bar ── */}
-      <div style={{
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        padding: "24px clamp(16px, 4vw, 48px)",
-      }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            {meLoading
-              ? <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
-              : <Avatar name={fullName} />
-            }
-            <div>
-              <div style={{ fontSize: 20, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 5 }}>
-                {meLoading ? <Shimmer w={160} h={18} /> : `Welcome back, ${fullName.split(" ")[0]}`}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{
-                  fontSize: 10, fontWeight: 700, color: BLUE, letterSpacing: "0.1em",
-                  background: "rgba(29,197,255,0.1)", border: "1px solid rgba(29,197,255,0.2)",
-                  padding: "2px 8px", borderRadius: 20, textTransform: "uppercase" as const,
-                }}>{role}</span>
-                {!meLoading && (
-                  <span style={{
-                    display: "inline-flex", alignItems: "center", gap: 5,
-                    fontSize: 11, fontWeight: 600,
-                    color: emailVerified ? GREEN : "#f97316",
-                  }}>
-                    <span style={{
-                      width: 5, height: 5, borderRadius: "50%", display: "inline-block",
-                      background: emailVerified ? GREEN : "#f97316",
-                      boxShadow: `0 0 5px ${emailVerified ? GREEN : "#f97316"}`,
-                    }} />
-                    {emailVerified ? "Verified account" : "Email not verified"}
-                  </span>
-                )}
-              </div>
+        {/* ── Welcome row ── */}
+        <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 5 }}>
+              {meLoading ? <Shimmer w={160} h={20} /> : `Welcome back, ${fullName.split(" ")[0]}`}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{
+                fontSize: 10, fontWeight: 700, color: BLUE, letterSpacing: "0.1em",
+                background: "rgba(29,197,255,0.1)", border: "1px solid rgba(29,197,255,0.2)",
+                padding: "2px 8px", borderRadius: 20, textTransform: "uppercase" as const,
+              }}>{role}</span>
+              {!meLoading && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: emailVerified ? GREEN : "#f97316" }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", display: "inline-block", background: emailVerified ? GREEN : "#f97316", boxShadow: `0 0 5px ${emailVerified ? GREEN : "#f97316"}` }} />
+                  {emailVerified ? "Verified" : "Email not verified"}
+                </span>
+              )}
             </div>
           </div>
-
-          <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <Link href="/campaigns">
-              <button style={{
-                padding: "9px 18px", borderRadius: 9,
-                border: "1px solid rgba(255,255,255,0.1)",
-                background: "rgba(255,255,255,0.04)",
-                color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer",
-              }}>
+              <button style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                 Browse
               </button>
             </Link>
             {canCreateCampaign ? (
               <Link href="/dashboard/my-campaigns/new">
-                <button style={{
-                  padding: "9px 18px", borderRadius: 9, border: "none",
-                  background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-                  color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                  boxShadow: "0 4px 16px rgba(29,197,255,0.3)",
-                }}>
+                <button style={{ padding: "9px 18px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(29,197,255,0.3)" }}>
                   + New Campaign
                 </button>
               </Link>
             ) : (
               <Link href="/dashboard/kyc">
-                <button style={{
-                  padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(29,197,255,0.18)",
-                  background: "rgba(29,197,255,0.06)",
-                  color: "#f0f6ff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                }}>
+                <button style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(29,197,255,0.18)", background: "rgba(29,197,255,0.06)", color: "#f0f6ff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                   Complete KYC to create
                 </button>
               </Link>
             )}
           </div>
-        </div>
-      </div>
-
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px clamp(16px, 4vw, 48px)", display: "flex", flexDirection: "column", gap: 20 }}>
+        </motion.div>
 
         {/* ── KPI cards ── */}
         <motion.div {...fadeUp(0)} className="kpi-grid" style={{ display: "grid", gap: 12 }}>
@@ -245,11 +203,11 @@ export default function DashboardPage() {
             borderRadius: 16,
           }}>
             <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>Wave number</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <Image src="/wave.png" alt="Wave" width={20} height={20} style={{ objectFit: "contain", borderRadius: 4 }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, overflow: "hidden" }}>
+              <Image src="/wave.png" alt="Wave" width={20} height={20} style={{ objectFit: "contain", borderRadius: 4, flexShrink: 0 }} />
               {meLoading
                 ? <Shimmer h={18} w="70%" />
-                : <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", letterSpacing: "-0.01em" }}>{wave}</div>
+                : <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", letterSpacing: "-0.01em", minWidth: 0, flex: 1, wordBreak: "break-all" }}>{wave}</div>
               }
             </div>
             <div style={{ fontSize: 12, color: "#4a5568" }}>Linked wallet</div>
@@ -257,10 +215,10 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* ── Main content: campaigns list + sidebar ── */}
-        <div className="dash-grid" style={{ display: "grid", gap: 16, alignItems: "start" }}>
+        <div style={{ display: "grid", gap: 16, alignItems: "start", gridTemplateColumns: isDesktop ? "1fr 280px" : "1fr" }}>
 
           {/* Campaigns list */}
-          <motion.div {...fadeUp(0.08)}>
+          <motion.div {...fadeUp(0.08)} style={{ minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>My campaigns</div>
               <Link href="/dashboard/my-campaigns" style={{ fontSize: 12, color: BLUE, fontWeight: 600 }}>Manage all →</Link>
@@ -323,7 +281,7 @@ export default function DashboardPage() {
                     : null;
                   return (
                     <motion.div key={c.id} {...fadeUp(0.04 * idx)}>
-                      <Link href={`/dashboard/my-campaigns/${c.id}/images`} style={{ textDecoration: "none" }}>
+                      <Link href={`/dashboard/my-campaigns/${c.id}/images`} style={{ textDecoration: "none", display: "block" }}>
                         <div style={{
                           display: "flex", alignItems: "center", gap: 14,
                           padding: "14px 16px",
@@ -331,6 +289,7 @@ export default function DashboardPage() {
                           border: "1px solid rgba(255,255,255,0.07)",
                           borderRadius: 12, cursor: "pointer",
                           transition: "border-color 0.2s, background 0.2s",
+                          overflow: "hidden",
                         }}
                           onMouseEnter={(e) => {
                             (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(29,197,255,0.22)";
@@ -359,8 +318,8 @@ export default function DashboardPage() {
 
                           {/* Info */}
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                              <span style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, minWidth: 0 }}>
+                              <span style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flex: 1 }}>
                                 {c.title}
                               </span>
                               <CampaignStatusChip status={c.status} />
@@ -397,7 +356,7 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* ── Sidebar ── */}
-          <motion.div {...fadeUp(0.12)} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <motion.div {...fadeUp(0.12)} style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
 
             {/* Account card */}
             <div style={{
@@ -411,7 +370,7 @@ export default function DashboardPage() {
               {[
                 { label: "Name", value: fullName },
                 { label: "Email", value: email },
-                { label: "User ID", value: `#${me?.id ?? "—"}` },
+                { label: "KYC status", value: kycApproved ? "Approved" : kycPending ? "Under review" : kycRejected ? "Rejected" : "Not submitted" },
               ].map(({ label, value }, i, arr) => (
                 <div key={label} style={{
                   padding: "11px 18px",
@@ -483,22 +442,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <style>{`
-        .kpi-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .dash-grid {
-          grid-template-columns: 1fr;
-        }
-        @media (min-width: 768px) {
-          .kpi-grid {
-            grid-template-columns: repeat(4, 1fr);
-          }
-          .dash-grid {
-            grid-template-columns: 1fr 280px;
-          }
-        }
-      `}</style>
     </div>
   );
 }

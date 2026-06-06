@@ -6,16 +6,23 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
 
-const signupSchema = z.object({
-  fullName: z.string().min(2, "Enter your full name."),
-  email: z.string().email("Enter a valid email address."),
-  waveNumber: z.string().min(6, "Enter your Wave number."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-});
+const signupSchema = z
+  .object({
+    fullName: z.string().min(2, "Enter your full name."),
+    email: z.string().email("Enter a valid email address."),
+    waveNumber: z.string().min(6, "Enter your Wave number."),
+    password: z.string().min(8, "Password must be at least 8 characters."),
+    confirmPassword: z.string().min(1, "Please confirm your password."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 function FieldError({ msg }: { msg?: string }) {
@@ -25,10 +32,12 @@ function FieldError({ msg }: { msg?: string }) {
 
 export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
   const [submitError, setSubmitError] = useState<string | null>(errorMessage ?? null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { fullName: "", email: "", waveNumber: "+220", password: "" },
+    defaultValues: { fullName: "", email: "", waveNumber: "+220", password: "", confirmPassword: "" },
   });
 
   const onSignup = form.handleSubmit(async (values) => {
@@ -70,11 +79,10 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
     transition: "border-color 0.2s",
   };
 
-  const fields = [
+  const plainFields = [
     { name: "fullName" as const, label: "Full name", placeholder: "Omar Keita", type: "text", autoComplete: "name", autoFocus: true },
     { name: "email" as const, label: "Email", placeholder: "you@example.com", type: "email", autoComplete: "email" },
     { name: "waveNumber" as const, label: "Wave number", placeholder: "+220XXXXXXXX", type: "tel", autoComplete: "tel" },
-    { name: "password" as const, label: "Password", placeholder: "Min 8 characters", type: "password", autoComplete: "new-password" },
   ];
 
   return (
@@ -119,7 +127,7 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
           )}
 
           <form onSubmit={(e) => void onSignup(e)} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {fields.map(({ name, label, placeholder, type, autoComplete, autoFocus }) => (
+            {plainFields.map(({ name, label, placeholder, type, autoComplete, autoFocus }) => (
               <div key={name}>
                 <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>{label}</label>
                 <input
@@ -135,6 +143,64 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
                 <FieldError msg={form.formState.errors[name]?.message} />
               </div>
             ))}
+
+            {/* Password with show/hide toggle */}
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>Password</label>
+              <div style={{ position: "relative" }}>
+                <input
+                  {...form.register("password")}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Min 8 characters"
+                  autoComplete="new-password"
+                  style={{ ...inputStyle, paddingRight: 44 }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  style={{
+                    position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", cursor: "pointer",
+                    color: "#6b7a8d", fontSize: 16, padding: 0, display: "flex", alignItems: "center",
+                  }}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                </button>
+              </div>
+              <FieldError msg={form.formState.errors.password?.message} />
+            </div>
+
+            {/* Confirm password with show/hide toggle */}
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>Confirm password</label>
+              <div style={{ position: "relative" }}>
+                <input
+                  {...form.register("confirmPassword")}
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Re-enter your password"
+                  autoComplete="new-password"
+                  style={{ ...inputStyle, paddingRight: 44 }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((v) => !v)}
+                  style={{
+                    position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", cursor: "pointer",
+                    color: "#6b7a8d", fontSize: 16, padding: 0, display: "flex", alignItems: "center",
+                  }}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                </button>
+              </div>
+              <FieldError msg={form.formState.errors.confirmPassword?.message} />
+            </div>
 
             <button
               type="submit"

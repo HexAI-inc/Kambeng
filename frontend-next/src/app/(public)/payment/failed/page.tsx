@@ -58,8 +58,8 @@ function PaymentFailedContent() {
         </div>
 
         {ref && (
-          <div style={{ marginTop: 24, fontSize: 11, color: "#2d3748" }}>
-            Reference: {ref}
+          <div style={{ marginTop: 28, fontSize: 11, color: "#374151", letterSpacing: "0.04em" }}>
+            Payment reference: <span style={{ fontFamily: "monospace", color: "#4a5568" }}>{ref}</span>
           </div>
         )}
       </div>

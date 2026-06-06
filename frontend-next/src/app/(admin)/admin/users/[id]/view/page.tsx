@@ -112,18 +112,15 @@ export default function UserViewPage() {
         {/* Info card */}
         <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "24px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-            <Field label="User ID" value={`#${user.id}`} />
             <Field label="Wave Number" value={user.wave_number} mono />
             <Field label="Role" value={
-              <Chip label={String(user.role)} color={user.role === "ADMIN" ? "#f97316" : BLUE} bg={user.role === "ADMIN" ? "rgba(249,115,22,0.1)" : "rgba(29,197,255,0.1)"} border={user.role === "ADMIN" ? "rgba(249,115,22,0.25)" : "rgba(29,197,255,0.2)"} />
+              <Chip label={user.role === "ADMIN" ? "Admin" : "Member"} color={user.role === "ADMIN" ? "#f97316" : BLUE} bg={user.role === "ADMIN" ? "rgba(249,115,22,0.1)" : "rgba(29,197,255,0.1)"} border={user.role === "ADMIN" ? "rgba(249,115,22,0.25)" : "rgba(29,197,255,0.2)"} />
             } />
             <Field label="Account Status" value={
               <Chip label={user.is_active ? "Active" : "Suspended"} color={user.is_active ? GREEN : RED} bg={user.is_active ? "rgba(27,191,136,0.1)" : "rgba(239,68,68,0.1)"} border={user.is_active ? "rgba(27,191,136,0.25)" : "rgba(239,68,68,0.25)"} />
             } />
             <Field label="KYC Status" value={
-              user.kyc_status
-                ? <Chip label={String(user.kyc_status)} color={user.kyc_status === "APPROVED" ? GREEN : user.kyc_status === "REJECTED" ? RED : "#f97316"} bg={user.kyc_status === "APPROVED" ? "rgba(27,191,136,0.1)" : user.kyc_status === "REJECTED" ? "rgba(239,68,68,0.1)" : "rgba(249,115,22,0.1)"} border={user.kyc_status === "APPROVED" ? "rgba(27,191,136,0.25)" : user.kyc_status === "REJECTED" ? "rgba(239,68,68,0.25)" : "rgba(249,115,22,0.25)"} />
-                : "—"
+              <Chip label={kycTone.label} color={kycTone.color} bg={kycTone.bg} border={kycTone.border} />
             } />
             <Field label="Campaigns" value={<span style={{ fontSize: 18, fontWeight: 800, color: BLUE }}>{user.campaign_count ?? 0}</span>} />
             <Field label="Total Raised" value={<span style={{ fontWeight: 700, color: GREEN }}>{Number(user.total_raised ?? 0).toLocaleString()} GMD</span>} />

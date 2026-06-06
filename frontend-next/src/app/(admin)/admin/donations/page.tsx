@@ -53,7 +53,7 @@ export default function DonationsPage() {
               Open reconciliation workspace
             </button>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
             {[
               { label: "Successful", value: String(completedCount), color: GREEN },
               { label: "Failed or pending", value: String(rows.length - completedCount), color: "#8899aa" },
@@ -69,8 +69,9 @@ export default function DonationsPage() {
 
         {/* Table */}
         <motion.div {...fadeUp(0.08)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
+            <div className="admin-table-wrap" style={{ minWidth: 780 }}>
+            <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
               <div>Reference</div><div>Campaign</div><div>Donor</div><div>Amount</div><div>Status</div><div>Source</div><div>Review</div>
             </div>
 
@@ -83,23 +84,26 @@ export default function DonationsPage() {
               <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No successful donations found</div>
             ) : pageRows.map((d: AdminDonation) => {
               return (
-                <div key={d.client_reference} style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
+                <div key={d.client_reference} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                 >
-                  <div style={{ fontSize: 11, fontFamily: "monospace", color: "#8899aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.client_reference}</div>
-                  <div style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.campaign_title}</div>
-                  <div style={{ fontSize: 12, color: "#8899aa" }}>{d.donor_name || "Anonymous"}</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{d.amount.toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
-                  <div><StatusChip status={d.status} /></div>
-                  <div style={{ fontSize: 12, color: "#4a5568" }}>{d.reconciliation_source || "—"}</div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <button onClick={() => router.push(`/admin/campaigns/${d.campaign_id}/view`)} style={btnStyle("default")}>Campaign</button>
-                    <span style={{ fontSize: 11, color: "#4a5568", padding: "5px 0" }}>Successful</span>
+                  <div data-label="Reference" style={{ fontSize: 11, fontFamily: "monospace", color: "#8899aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.client_reference}</div>
+                  <div data-label="Campaign" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.campaign_title}</div>
+                  <div data-label="Donor" style={{ fontSize: 12, color: "#8899aa" }}>{d.donor_name || "Anonymous"}</div>
+                  <div data-label="Amount" style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{d.amount.toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
+                  <div data-label="Status"><StatusChip status={d.status} /></div>
+                  <div data-label="Source" style={{ fontSize: 12, color: "#4a5568" }}>{d.reconciliation_source || "—"}</div>
+                  <div data-label="Review">
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      <button onClick={() => router.push(`/admin/campaigns/${d.campaign_id}/view`)} style={btnStyle("default")}>Campaign</button>
+                      <span style={{ fontSize: 11, color: "#4a5568", padding: "5px 0" }}>Successful</span>
+                    </div>
                   </div>
                 </div>
               );
             })}
+            </div>
           </div>
         </motion.div>
 

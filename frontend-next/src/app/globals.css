@@ -61,7 +61,20 @@ a { color: inherit; text-decoration: none; }
 ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--wave-blue-deep); }
 
-/* Antd overrides for dark theme */
+/* ── Dashboard responsive grid ────────────────────────────── */
+.kpi-grid { grid-template-columns: repeat(2, 1fr); }
+
+@media (max-width: 399px) {
+  .kpi-grid { grid-template-columns: 1fr !important; }
+}
+@media (min-width: 768px) {
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Prevent any dashboard page content from overflowing horizontally */
+.dash-main > * { max-width: 100%; }
+
+/* ── Antd overrides for dark theme ───────────────────────── */
 .ant-card {
   background: var(--bg-card) !important;
   border-color: var(--line) !important;

@@ -73,7 +73,7 @@ export default function AdminCommissionsPage() {
 
         {/* KPI strip */}
         <motion.div {...fadeUp(0.06)}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
               { label: "Total earned", value: `${(summary?.total_commissions ?? 0).toFixed(2)} GMD`, color: "#f0f6ff" },
               { label: "Available", value: `${available.toFixed(2)} GMD`, color: GREEN },
@@ -167,34 +167,36 @@ export default function AdminCommissionsPage() {
 
         {/* Sources table */}
         <motion.div {...fadeUp(0.14)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
             <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>Commission Sources</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 130px 130px 110px 100px 110px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+            <div className="admin-table-wrap" style={{ minWidth: 720 }}>
+            <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 130px 130px 110px 100px 110px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
               <div>Campaign</div><div>User</div><div>Gross</div><div>Commission</div><div>Status</div><div>Date</div><div>Actions</div>
             </div>
 
             {rows.length === 0 ? (
               <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No commission sources yet</div>
             ) : pageRows.map((s: CommissionSourceItem, i: number) => (
-              <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 130px 130px 110px 100px 110px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
+              <div key={i} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 130px 130px 110px 100px 110px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
-                <div>
+                <div data-label="Campaign">
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{s.campaign_title}</div>
-                  <div style={{ fontSize: 11, color: "#4a5568" }}>#{s.campaign_id}</div>
                 </div>
-                <div>
+                <div data-label="User">
                   <div style={{ fontSize: 13, color: "#8899aa" }}>{s.user_name}</div>
-                  <div style={{ fontSize: 11, color: "#4a5568" }}>#{s.user_id}</div>
                 </div>
-                <div style={{ fontSize: 13, color: "#8899aa" }}>{s.gross_amount.toFixed(2)} GMD</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>+{s.platform_commission.toFixed(2)} GMD</div>
-                <div><StatusChip status={s.status} /></div>
-                <div style={{ fontSize: 12, color: "#4a5568" }}>{new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
-                <button onClick={() => router.push(`/admin/campaigns/${s.campaign_id}/view`)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}>View</button>
+                <div data-label="Gross" style={{ fontSize: 13, color: "#8899aa" }}>{s.gross_amount.toFixed(2)} GMD</div>
+                <div data-label="Commission" style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>+{s.platform_commission.toFixed(2)} GMD</div>
+                <div data-label="Status"><StatusChip status={s.status} /></div>
+                <div data-label="Date" style={{ fontSize: 12, color: "#4a5568" }}>{new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+                <div data-label="Actions">
+                  <button onClick={() => router.push(`/admin/campaigns/${s.campaign_id}/view`)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}>View</button>
+                </div>
               </div>
             ))}
+            </div>
           </div>
         </motion.div>
 

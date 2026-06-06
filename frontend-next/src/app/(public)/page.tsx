@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { CameraOutlined, StarOutlined } from "@ant-design/icons";
 import { useHomeFeed, useSessionProfile } from "@/hooks/use-frontend-data";
 
 const BLUE = "#1dc5ff";
@@ -77,7 +78,7 @@ function FeaturedCampaignCard({ campaign }: {
   const hasTarget = campaign.target_amount && campaign.target_amount > 0;
 
   return (
-    <motion.div {...fadeUp(0.2)} style={{
+    <motion.div {...fadeUp(0.2)} className="featured-card" style={{
       position: "relative",
       borderRadius: 20,
       overflow: "hidden",
@@ -304,7 +305,7 @@ export default function PublicHomePage() {
     <div style={{ background: "#0a0f1a" }}>
 
       {/* ── HERO ── */}
-      <section style={{
+      <section className="hero-section" style={{
         position: "relative", overflow: "hidden",
         minHeight: "calc(100vh - 68px)",
         display: "flex", alignItems: "center",
@@ -422,8 +423,8 @@ export default function PublicHomePage() {
               {/* Trust pills */}
               <motion.div {...fadeUp(0.28)} style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
                 <TrustPill icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z" fill="rgba(27,191,136,0.2)" stroke="#1bbf88" strokeWidth="1.5"/><path d="M9 12l2 2 4-4" stroke="#1bbf88" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>} label="KYC Verified Campaigners" />
-                <TrustPill icon={<span style={{ fontSize: 12 }}>📸</span>} label="Proof of Expenditure" />
-                <TrustPill icon={<span style={{ fontSize: 12 }}>⭐</span>} label="Donor Reviews" />
+                <TrustPill icon={<CameraOutlined style={{ fontSize: 12, color: "#1bbf88" }} />} label="Proof of Expenditure" />
+                <TrustPill icon={<StarOutlined style={{ fontSize: 12, color: "#fbbf24" }} />} label="Donor Reviews" />
               </motion.div>
 
               {/* Live stats */}
@@ -476,7 +477,7 @@ export default function PublicHomePage() {
 
               {/* Other campaigns mini list */}
               {otherCampaigns.length > 0 && !isLoading && (
-                <motion.div {...fadeUp(0.35)} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <motion.div {...fadeUp(0.35)} className="hero-more-campaigns" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 600, letterSpacing: "0.08em", marginBottom: 4, textTransform: "uppercase" }}>
                     More campaigns
                   </div>
@@ -501,7 +502,7 @@ export default function PublicHomePage() {
       </section>
 
       {/* ── TRUST SECTION ── */}
-      <section style={{
+      <section className="trust-section" style={{
         padding: "96px clamp(16px, 5vw, 72px)",
         borderTop: "1px solid rgba(255,255,255,0.05)",
         position: "relative", overflow: "hidden",
@@ -516,7 +517,7 @@ export default function PublicHomePage() {
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1 }}>
 
           {/* Section header — left-aligned with a number accent for credibility */}
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 24, marginBottom: 56 }}>
+          <div className="trust-header" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 24, marginBottom: 56 }}>
             <div>
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 7,
@@ -537,14 +538,13 @@ export default function PublicHomePage() {
                 Donors know exactly<br />where their money goes
               </h2>
             </div>
-            <p style={{ color: "#8899aa", fontSize: 15, maxWidth: 360, margin: 0, lineHeight: 1.75 }}>
+            <p className="trust-tagline" style={{ color: "#8899aa", fontSize: 15, maxWidth: 360, margin: 0, lineHeight: 1.75 }}>
               Every campaign on Kambeng comes with photos, receipts, and verified identity — because trust is everything.
             </p>
           </div>
 
-          <div style={{
+          <div className="trust-grid" style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
             gap: 2,
             background: "rgba(255,255,255,0.04)",
             borderRadius: 20,
@@ -609,7 +609,7 @@ export default function PublicHomePage() {
                 stat: "Always", statLabel: "visible",
               },
             ].map(({ svgIcon, accent, glow, border, title, desc, stat, statLabel }, i) => (
-              <div key={title} style={{
+              <div key={title} className="trust-card" style={{
                 padding: "32px 28px",
                 background: "#0d1120",
                 position: "relative",
@@ -640,7 +640,7 @@ export default function PublicHomePage() {
                 }}>{svgIcon}</div>
 
                 <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 8, letterSpacing: "-0.01em" }}>{title}</div>
-                <div style={{ fontSize: 13, color: "#6b7a8d", lineHeight: 1.75, marginBottom: 20 }}>{desc}</div>
+                <div className="trust-desc" style={{ fontSize: 13, color: "#6b7a8d", lineHeight: 1.75, marginBottom: 20 }}>{desc}</div>
 
                 {/* Stat chip */}
                 <div style={{
@@ -659,7 +659,7 @@ export default function PublicHomePage() {
       </section>
 
       {/* ── CTA BANNER ── */}
-      <section style={{ padding: "0 clamp(16px, 5vw, 72px) 80px" }}>
+      <section className="cta-section" style={{ padding: "0 clamp(16px, 5vw, 72px) 80px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{
             position: "relative", overflow: "hidden",
@@ -685,21 +685,23 @@ export default function PublicHomePage() {
                   Join Gambians using Kambeng to fund schools, health projects, and community causes — transparently.
                 </p>
               </div>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
-                <Link href="/auth/signup">
+              <div className="cta-buttons" style={{ display: "flex", gap: 12, flexWrap: "wrap", flexShrink: 0 }}>
+                <Link href="/auth/signup" className="cta-btn-link">
                   <button style={{
                     padding: "13px 28px", borderRadius: 12, border: "none",
                     background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
                     color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer",
                     boxShadow: "0 8px 28px rgba(29,197,255,0.35)",
+                    width: "100%",
                   }}>Start a Campaign</button>
                 </Link>
-                <Link href="/campaigns">
+                <Link href="/campaigns" className="cta-btn-link">
                   <button style={{
                     padding: "13px 28px", borderRadius: 12,
                     border: "1px solid rgba(255,255,255,0.15)",
                     background: "rgba(255,255,255,0.06)",
                     color: "#f0f6ff", fontSize: 15, fontWeight: 600, cursor: "pointer",
+                    width: "100%",
                   }}>Browse Campaigns</button>
                 </Link>
               </div>
@@ -712,6 +714,28 @@ export default function PublicHomePage() {
         @keyframes shimmer {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
+        }
+        .trust-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        @media (max-width: 640px) {
+          .hero-section { min-height: unset !important; padding: 28px clamp(16px, 5vw, 72px) 40px !important; }
+          .trust-section { padding: 48px clamp(16px, 5vw, 72px) !important; }
+          .trust-header { margin-bottom: 28px !important; }
+          .trust-grid { grid-template-columns: repeat(2, 1fr); }
+          .trust-card { padding: 18px 12px !important; }
+          .trust-tagline { display: none !important; }
+          .trust-desc {
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+            margin-bottom: 12px !important;
+          }
+          .featured-card { aspect-ratio: unset !important; height: 240px !important; }
+          .hero-more-campaigns { display: none !important; }
+          .cta-buttons { flex-direction: column !important; width: 100% !important; }
+          .cta-btn-link { width: 100% !important; display: block !important; }
+          .cta-section { padding: 0 clamp(16px, 5vw, 72px) 40px !important; }
+          .cta-section > div > div { padding: 36px clamp(20px, 5vw, 72px) !important; }
         }
       `}</style>
     </div>

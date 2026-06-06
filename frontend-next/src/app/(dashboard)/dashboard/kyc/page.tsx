@@ -234,7 +234,7 @@ export default function KYCPage() {
                   Upload at least one clear copy. Supported: PDF, PNG, JPG.
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 24 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 24 }}>
                   {DOC_TYPES.map(({ key, label, icon }) => {
                     const upload = uploads.find((u) => u.type === key)!;
                     return (

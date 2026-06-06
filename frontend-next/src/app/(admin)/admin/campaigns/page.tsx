@@ -107,15 +107,16 @@ export default function AdminCampaignsPage() {
         <motion.div {...fadeUp(0.06)}>
           <div style={{
             background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
-            borderRadius: 16, overflow: "hidden",
+            borderRadius: 16, overflowX: "auto",
           }}>
+            <div className="admin-table-wrap" style={{ minWidth: 720 }}>
             {/* Table header */}
-            <div style={{
-              display: "grid", gridTemplateColumns: "60px 1fr 160px 120px 120px 200px",
+            <div className="admin-table-header" style={{
+              display: "grid", gridTemplateColumns: "1fr 160px 120px 120px 200px",
               padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)",
               fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em",
             }}>
-              <div>ID</div><div>Campaign</div><div>Status</div><div>Raised</div><div>Target</div><div>Actions</div>
+              <div>Campaign</div><div>Status</div><div>Raised</div><div>Target</div><div>Actions</div>
             </div>
 
             {isLoading ? (
@@ -129,8 +130,9 @@ export default function AdminCampaignsPage() {
               <motion.div
                 key={c.id}
                 {...fadeUp(0.03 * i)}
+                className="admin-table-row"
                 style={{
-                  display: "grid", gridTemplateColumns: "60px 1fr 160px 120px 120px 200px",
+                  display: "grid", gridTemplateColumns: "1fr 160px 120px 120px 200px",
                   padding: "14px 18px", alignItems: "center",
                   borderBottom: "1px solid rgba(255,255,255,0.04)",
                   transition: "background 0.15s",
@@ -138,28 +140,30 @@ export default function AdminCampaignsPage() {
                 onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
-                <div style={{ fontSize: 12, color: "#4a5568", fontWeight: 600 }}>#{c.id}</div>
-                <div>
+                <div data-label="Campaign">
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 2 }}>{c.title}</div>
                   <div style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{c.slug}</div>
                 </div>
-                <div><StatusChip status={String(c.status)} /></div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{Number(c.amount_raised ?? 0).toLocaleString()} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
-                <div style={{ fontSize: 13, color: "#8899aa" }}>{c.target_amount ? `${Number(c.target_amount).toLocaleString()} GMD` : "—"}</div>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  <button onClick={() => router.push(`/admin/campaigns/${c.id}/view`)} style={btnStyle("default")}>View</button>
-                  {String(c.status) !== "ACTIVE" && (
-                    <button onClick={() => updateStatus.mutate({ slug: c.slug, status: "ACTIVE" })} disabled={updateStatus.isPending} style={btnStyle("green")}>Activate</button>
-                  )}
-                  {String(c.status) !== "SUSPENDED" && (
-                    <button onClick={() => updateStatus.mutate({ slug: c.slug, status: "SUSPENDED" })} disabled={updateStatus.isPending} style={btnStyle("orange")}>Suspend</button>
-                  )}
-                  {String(c.status) !== "CLOSED" && (
-                    <button onClick={() => updateStatus.mutate({ slug: c.slug, status: "CLOSED" })} disabled={updateStatus.isPending} style={btnStyle("red")}>Close</button>
-                  )}
+                <div data-label="Status"><StatusChip status={String(c.status)} /></div>
+                <div data-label="Raised" style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{Number(c.amount_raised ?? 0).toLocaleString()} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
+                <div data-label="Target" style={{ fontSize: 13, color: "#8899aa" }}>{c.target_amount ? `${Number(c.target_amount).toLocaleString()} GMD` : "—"}</div>
+                <div data-label="Actions">
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <button onClick={() => router.push(`/admin/campaigns/${c.id}/view`)} style={btnStyle("default")}>View</button>
+                    {String(c.status) !== "ACTIVE" && (
+                      <button onClick={() => updateStatus.mutate({ slug: c.slug, status: "ACTIVE" })} disabled={updateStatus.isPending} style={btnStyle("green")}>Activate</button>
+                    )}
+                    {String(c.status) !== "SUSPENDED" && (
+                      <button onClick={() => updateStatus.mutate({ slug: c.slug, status: "SUSPENDED" })} disabled={updateStatus.isPending} style={btnStyle("orange")}>Suspend</button>
+                    )}
+                    {String(c.status) !== "CLOSED" && (
+                      <button onClick={() => updateStatus.mutate({ slug: c.slug, status: "CLOSED" })} disabled={updateStatus.isPending} style={btnStyle("red")}>Close</button>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             ))}
+            </div>
           </div>
         </motion.div>
 

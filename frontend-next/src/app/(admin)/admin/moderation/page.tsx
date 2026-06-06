@@ -168,12 +168,13 @@ export default function AdminModerationPage() {
         {/* Search results */}
         {isSearching ? (
           <motion.div {...fadeUp(0.1)}>
-            <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
+            <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
               <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>
                 Search Results {search.data ? `(${search.data.total})` : ""}
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "100px 1fr 1fr 100px 80px 80px 80px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-                <div>Model</div><div>Title</div><div>Subtitle</div><div>Status</div><div>ID</div><div>Date</div><div>Action</div>
+              <div className="admin-table-wrap" style={{ minWidth: 660 }}>
+              <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "100px 1fr 1fr 100px 80px 80px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                <div>Model</div><div>Title</div><div>Subtitle</div><div>Status</div><div>Date</div><div>Action</div>
               </div>
               {search.isLoading ? (
                 <div style={{ padding: 32, textAlign: "center" }}>
@@ -183,25 +184,27 @@ export default function AdminModerationPage() {
               ) : (search.data?.items ?? []).length === 0 ? (
                 <div style={{ padding: "40px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No results found</div>
               ) : (search.data?.items ?? []).map((item: AdminSearchResultItem, i: number) => (
-                <div key={i} style={{ display: "grid", gridTemplateColumns: "100px 1fr 1fr 100px 80px 80px 80px", padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
+                <div key={i} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "100px 1fr 1fr 100px 80px 80px", padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                 >
-                  <span style={{ fontSize: 10, fontWeight: 700, color: BLUE, background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.15)", borderRadius: 6, padding: "3px 8px", textTransform: "capitalize" }}>{item.model}</span>
-                  <div style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
-                  <div style={{ fontSize: 12, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.subtitle}</div>
-                  <div style={{ fontSize: 12, color: "#8899aa" }}>{item.status}</div>
-                  <div style={{ fontSize: 12, color: "#4a5568" }}>#{item.entity_id}</div>
-                  <div style={{ fontSize: 11, color: "#4a5568" }}>{new Date(item.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
-                  <button
-                    onClick={() => {
-                      const url = MODEL_URL_MAP[item.model]?.(item.entity_id) ?? `/admin/${item.model}/${item.entity_id}`;
-                      window.open(url, "_blank");
-                    }}
-                    style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(29,197,255,0.25)", background: "rgba(29,197,255,0.08)", color: BLUE, cursor: "pointer" }}
-                  >Open</button>
+                  <div data-label="Model"><span style={{ fontSize: 10, fontWeight: 700, color: BLUE, background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.15)", borderRadius: 6, padding: "3px 8px", textTransform: "capitalize" }}>{item.model}</span></div>
+                  <div data-label="Title" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
+                  <div data-label="Subtitle" style={{ fontSize: 12, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.subtitle}</div>
+                  <div data-label="Status" style={{ fontSize: 12, color: "#8899aa" }}>{item.status}</div>
+                  <div data-label="Date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(item.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+                  <div data-label="Action">
+                    <button
+                      onClick={() => {
+                        const url = MODEL_URL_MAP[item.model]?.(item.entity_id) ?? `/admin/${item.model}/${item.entity_id}`;
+                        window.open(url, "_blank");
+                      }}
+                      style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(29,197,255,0.25)", background: "rgba(29,197,255,0.08)", color: BLUE, cursor: "pointer" }}
+                    >Open</button>
+                  </div>
                 </div>
               ))}
+              </div>
             </div>
             {searchTotalPages > 1 && (
               <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 12 }}>
@@ -224,7 +227,9 @@ export default function AdminModerationPage() {
 
             {resolvingId && (
               <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 18, marginBottom: 18 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Resolve Report #{resolvingId}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>
+                  {(() => { const r = reportRows.find((x) => x.id === resolvingId); return r ? `Resolve — ${r.reason?.replace(/_/g, " ")} on ${r.reported_entity_type}` : "Resolve Report"; })()}
+                </div>
                 <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 16 }}>Choose an action and add optional notes about your decision.</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, marginBottom: 16 }}>
                   {(Object.entries(RESOLUTION_ACTIONS) as [ResolutionAction, typeof RESOLUTION_ACTIONS[ResolutionAction]][]).map(([key, { label, color, bg, border }]) => (
@@ -249,9 +254,10 @@ export default function AdminModerationPage() {
               </div>
             )}
 
-            <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "52px 140px 120px 100px 1fr 160px 100px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-                <div>ID</div><div>Reason</div><div>Entity</div><div>Status</div><div>Description</div><div>Actions</div><div>Date</div>
+            <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
+              <div className="admin-table-wrap" style={{ minWidth: 700 }}>
+              <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "160px 120px 100px 1fr 160px 100px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                <div>Reason</div><div>Entity</div><div>Status</div><div>Description</div><div>Actions</div><div>Date</div>
               </div>
 
               {reportsLoading ? (
@@ -264,34 +270,36 @@ export default function AdminModerationPage() {
               ) : reportPageRows.map((r: AdminModerationReport) => {
                 const isOpen = r.status?.toLowerCase() === "open";
                 return (
-                  <div key={r.id} style={{ display: "grid", gridTemplateColumns: "52px 140px 120px 100px 1fr 160px 100px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", borderLeft: isOpen ? `3px solid ${RED}` : "3px solid transparent", transition: "background 0.15s" }}
+                  <div key={r.id} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "160px 120px 100px 1fr 160px 100px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", borderLeft: isOpen ? `3px solid ${RED}` : "3px solid transparent", transition: "background 0.15s" }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                   >
-                    <div style={{ fontSize: 12, color: "#4a5568", fontWeight: 600 }}>#{r.id}</div>
-                    <div style={{ fontSize: 12, color: "#8899aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.reason}</div>
-                    <div style={{ fontSize: 12, color: "#4a5568" }}>{r.reported_entity_type}</div>
-                    <div><span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: isOpen ? RED : GREEN, background: isOpen ? "rgba(239,68,68,0.1)" : "rgba(27,191,136,0.1)", border: `1px solid ${isOpen ? "rgba(239,68,68,0.25)" : "rgba(27,191,136,0.25)"}` }}>{r.status}</span></div>
-                    <div style={{ fontSize: 12, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.description || "—"}</div>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      {isOpen && (
-                        <button onClick={() => setResolvingId(r.id)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid rgba(29,197,255,0.25)`, background: "rgba(29,197,255,0.08)", color: BLUE, cursor: "pointer" }}>Review</button>
-                      )}
-                      {(r.campaign_id || r.reported_by_user_id) && (
-                        <button
-                          onClick={() => {
-                            if (r.campaign_id) window.open(`/admin/campaigns/${r.campaign_id}/view`, "_blank");
-                            else if (r.reported_by_user_id) window.open(`/admin/users/${r.reported_by_user_id}/view`, "_blank");
-                          }}
-                          style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}
-                        >View</button>
-                      )}
-                      {!isOpen && <span style={{ fontSize: 11, color: "#4a5568" }}>Resolved</span>}
+                    <div data-label="Reason" style={{ fontSize: 12, color: "#8899aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.reason?.replace(/_/g, " ")}</div>
+                    <div data-label="Entity" style={{ fontSize: 12, color: "#4a5568" }}>{r.reported_entity_type}</div>
+                    <div data-label="Status"><span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: isOpen ? RED : GREEN, background: isOpen ? "rgba(239,68,68,0.1)" : "rgba(27,191,136,0.1)", border: `1px solid ${isOpen ? "rgba(239,68,68,0.25)" : "rgba(27,191,136,0.25)"}` }}>{r.status}</span></div>
+                    <div data-label="Description" style={{ fontSize: 12, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.description || "—"}</div>
+                    <div data-label="Actions">
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        {isOpen && (
+                          <button onClick={() => setResolvingId(r.id)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid rgba(29,197,255,0.25)`, background: "rgba(29,197,255,0.08)", color: BLUE, cursor: "pointer" }}>Review</button>
+                        )}
+                        {(r.campaign_id || r.reported_by_user_id) && (
+                          <button
+                            onClick={() => {
+                              if (r.campaign_id) window.open(`/admin/campaigns/${r.campaign_id}/view`, "_blank");
+                              else if (r.reported_by_user_id) window.open(`/admin/users/${r.reported_by_user_id}/view`, "_blank");
+                            }}
+                            style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}
+                          >View</button>
+                        )}
+                        {!isOpen && <span style={{ fontSize: 11, color: "#4a5568" }}>Resolved</span>}
+                      </div>
                     </div>
-                    <div style={{ fontSize: 11, color: "#4a5568" }}>{new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+                    <div data-label="Date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
                   </div>
                 );
               })}
+              </div>
             </div>
 
             {reportTotalPages > 1 && (

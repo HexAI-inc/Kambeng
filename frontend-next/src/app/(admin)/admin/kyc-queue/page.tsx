@@ -105,7 +105,9 @@ export default function KYCQueuePage() {
             background: "#0d1120", border: "1px solid rgba(239,68,68,0.2)",
             borderRadius: 14, padding: "22px 24px",
           }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Reject Submission #{rejectingId}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>
+              Reject KYC — {rows.find((r) => r.id === rejectingId)?.user_name ?? `Submission ${rejectingId}`}
+            </div>
             <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 16 }}>Provide a reason — this will be sent to the user.</div>
             <textarea
               value={rejectionReason}
@@ -139,13 +141,14 @@ export default function KYCQueuePage() {
 
         {/* List */}
         <motion.div {...fadeUp(0.06)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
-            <div style={{
-              display: "grid", gridTemplateColumns: "52px 1fr 140px 120px 100px 200px",
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
+            <div className="admin-table-wrap" style={{ minWidth: 700 }}>
+            <div className="admin-table-header" style={{
+              display: "grid", gridTemplateColumns: "1fr 140px 120px 100px 200px",
               padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)",
               fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em",
             }}>
-              <div>ID</div><div>User</div><div>Status</div><div>Submitted</div><div>Docs</div><div>Actions</div>
+              <div>Applicant</div><div>Status</div><div>Submitted</div><div>Docs</div><div>Actions</div>
             </div>
 
             {isLoading ? (
@@ -162,36 +165,39 @@ export default function KYCQueuePage() {
                   key={sub.id}
                   {...fadeUp(0.03 * i)}
                   style={{
-                    display: "grid", gridTemplateColumns: "52px 1fr 140px 120px 100px 200px",
+                    display: "grid", gridTemplateColumns: "1fr 140px 120px 100px 200px",
                     padding: "14px 18px", alignItems: "center",
                     borderBottom: "1px solid rgba(255,255,255,0.04)",
                     transition: "background 0.15s",
                     borderLeft: !isProcessed ? `3px solid ${BLUE}` : "3px solid transparent",
                   }}
+                  className="admin-table-row"
                   onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                 >
-                  <div style={{ fontSize: 12, color: "#4a5568", fontWeight: 600 }}>#{sub.id}</div>
-                  <div>
+                  <div data-label="User">
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{sub.user_name}</div>
                     <div style={{ fontSize: 11, color: "#4a5568" }}>{sub.user_email}</div>
                   </div>
-                  <div><StatusChip status={sub.status} /></div>
-                  <div style={{ fontSize: 12, color: "#8899aa" }}>{new Date(sub.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
-                  <div style={{ fontSize: 13, color: "#8899aa", fontWeight: 600 }}>{sub.document_file_url ? "1 doc" : "0 docs"}</div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <button onClick={() => router.push(`/admin/kyc-queue/${sub.id}/review`)} style={btnStyle("blue")}>Review</button>
-                    <button onClick={() => router.push(`/admin/kyc-queue/${sub.id}/view`)} style={btnStyle("default")}>View</button>
-                    {!isProcessed && (
-                      <>
-                        <button onClick={() => void handleApprove(sub.id)} disabled={approveKYC.isPending} style={btnStyle("green")}>Approve</button>
-                        <button onClick={() => setRejectingId(sub.id)} style={btnStyle("red")}>Reject</button>
-                      </>
-                    )}
+                  <div data-label="Status"><StatusChip status={sub.status} /></div>
+                  <div data-label="Submitted" style={{ fontSize: 12, color: "#8899aa" }}>{new Date(sub.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
+                  <div data-label="Docs" style={{ fontSize: 13, color: "#8899aa", fontWeight: 600 }}>{sub.document_file_url ? "1 doc" : "0 docs"}</div>
+                  <div data-label="Actions">
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      <button onClick={() => router.push(`/admin/kyc-queue/${sub.id}/review`)} style={btnStyle("blue")}>Review</button>
+                      <button onClick={() => router.push(`/admin/kyc-queue/${sub.id}/view`)} style={btnStyle("default")}>View</button>
+                      {!isProcessed && (
+                        <>
+                          <button onClick={() => void handleApprove(sub.id)} disabled={approveKYC.isPending} style={btnStyle("green")}>Approve</button>
+                          <button onClick={() => setRejectingId(sub.id)} style={btnStyle("red")}>Reject</button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               );
             })}
+            </div>
           </div>
         </motion.div>
       </div>

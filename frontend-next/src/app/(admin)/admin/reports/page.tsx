@@ -82,6 +82,7 @@ export default function AdminReportsPage() {
   const statusOptions   = useMemo(() => ["ALL", ...Array.from(new Set((transactions ?? []).map((t) => String(t.status ?? ""))))].filter(Boolean), [transactions]);
   const typeOptions     = useMemo(() => ["ALL", ...Array.from(new Set((transactions ?? []).map((t) => String(t.transaction_type ?? ""))))].filter(Boolean), [transactions]);
   const campaignOptions = useMemo(() => [{ id: "ALL", label: "All campaigns" }, ...((campaigns ?? []).map((c) => ({ id: String(c.id), label: c.title })))], [campaigns]);
+  const campaignNameById = useMemo(() => Object.fromEntries((campaigns ?? []).map((c) => [String(c.id), c.title])), [campaigns]);
 
   const selectStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f0f6ff", fontSize: 12, outline: "none", cursor: "pointer" };
 
@@ -97,7 +98,7 @@ export default function AdminReportsPage() {
 
         {/* KPI grid */}
         <motion.div {...fadeUp(0.06)}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden", marginBottom: 2 }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden", marginBottom: 2 }}>
             {[
               { label: "Transactions",      value: String(summary?.transaction_count ?? 0),                              color: "#f0f6ff" },
               { label: "Total Donations",   value: `${(summary?.total_donations ?? 0).toFixed(2)} GMD`,                  color: GREEN },
@@ -110,7 +111,7 @@ export default function AdminReportsPage() {
               </div>
             ))}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
               { label: "Users",          value: String(systemStats?.total_users ?? 0),          color: "#f0f6ff" },
               { label: "Active Campaigns",value: String(systemStats?.active_campaigns ?? 0),    color: GREEN },
@@ -150,18 +151,17 @@ export default function AdminReportsPage() {
         {/* Transactions table */}
         <AdminTable
           title="Transactions"
-          headers={["ID", "Campaign", "Type", "Status", "Gross", "Net", "Reference", "Date"]}
-          cols="52px 80px 120px 110px 100px 100px 140px 90px"
+          headers={["Campaign", "Type", "Status", "Gross", "Net", "Reference", "Date"]}
+          cols="1fr 120px 110px 110px 110px 140px 90px"
           rows={txRows}
           renderRow={(t: AdminTransaction) => [
-            <span key="id" style={{ fontSize: 12, color: "#4a5568" }}>#{t.id}</span>,
-            <Link key="campaign" href={`/admin/reports/campaign/${t.campaign_id}`} style={{ color: BLUE, fontSize: 12, fontWeight: 600, textDecoration: "none" }}>#{t.campaign_id}</Link>,
+            <Link key="campaign" href={`/admin/reports/campaign/${t.campaign_id}`} style={{ color: "#f0f6ff", fontSize: 13, fontWeight: 600, textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{campaignNameById[String(t.campaign_id)] ?? `Campaign ${t.campaign_id}`}</Link>,
             <TypeChip key="type" type={String(t.transaction_type)} />,
             <StatusChip key="status" status={String(t.status)} />,
-            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{t.gross_amount}</span>,
-            <span key="net" style={{ fontSize: 13, color: GREEN }}>{t.net_amount}</span>,
-            <span key="ref" style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{t.external_reference || "—"}</span>,
-            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(t.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
+            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(t.gross_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
+            <span key="net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(t.net_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
+            <span key="ref" style={{ fontSize: 11, color: "#8899aa", fontFamily: "monospace" }}>{t.external_reference || "—"}</span>,
+            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(t.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
           ]}
           page={txPage}
           totalPages={txPages}
@@ -172,17 +172,16 @@ export default function AdminReportsPage() {
         {/* Payouts table */}
         <AdminTable
           title="Payouts"
-          headers={["Payout", "Campaign", "User", "Gross", "Net", "Status", "Date"]}
-          cols="80px 1fr 140px 110px 110px 110px 90px"
+          headers={["Campaign", "Recipient", "Gross", "Net", "Status", "Date"]}
+          cols="1fr 160px 110px 110px 110px 90px"
           rows={payRows}
           renderRow={(p: AdminPayoutOverview) => [
-            <span key="id" style={{ fontSize: 12, color: "#4a5568" }}>#{p.payout_id}</span>,
             <span key="campaign" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600 }}>{p.campaign_title}</span>,
             <span key="user" style={{ fontSize: 12, color: "#8899aa" }}>{p.user_name}</span>,
-            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{p.gross_amount}</span>,
-            <span key="net" style={{ fontSize: 13, color: GREEN }}>{p.net_amount}</span>,
+            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(p.gross_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
+            <span key="net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
             <StatusChip key="status" status={String(p.status)} />,
-            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
+            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
           ]}
           page={payPage}
           totalPages={payPages}
@@ -193,15 +192,14 @@ export default function AdminReportsPage() {
         {/* Audit logs table */}
         <AdminTable
           title="Audit Logs"
-          headers={["ID", "Action", "Entity", "Description", "When"]}
-          cols="52px 140px 120px 1fr 100px"
+          headers={["Action", "Entity", "Description", "When"]}
+          cols="160px 100px 1fr 110px"
           rows={auditRows}
           renderRow={(a: AdminAuditLog) => [
-            <span key="id" style={{ fontSize: 12, color: "#4a5568" }}>#{a.id}</span>,
-            <span key="action" style={{ fontSize: 12, fontWeight: 700, color: BLUE }}>{a.action_type}</span>,
+            <span key="action" style={{ fontSize: 12, fontWeight: 700, color: BLUE }}>{a.action_type.replace(/_/g, " ")}</span>,
             <span key="entity" style={{ fontSize: 12, color: "#8899aa" }}>{a.target_entity_type}</span>,
             <span key="desc" style={{ fontSize: 12, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.description}</span>,
-            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(a.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>,
+            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(a.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
           ]}
           page={auditPage}
           totalPages={auditPages}
@@ -227,21 +225,23 @@ function AdminTable<T>({ title, headers, cols, rows, renderRow, page, totalPages
 }) {
   return (
     <div>
-      <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
+      <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
         <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{title}</div>
-        <div style={{ display: "grid", gridTemplateColumns: cols, padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+        <div className="admin-table-wrap" style={{ minWidth: 560 }}>
+        <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: cols, padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
           {headers.map((h) => <div key={h}>{h}</div>)}
         </div>
         {rows.length === 0 ? (
           <div style={{ padding: "36px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>{emptyText}</div>
         ) : rows.map((row, i) => (
-          <div key={i} style={{ display: "grid", gridTemplateColumns: cols, padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s", gap: 8 }}
+          <div key={i} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: cols, padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s", gap: 8 }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
           >
-            {renderRow(row).map((cell, j) => <div key={j}>{cell}</div>)}
+            {renderRow(row).map((cell, j) => <div key={j} data-label={headers[j]}>{cell}</div>)}
           </div>
         ))}
+        </div>
       </div>
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 10 }}>

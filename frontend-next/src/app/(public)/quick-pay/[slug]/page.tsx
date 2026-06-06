@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
+import { ThunderboltOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 
@@ -258,7 +259,7 @@ export default function QuickPayPage() {
                 <p style={{ fontSize: 12, color: "#8899aa", fontWeight: 600, marginBottom: 10, letterSpacing: "0.05em" }}>
                   QUICK SELECT (GMD)
                 </p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+                <div className="qp-amounts" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
                   {QUICK_AMOUNTS.map((qa) => (
                     <button
                       key={qa}
@@ -398,7 +399,7 @@ export default function QuickPayPage() {
                     transition: "all 0.2s",
                   }}
                 >
-                  ⚡ {isSubmitting ? "Redirecting to Wave..." : "Donate with Wave"}
+                  <ThunderboltOutlined /> {isSubmitting ? "Redirecting to Wave..." : "Donate with Wave"}
                 </button>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center", marginTop: 4 }}>
@@ -415,9 +416,8 @@ export default function QuickPayPage() {
 
       <style>{`
         @media (max-width: 768px) {
-          .quick-pay-grid {
-            grid-template-columns: 1fr !important;
-          }
+          .quick-pay-grid { grid-template-columns: 1fr !important; }
+          .qp-amounts { grid-template-columns: repeat(3, 1fr) !important; }
         }
       `}</style>
     </div>

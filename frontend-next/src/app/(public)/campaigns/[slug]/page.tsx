@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState, useCallback } from "react";
+import { CheckCircleOutlined, SafetyCertificateOutlined, FileTextOutlined, StarOutlined, AimOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 
@@ -1233,7 +1234,7 @@ export default function CampaignDetailPage() {
                 background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
                 borderRadius: 16, padding: "22px 22px 26px",
               }}>
-                <SectionHeader icon={<span style={{ fontSize: 16 }}>🎯</span>} title="Campaign Goals" />
+                <SectionHeader icon={<AimOutlined style={{ fontSize: 16, color: "#1dc5ff" }} />} title="Campaign Goals" />
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 12 }}>
                   {goals.map((goal: CampaignGoal) => {
                     const pct = Math.min((goal.amount_raised / goal.target_amount) * 100, 100);
@@ -1419,13 +1420,13 @@ export default function CampaignDetailPage() {
               Trust & Safety
             </div>
             {[
-              { icon: "✅", label: "Payments via Wave (secure)" },
-              { icon: "🔐", label: "KYC-verified campaigner" },
-              { icon: "📄", label: `${proofs.length} proof document${proofs.length !== 1 ? "s" : ""} uploaded` },
-              { icon: "⭐", label: `${reviewSummary.count} donor review${reviewSummary.count !== 1 ? "s" : ""}` },
+              { icon: <CheckCircleOutlined style={{ fontSize: 14, color: "#1bbf88" }} />, label: "Payments via Wave (secure)" },
+              { icon: <SafetyCertificateOutlined style={{ fontSize: 14, color: "#1dc5ff" }} />, label: "KYC-verified campaigner" },
+              { icon: <FileTextOutlined style={{ fontSize: 14, color: "#8899aa" }} />, label: `${proofs.length} proof document${proofs.length !== 1 ? "s" : ""} uploaded` },
+              { icon: <StarOutlined style={{ fontSize: 14, color: "#fbbf24" }} />, label: `${reviewSummary.count} donor review${reviewSummary.count !== 1 ? "s" : ""}` },
             ].map(({ icon, label }) => (
               <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
-                <span style={{ fontSize: 14 }}>{icon}</span>
+                {icon}
                 <span style={{ fontSize: 12, color: "#8899aa" }}>{label}</span>
               </div>
             ))}

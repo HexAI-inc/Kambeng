@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MobileOutlined } from "@ant-design/icons";
 import { useCampaignQRCode, useDonationQRCode } from "@/hooks/use-frontend-data";
 import { AppButton, AppCard, AppSpace } from "@/components/ui";
 import styles from "./campaign-qr-modal.module.css";
@@ -36,7 +37,7 @@ export function CampaignQRModal({ campaignSlug, campaignTitle }: CampaignQRModal
         onClick={handleOpen}
         className={styles.triggerButton}
       >
-        📱 Share QR Code
+        <MobileOutlined /> Share QR Code
       </AppButton>
 
       {visible && (

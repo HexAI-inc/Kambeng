@@ -3,43 +3,52 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  AppstoreOutlined, FundProjectionScreenOutlined, TeamOutlined,
+  HeartOutlined, ReconciliationOutlined, PercentageOutlined,
+  WalletOutlined, AuditOutlined, BarChartOutlined,
+  FileProtectOutlined, WarningOutlined,
+  MenuOutlined, CloseOutlined, LogoutOutlined, SwapOutlined,
+  MenuFoldOutlined, MenuUnfoldOutlined,
+} from "@ant-design/icons";
 
 const BLUE = "#1dc5ff";
 const BG = "#0a0f1a";
 const CARD = "#0d1120";
 
-type NavSection = { label: string; items: { key: string; label: string; href: string; icon: string }[] };
+type IconComp = React.ComponentType<{ style?: React.CSSProperties }>;
+type NavSection = { label: string; items: { key: string; label: string; href: string; icon: IconComp }[] };
 
 const NAV: NavSection[] = [
   {
     label: "Overview",
     items: [
-      { key: "overview", label: "Dashboard", href: "/admin/overview", icon: "▣" },
+      { key: "overview", label: "Dashboard", href: "/admin/overview", icon: AppstoreOutlined },
     ],
   },
   {
     label: "Content",
     items: [
-      { key: "campaigns", label: "Campaigns", href: "/admin/campaigns", icon: "◈" },
-      { key: "users", label: "Users", href: "/admin/users", icon: "◉" },
+      { key: "campaigns", label: "Campaigns", href: "/admin/campaigns", icon: FundProjectionScreenOutlined },
+      { key: "users", label: "Users", href: "/admin/users", icon: TeamOutlined },
     ],
   },
   {
     label: "Finance",
     items: [
-      { key: "donations", label: "Donations", href: "/admin/donations", icon: "◆" },
-      { key: "reconciliations", label: "Reconciliations", href: "/admin/reconciliations", icon: "◎" },
-      { key: "commissions", label: "Commissions", href: "/admin/commissions", icon: "◇" },
-      { key: "payouts", label: "Payouts", href: "/admin/payouts", icon: "◈" },
-      { key: "auditlogs", label: "Audit Logs", href: "/admin/audit-logs", icon: "▦" },
-      { key: "reports", label: "Reports", href: "/admin/reports", icon: "▦" },
+      { key: "donations", label: "Donations", href: "/admin/donations", icon: HeartOutlined },
+      { key: "reconciliations", label: "Reconciliations", href: "/admin/reconciliations", icon: ReconciliationOutlined },
+      { key: "commissions", label: "Commissions", href: "/admin/commissions", icon: PercentageOutlined },
+      { key: "payouts", label: "Payouts", href: "/admin/payouts", icon: WalletOutlined },
+      { key: "auditlogs", label: "Audit Logs", href: "/admin/audit-logs", icon: AuditOutlined },
+      { key: "reports", label: "Reports", href: "/admin/reports", icon: BarChartOutlined },
     ],
   },
   {
     label: "Compliance",
     items: [
-      { key: "kyc", label: "KYC Queue", href: "/admin/kyc-queue", icon: "◎" },
-      { key: "moderation", label: "Moderation", href: "/admin/moderation", icon: "◈" },
+      { key: "kyc", label: "KYC Queue", href: "/admin/kyc-queue", icon: FileProtectOutlined },
+      { key: "moderation", label: "Moderation", href: "/admin/moderation", icon: WarningOutlined },
     ],
   },
 ];
@@ -71,7 +80,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           className="admin-collapse-btn"
           style={{ width: 28, height: 28, borderRadius: 7, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}
         >
-          {collapsed ? "→" : "←"}
+          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
         </button>
       </div>
 
@@ -106,7 +115,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }}
                     onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
                   >
-                    <span style={{ fontSize: 14, flexShrink: 0 }}>{item.icon}</span>
+                    <item.icon style={{ fontSize: 14, flexShrink: 0 }} />
                     {!collapsed && <span>{item.label}</span>}
                   </div>
                 </Link>
@@ -117,7 +126,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <div style={{ padding: "12px 10px 16px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <Link href="/" style={{ textDecoration: "none" }}>
+        <Link href="/dashboard" style={{ textDecoration: "none" }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
             padding: collapsed ? "10px" : "9px 10px",
@@ -128,8 +137,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
           >
-            <span style={{ fontSize: 14 }}>⤴</span>
-            {!collapsed && <span>Back to Site</span>}
+            <SwapOutlined style={{ fontSize: 14 }} />
+            {!collapsed && <span>User Dashboard</span>}
           </div>
         </Link>
         <Link href="/auth/logout" style={{ textDecoration: "none" }}>
@@ -143,7 +152,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(239,68,68,0.06)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
           >
-            <span style={{ fontSize: 14 }}>↩</span>
+            <LogoutOutlined style={{ fontSize: 14 }} />
             {!collapsed && <span>Logout</span>}
           </div>
         </Link>
@@ -201,8 +210,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         >
           <button
             onClick={() => setMobileOpen(true)}
-            style={{ width: 36, height: 36, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#f0f6ff", cursor: "pointer", fontSize: 16 }}
-          >☰</button>
+            style={{ width: 36, height: 36, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#f0f6ff", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
+          ><MenuOutlined /></button>
           <Logo />
         </header>
 
@@ -219,6 +228,82 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         }
         @media (min-width: 769px) {
           .admin-mobile-bar { display: none !important; }
+        }
+
+        /* ── Admin table mobile card layout ── */
+        @media (max-width: 767px) {
+          .admin-table-header { display: none !important; }
+          .admin-table-wrap { min-width: unset !important; }
+
+          .admin-table-row {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0 12px;
+            padding: 14px 16px !important;
+            border-radius: 12px;
+            margin: 6px 10px;
+            border: 1px solid rgba(255,255,255,0.07) !important;
+            background: rgba(255,255,255,0.015);
+          }
+
+          /* All detail cells: small label above value */
+          .admin-table-row > div[data-label] {
+            padding: 5px 0;
+          }
+          .admin-table-row > div[data-label]::before {
+            content: attr(data-label);
+            display: block;
+            font-size: 9px;
+            font-weight: 700;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 2px;
+          }
+
+          /* ── Header row: primary content cell + Status ── */
+          .admin-table-row > div[data-label="User"],
+          .admin-table-row > div[data-label="Campaign"],
+          .admin-table-row > div[data-label="Reference"],
+          .admin-table-row > div[data-label="Title"],
+          .admin-table-row > div[data-label="Reason"] {
+            order: -2;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+          }
+          .admin-table-row > div[data-label="Status"] {
+            order: -2;
+            justify-self: end;
+            align-self: start;
+            padding-top: 2px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+          }
+
+          /* No labels for header-row cells */
+          .admin-table-row > div[data-label="User"]::before,
+          .admin-table-row > div[data-label="Campaign"]::before,
+          .admin-table-row > div[data-label="Reference"]::before,
+          .admin-table-row > div[data-label="Title"]::before,
+          .admin-table-row > div[data-label="Reason"]::before,
+          .admin-table-row > div[data-label="Status"]::before { display: none !important; }
+
+          /* ── Actions: full width at the bottom ── */
+          .admin-table-row > div[data-label="Actions"],
+          .admin-table-row > div[data-label="Review"],
+          .admin-table-row > div[data-label="Action"] {
+            order: 99;
+            grid-column: 1 / -1;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 2px;
+          }
+          .admin-table-row > div[data-label="Actions"]::before,
+          .admin-table-row > div[data-label="Review"]::before,
+          .admin-table-row > div[data-label="Action"]::before { display: none !important; }
+
+          /* ── KPI stat strips: 2-column ── */
+          .admin-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
       `}</style>
     </div>

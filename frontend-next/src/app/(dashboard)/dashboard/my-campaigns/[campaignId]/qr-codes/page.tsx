@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { MobileOutlined, PrinterOutlined, BarChartOutlined, LinkOutlined } from "@ant-design/icons";
 import { useCampaignQRCode, useDonationQRCode, useCampaignAliases, useShortCodeQRCode } from "@/hooks/use-frontend-data";
 import { useAppFeedback } from "@/components/ui";
 
@@ -129,10 +130,10 @@ export default function CampaignQRCodesPage() {
   };
 
   const tips = [
-    { icon: "📱", title: "Social Media", desc: "Post QR codes on Instagram Stories or Facebook to make it easy for followers to donate." },
-    { icon: "🖨️", title: "Print & Physical", desc: "Print QR codes on posters and flyers for in-person fundraising events." },
-    { icon: "📊", title: "Track Channels", desc: "Different QR codes let you see which channel drives the most donations." },
-    { icon: "🔗", title: "Short Links", desc: "Use aliases for memorable short links that are easier to share and type." },
+    { icon: <MobileOutlined style={{ fontSize: 20, color: BLUE }} />, title: "Social Media", desc: "Post QR codes on Instagram Stories or Facebook to make it easy for followers to donate." },
+    { icon: <PrinterOutlined style={{ fontSize: 20, color: GREEN }} />, title: "Print & Physical", desc: "Print QR codes on posters and flyers for in-person fundraising events." },
+    { icon: <BarChartOutlined style={{ fontSize: 20, color: "#a855f7" }} />, title: "Track Channels", desc: "Different QR codes let you see which channel drives the most donations." },
+    { icon: <LinkOutlined style={{ fontSize: 20, color: "#fbbf24" }} />, title: "Short Links", desc: "Use aliases for memorable short links that are easier to share and type." },
   ];
 
   return (
@@ -195,7 +196,7 @@ export default function CampaignQRCodesPage() {
                 padding: "16px", borderRadius: 12,
                 background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)",
               }}>
-                <div style={{ fontSize: 20, marginBottom: 8 }}>{icon}</div>
+                <div style={{ marginBottom: 8 }}>{icon}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>{title}</div>
                 <div style={{ fontSize: 12, color: "#6b7a8d", lineHeight: 1.65 }}>{desc}</div>
               </div>

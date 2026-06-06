@@ -4,15 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { AppstoreOutlined, ReadOutlined, HeartOutlined, ThunderboltOutlined, SearchOutlined } from "@ant-design/icons";
 import { usePublicCampaignDiscovery } from "@/hooks/use-frontend-data";
 
 type BrowseFilter = "all" | "schools" | "health" | "emergency";
 
-const FILTERS: Array<{ value: BrowseFilter; label: string; icon: string; keywords?: string[] }> = [
-  { value: "all", label: "All", icon: "▦" },
-  { value: "schools", label: "Education", icon: "◈", keywords: ["school", "education", "classroom", "student"] },
-  { value: "health", label: "Health", icon: "♥", keywords: ["health", "clinic", "medical", "hospital"] },
-  { value: "emergency", label: "Emergency", icon: "⚡", keywords: ["flood", "relief", "emergency", "disaster"] },
+type IconComp = React.ComponentType<{ style?: React.CSSProperties }>;
+const FILTERS: Array<{ value: BrowseFilter; label: string; icon: IconComp; keywords?: string[] }> = [
+  { value: "all",       label: "All",       icon: AppstoreOutlined },
+  { value: "schools",   label: "Education", icon: ReadOutlined,        keywords: ["school", "education", "classroom", "student"] },
+  { value: "health",    label: "Health",    icon: HeartOutlined,        keywords: ["health", "clinic", "medical", "hospital"] },
+  { value: "emergency", label: "Emergency", icon: ThunderboltOutlined,  keywords: ["flood", "relief", "emergency", "disaster"] },
 ];
 
 function matchesFilter(
@@ -95,7 +97,7 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
       }}
     >
       {/* Cover */}
-      <div style={{ position: "relative", height: 200, flexShrink: 0, overflow: "hidden", background: "#1a2333" }}>
+      <div className="campaign-cover" style={{ position: "relative", height: 200, flexShrink: 0, overflow: "hidden", background: "#1a2333" }}>
         {campaign.cover_image_url ? (
           <Image
             src={campaign.cover_image_url}
@@ -270,7 +272,7 @@ export default function CampaignDiscoveryPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#0a0f1a" }}>
       {/* Hero header */}
-      <div style={{
+      <div className="campaigns-hero" style={{
         padding: "60px clamp(16px, 4vw, 48px) 0",
         maxWidth: 1200,
         margin: "0 auto",
@@ -312,10 +314,10 @@ export default function CampaignDiscoveryPage() {
         {/* Search + filters */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 48 }}>
           <div style={{ position: "relative", maxWidth: 560 }}>
-            <span style={{
+            <SearchOutlined style={{
               position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
               color: "#4a5568", fontSize: 15, zIndex: 1, lineHeight: 1,
-            }}>⌕</span>
+            }} />
             <input
               type="text"
               placeholder="Search campaigns..."
@@ -355,7 +357,7 @@ export default function CampaignDiscoveryPage() {
                   transition: "all 0.2s",
                 }}
               >
-                {f.icon}
+                <f.icon style={{ fontSize: 13 }} />
                 {f.label}
               </button>
             ))}
@@ -364,7 +366,7 @@ export default function CampaignDiscoveryPage() {
       </div>
 
       {/* Campaign grid */}
-      <div style={{
+      <div className="campaigns-grid-wrap" style={{
         padding: "0 clamp(16px, 4vw, 48px) 80px",
         maxWidth: 1200,
         margin: "0 auto",
@@ -410,7 +412,7 @@ export default function CampaignDiscoveryPage() {
               padding: "80px 20px",
             }}
           >
-            <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.4 }}>🔍</div>
+            <SearchOutlined style={{ fontSize: 48, marginBottom: 16, opacity: 0.4, color: "#4a5568", display: "block" }} />
             <h3 style={{ color: "#f0f6ff", fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
               No campaigns found
             </h3>
@@ -436,6 +438,14 @@ export default function CampaignDiscoveryPage() {
           </motion.div>
         )}
       </div>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .campaigns-hero { padding-top: 32px !important; }
+          .campaigns-grid-wrap { padding-bottom: 48px !important; }
+          .campaign-cover { height: 160px !important; }
+        }
+      `}</style>
     </div>
   );
 }

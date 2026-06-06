@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useSessionProfile, useUpdateMyProfile } from "@/hooks/use-frontend-data";
+import { kycLabel } from "@/lib/fmt";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -188,10 +189,10 @@ export default function ProfilePage() {
         <motion.div {...fade(0.14)}>
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "24px" }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 18 }}>Account info</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className="profile-info-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               {[
-                { label: "Role",           value: me.role },
-                { label: "KYC status",     value: me.kyc_status ?? "NOT_SUBMITTED" },
+                { label: "Role",           value: me.role === "ADMIN" ? "Admin" : "Member" },
+                { label: "KYC status",     value: kycLabel(me.kyc_status) },
                 { label: "Account status", value: me.is_active ? "Active" : "Suspended" },
                 { label: "Member since",   value: new Date(me.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) },
               ].map(({ label, value }) => (
@@ -204,7 +205,12 @@ export default function ProfilePage() {
           </div>
         </motion.div>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 480px) {
+          .profile-info-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }

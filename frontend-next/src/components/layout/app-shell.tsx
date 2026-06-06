@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MenuOutlined, CloseOutlined } from "@ant-design/icons";
 import { useSessionProfile } from "@/hooks/use-frontend-data";
 
 type NavItem = { key: string; label: string; href: string };
@@ -66,6 +67,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const authLink = isLoggedIn
     ? { key: "logout", label: "Logout", href: "/auth/logout" }
     : { key: "login", label: "Login", href: "/auth/login" };
+
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -174,7 +179,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
-            {mobileOpen ? "✕" : "☰"}
+            {mobileOpen ? <CloseOutlined /> : <MenuOutlined />}
           </button>
         </div>
       </header>
@@ -246,13 +251,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Footer */}
       {isPublic && (
-        <footer style={{
+        <footer className="site-footer" style={{
           borderTop: "1px solid rgba(255,255,255,0.06)",
           padding: "40px clamp(16px, 4vw, 48px) 32px",
           background: "rgba(0,0,0,0.3)",
         }}>
           <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 40, justifyContent: "space-between", marginBottom: 32 }}>
+            <div className="footer-top" style={{ display: "flex", flexWrap: "wrap", gap: 40, justifyContent: "space-between", marginBottom: 32 }}>
               <div style={{ maxWidth: 280 }}>
                 <Logo />
                 <p style={{ color: "#8899aa", fontSize: 14, marginTop: 12, lineHeight: 1.7 }}>
@@ -294,6 +299,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         @media (min-width: 769px) {
           .desktop-nav { display: flex !important; }
           .mobile-nav { display: none !important; }
+        }
+        @media (max-width: 640px) {
+          .site-footer { padding: 28px clamp(16px, 4vw, 48px) 20px !important; }
+          .footer-top { gap: 24px !important; margin-bottom: 20px !important; }
         }
       `}</style>
     </div>

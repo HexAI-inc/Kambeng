@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { DM_Sans, Syne } from "next/font/google";
 import "antd/dist/reset.css";
 import { Providers } from "@/components/providers";
-import { AppShell } from "@/components/layout/app-shell";
 import "./globals.css";
 
 const display = Syne({
@@ -31,7 +30,7 @@ export default function RootLayout({
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
         <Providers>
-          <AppShell>{children}</AppShell>
+          {children}
         </Providers>
       </body>
     </html>

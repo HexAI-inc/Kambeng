@@ -85,13 +85,14 @@ export default function AdminUsersPage() {
         </motion.div>
 
         <motion.div {...fadeUp(0.06)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
-            <div style={{
-              display: "grid", gridTemplateColumns: "52px 1fr 100px 100px 80px 80px 160px",
+          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
+            <div className="admin-table-wrap" style={{ minWidth: 640 }}>
+            <div className="admin-table-header" style={{
+              display: "grid", gridTemplateColumns: "1fr 120px 100px 80px 80px 160px",
               padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)",
               fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em",
             }}>
-              <div>ID</div><div>User</div><div>Role</div><div>Status</div><div>KYC</div><div>Camps</div><div>Actions</div>
+              <div>User</div><div>Role</div><div>Status</div><div>KYC</div><div>Camps</div><div>Actions</div>
             </div>
 
             {isLoading ? (
@@ -105,8 +106,9 @@ export default function AdminUsersPage() {
               <motion.div
                 key={u.id}
                 {...fadeUp(0.03 * i)}
+                className="admin-table-row"
                 style={{
-                  display: "grid", gridTemplateColumns: "52px 1fr 100px 100px 80px 80px 160px",
+                  display: "grid", gridTemplateColumns: "1fr 120px 100px 80px 80px 160px",
                   padding: "13px 18px", alignItems: "center",
                   borderBottom: "1px solid rgba(255,255,255,0.04)",
                   transition: "background 0.15s",
@@ -114,13 +116,12 @@ export default function AdminUsersPage() {
                 onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
-                <div style={{ fontSize: 12, color: "#4a5568", fontWeight: 600 }}>#{u.id}</div>
-                <div>
+                <div data-label="User">
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{u.full_name}</div>
                   <div style={{ fontSize: 11, color: "#4a5568" }}>{u.email}</div>
                   {u.wave_number && <div style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{u.wave_number}</div>}
                 </div>
-                <div>
+                <div data-label="Role">
                   <Chip
                     label={String(u.role)}
                     color={u.role === "ADMIN" ? "#f97316" : BLUE}
@@ -128,7 +129,7 @@ export default function AdminUsersPage() {
                     border={u.role === "ADMIN" ? "rgba(249,115,22,0.25)" : "rgba(29,197,255,0.2)"}
                   />
                 </div>
-                <div>
+                <div data-label="Status">
                   <Chip
                     label={u.is_active ? "Active" : "Suspended"}
                     color={u.is_active ? GREEN : RED}
@@ -136,7 +137,7 @@ export default function AdminUsersPage() {
                     border={u.is_active ? "rgba(27,191,136,0.25)" : "rgba(239,68,68,0.25)"}
                   />
                 </div>
-                <div>
+                <div data-label="KYC">
                   {u.kyc_status && (
                     <Chip
                       label={String(u.kyc_status)}
@@ -146,8 +147,9 @@ export default function AdminUsersPage() {
                     />
                   )}
                 </div>
-                <div style={{ fontSize: 13, color: "#8899aa", fontWeight: 600 }}>{u.campaign_count ?? 0}</div>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div data-label="Campaigns" style={{ fontSize: 13, color: "#8899aa", fontWeight: 600 }}>{u.campaign_count ?? 0}</div>
+                <div data-label="Actions">
+                  <div style={{ display: "flex", gap: 6 }}>
                   <button onClick={() => router.push(`/admin/users/${u.id}/view`)} style={btnStyle("default")}>View</button>
                   <button
                     onClick={() =>
@@ -164,9 +166,11 @@ export default function AdminUsersPage() {
                   >
                     {u.is_active ? "Suspend" : "Activate"}
                   </button>
+                  </div>
                 </div>
               </motion.div>
             ))}
+            </div>
           </div>
         </motion.div>
 

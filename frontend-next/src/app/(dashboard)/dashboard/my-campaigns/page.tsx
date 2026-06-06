@@ -56,6 +56,7 @@ export default function MyCampaignsPage() {
   const activeCnt = (campaigns ?? []).filter((c) => c.status === "ACTIVE").length;
 
   return (
+    <>
     <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
@@ -98,7 +99,7 @@ export default function MyCampaignsPage() {
 
         {/* Summary strip */}
         {!isLoading && campaigns && campaigns.length > 0 && (
-          <motion.div {...fadeUp(0.06)} style={{
+          <motion.div {...fadeUp(0.06)} className="mc-summary" style={{
             display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2,
             background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
             borderRadius: 14, overflow: "hidden",
@@ -144,7 +145,7 @@ export default function MyCampaignsPage() {
                 >
                   <div style={{ display: "flex", gap: 0 }}>
                     {/* Thumbnail strip */}
-                    <div style={{ width: 100, minHeight: 130, flexShrink: 0, position: "relative", background: "#1a2333" }}>
+                    <div className="mc-thumb" style={{ width: 100, minHeight: 130, flexShrink: 0, position: "relative", background: "#1a2333" }}>
                       {c.cover_image_url ? (
                         <Image src={c.cover_image_url} alt={c.title} fill unoptimized sizes="100px" style={{ objectFit: "cover" }} />
                       ) : (
@@ -258,5 +259,12 @@ export default function MyCampaignsPage() {
         )}
       </div>
     </div>
+    <style>{`
+      @media (max-width: 480px) {
+        .mc-summary { grid-template-columns: 1fr !important; }
+        .mc-thumb { width: 72px !important; min-height: 100px !important; }
+      }
+    `}</style>
+    </>
   );
 }

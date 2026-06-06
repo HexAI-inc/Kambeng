@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { humanize } from "@/lib/fmt";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -40,7 +41,7 @@ function KPI({
   label: string; value: string | number; sub?: string; color?: string; href?: string;
 }) {
   const content = (
-    <div style={{
+    <div className="kpi-card" style={{
       background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14,
       padding: "20px 22px", display: "flex", flexDirection: "column", gap: 6,
       cursor: href ? "pointer" : "default", transition: "border-color 0.2s, transform 0.2s",
@@ -82,7 +83,7 @@ function ActivityRow({ log }: { log: AdminAuditLog }) {
     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
       <div style={{ width: 7, height: 7, borderRadius: "50%", background: color, flexShrink: 0, marginTop: 5 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.action_type}</div>
+        <div style={{ fontSize: 12, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{humanize(log.action_type)}</div>
         <div style={{ fontSize: 11, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.description}</div>
       </div>
       <div style={{ fontSize: 10, color: "#4a5568", flexShrink: 0 }}>{new Date(log.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
@@ -167,7 +168,7 @@ export default function AdminOverviewPage() {
     return Object.entries(map)
       .map(([cid, rev]) => {
         const c = arr.find((x) => x.id === Number(cid));
-        return { name: c ? (c.title.length > 18 ? c.title.slice(0, 18) + "…" : c.title) : `#${cid}`, revenue: rev };
+        return { name: c ? (c.title.length > 22 ? c.title.slice(0, 22) + "…" : c.title) : `Campaign ${cid}`, revenue: rev };
       })
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 8);
@@ -210,7 +211,8 @@ export default function AdminOverviewPage() {
         </motion.div>
 
         {/* Charts row 1: Donations timeline + Transaction types */}
-        <motion.div {...fadeUp(0.13)} style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 16 }} className="chart-row-1">
+        <motion.div {...fadeUp(0.13)}>
+        <div className="chart-row-1">
           {/* Area chart */}
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Donations (Last 14 Days)</div>
@@ -259,10 +261,12 @@ export default function AdminOverviewPage() {
               </>
             )}
           </div>
+        </div>
         </motion.div>
 
         {/* Charts row 2: Revenue per campaign + KYC donut */}
-        <motion.div {...fadeUp(0.17)} style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16 }} className="chart-row-2">
+        <motion.div {...fadeUp(0.17)}>
+        <div className="chart-row-2">
           {/* Bar: revenue per campaign */}
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Commission Revenue by Campaign</div>
@@ -307,10 +311,12 @@ export default function AdminOverviewPage() {
               ))}
             </div>
           </div>
+        </div>
         </motion.div>
 
         {/* Bottom row: Campaign status bar + Recent activity */}
-        <motion.div {...fadeUp(0.21)} style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 16 }} className="chart-row-3">
+        <motion.div {...fadeUp(0.21)}>
+        <div className="chart-row-3">
           {/* Campaign status bar chart */}
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Campaign Status Distribution</div>
@@ -343,6 +349,7 @@ export default function AdminOverviewPage() {
               ) : recentLogs.map((log) => <ActivityRow key={log.id} log={log} />)}
             </div>
           </div>
+        </div>
         </motion.div>
 
         {/* Quick links */}
@@ -379,8 +386,8 @@ export default function AdminOverviewPage() {
           .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .chart-row-1, .chart-row-2, .chart-row-3 { grid-template-columns: 1fr !important; }
         }
-        @media (max-width: 500px) {
-          .kpi-grid { grid-template-columns: 1fr !important; }
+        @media (max-width: 540px) {
+          .kpi-card { padding: 14px 12px !important; }
         }
       `}</style>
     </div>

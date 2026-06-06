@@ -72,7 +72,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const sidebar = (
-    <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
       <div style={{ padding: "20px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Logo />
         <button
@@ -172,7 +172,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           width: sidebarWidth, flexShrink: 0,
           background: CARD,
           borderRight: "1px solid rgba(255,255,255,0.06)",
-          position: "sticky", top: 0, height: "100vh",
+          position: "sticky", top: 0, height: "100dvh",
           transition: "width 0.2s ease",
           overflow: "hidden",
         }}
@@ -187,7 +187,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           onClick={() => setMobileOpen(false)}
         >
           <aside
-            style={{ width: 240, background: CARD, borderRight: "1px solid rgba(255,255,255,0.06)", height: "100vh", flexShrink: 0 }}
+            style={{ width: 240, background: CARD, borderRight: "1px solid rgba(255,255,255,0.06)", height: "100%", overflow: "hidden", flexShrink: 0 }}
             onClick={(e) => e.stopPropagation()}
           >
             {sidebar}

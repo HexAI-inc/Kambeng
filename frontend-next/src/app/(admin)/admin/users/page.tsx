@@ -86,9 +86,9 @@ export default function AdminUsersPage() {
 
         <motion.div {...fadeUp(0.06)}>
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
-            <div className="admin-table-wrap" style={{ minWidth: 640 }}>
+            <div className="admin-table-wrap" style={{ minWidth: 740 }}>
             <div className="admin-table-header" style={{
-              display: "grid", gridTemplateColumns: "1fr 120px 100px 80px 80px 160px",
+              display: "grid", gridTemplateColumns: "1fr 100px 110px 140px 60px 160px",
               padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)",
               fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em",
             }}>
@@ -108,7 +108,7 @@ export default function AdminUsersPage() {
                 {...fadeUp(0.03 * i)}
                 className="admin-table-row"
                 style={{
-                  display: "grid", gridTemplateColumns: "1fr 120px 100px 80px 80px 160px",
+                  display: "grid", gridTemplateColumns: "1fr 100px 110px 140px 60px 160px",
                   padding: "13px 18px", alignItems: "center",
                   borderBottom: "1px solid rgba(255,255,255,0.04)",
                   transition: "background 0.15s",

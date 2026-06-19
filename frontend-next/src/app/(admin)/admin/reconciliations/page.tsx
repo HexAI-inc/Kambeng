@@ -129,8 +129,8 @@ export default function ReconciliationsPage() {
 
         <motion.div {...fadeUp(0.08)}>
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
-            <div className="admin-table-wrap" style={{ minWidth: 780 }}>
-            <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+            <div className="admin-table-wrap" style={{ minWidth: 900 }}>
+            <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "130px 1fr 110px 90px 100px 80px 210px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
               <div>Reference</div><div>Campaign</div><div>Donor</div><div>Amount</div><div>Status</div><div>Source</div><div>Actions</div>
             </div>
 
@@ -144,7 +144,7 @@ export default function ReconciliationsPage() {
             ) : pageRows.map((d: AdminDonation) => {
               const isPending = !d.reconciliation_source && d.status.toLowerCase() === "pending";
               return (
-                <div key={d.client_reference} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "140px 1fr 120px 100px 100px 100px 180px", padding: "13px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", borderLeft: isPending ? `3px solid #f97316` : "3px solid transparent", transition: "background 0.15s" }}
+                <div key={d.client_reference} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "130px 1fr 110px 90px 100px 80px 210px", padding: "13px 18px", alignItems: "start", borderBottom: "1px solid rgba(255,255,255,0.04)", borderLeft: isPending ? `3px solid #f97316` : "3px solid transparent", transition: "background 0.15s" }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                 >
@@ -155,15 +155,15 @@ export default function ReconciliationsPage() {
                   <div data-label="Status"><StatusChip status={d.status} /></div>
                   <div data-label="Source" style={{ fontSize: 12, color: "#4a5568" }}>{d.reconciliation_source || "—"}</div>
                   <div data-label="Actions">
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      <button onClick={() => router.push(`/admin/campaigns/${d.campaign_id}/view`)} style={btnStyle("default")}>Campaign</button>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5, alignItems: "flex-start" }}>
+                      <button onClick={() => router.push(`/admin/campaigns/${d.campaign_id}/view`)} style={btnStyle("default")}>View Campaign</button>
                       {isPending && (
                         <>
                           <button onClick={() => void handleApprove(d.client_reference)} disabled={approveDonation.isPending} style={btnStyle("green")}>Approve</button>
                           <button onClick={() => setRejectingRef(d.client_reference)} style={btnStyle("red")}>Reject</button>
                         </>
                       )}
-                      {!isPending && <span style={{ fontSize: 11, color: "#4a5568", padding: "5px 0" }}>Reconciled</span>}
+                      {!isPending && <span style={{ fontSize: 11, color: "#4a5568", padding: "2px 0" }}>Reconciled</span>}
                     </div>
                   </div>
                 </div>

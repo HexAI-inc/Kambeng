@@ -97,8 +97,11 @@ jobs:
             cd /opt/Kambeng
             git fetch origin development
             git reset --hard origin/development
-            COMPOSE_CMD="docker-compose"
-            docker compose version >/dev/null 2>&1 && COMPOSE_CMD="docker compose"
+            if docker compose version >/dev/null 2>&1; then
+              COMPOSE_CMD="docker compose"
+            else
+              COMPOSE_CMD="docker-compose"
+            fi
             $COMPOSE_CMD -f backend/docker-compose.yml up -d --build
             $COMPOSE_CMD -f backend/docker-compose.yml exec -T api alembic upgrade head
             curl -fsS https://api.kambeng.hexai.gm/api/utils/frontend/v1/home-feed >/dev/null

@@ -135,10 +135,11 @@ log "Stopping backend stack to free memory for frontend build"
 "${COMPOSE_CMD[@]}" -f "$BACKEND_COMPOSE_FILE" stop 2>/dev/null || true
 
 log "Installing frontend dependencies"
-npm ci --prefer-offline --prefix "$FRONTEND_DIR" || npm ci --prefix "$FRONTEND_DIR"
+NODE_OPTIONS="--max-old-space-size=1024" npm ci --prefer-offline --prefix "$FRONTEND_DIR" \
+  || NODE_OPTIONS="--max-old-space-size=1024" npm ci --prefix "$FRONTEND_DIR"
 
 log "Building frontend"
-npm run build --prefix "$FRONTEND_DIR"
+NODE_OPTIONS="--max-old-space-size=1024" npm run build --prefix "$FRONTEND_DIR"
 
 log "Starting backend stack"
 "${COMPOSE_CMD[@]}" -f "$BACKEND_COMPOSE_FILE" up -d --build

@@ -78,15 +78,14 @@ jobs:
         run: npm run build
 
   deploy:
-    name: Deploy to VPS
+    name: Deploy backend to VPS
     runs-on: ubuntu-latest
     environment: Deployment VPS
     needs:
       - backend-tests
-      - frontend-checks
     if: github.event_name == 'push' && github.ref == 'refs/heads/development'
     steps:
-      - name: Deploy over SSH
+      - name: Deploy backend over SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -98,6 +97,8 @@ jobs:
             cd /opt/Kambeng
             git fetch origin development
             git reset --hard origin/development
-            bash ./deploy.sh
-            curl -fsS https://kambeng.hexai.gm/ >/dev/null
-            curl -fsS https://kambeng.hexai.gm/api/backend/utils/frontend/v1/home-feed >/dev/null
+            COMPOSE_CMD="docker-compose"
+            docker compose version >/dev/null 2>&1 && COMPOSE_CMD="docker compose"
+            $COMPOSE_CMD -f backend/docker-compose.yml up -d --build
+            $COMPOSE_CMD -f backend/docker-compose.yml exec -T api alembic upgrade head
+            curl -fsS https://api.kambeng.hexai.gm/api/utils/frontend/v1/home-feed >/dev/null

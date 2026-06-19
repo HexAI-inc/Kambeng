@@ -16,15 +16,21 @@ function isItemActive(pathname: string, href: string) {
 function Logo() {
   return (
     <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{
-        width: 36, height: 36,
-        background: "linear-gradient(135deg, #1dc5ff 0%, #079bd4 100%)",
-        borderRadius: 10,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontWeight: 900, fontSize: 16, color: "#fff",
-        boxShadow: "0 4px 12px rgba(29,197,255,0.4)",
-        flexShrink: 0,
-      }}>K</div>
+      <svg width="36" height="36" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, filter: "drop-shadow(0 4px 12px rgba(29,197,255,0.4))" }}>
+        <defs>
+          <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#16B7F0"/>
+            <stop offset="100%" stopColor="#0B82BD"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="240" height="240" rx="54" fill="url(#logoBg)"/>
+        <g stroke="#FBF7F0" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" fill="none">
+          <path d="M84,64 L84,176"/>
+          <path d="M84,122 L162,64"/>
+          <path d="M84,122 L162,176"/>
+        </g>
+        <circle cx="192" cy="124" r="14" fill="#F2A93B"/>
+      </svg>
       <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 20, color: "#f0f6ff", letterSpacing: "-0.03em" }}>
         Kambeng
       </span>
@@ -253,39 +259,62 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {isPublic && (
         <footer className="site-footer" style={{
           borderTop: "1px solid rgba(255,255,255,0.06)",
-          padding: "40px clamp(16px, 4vw, 48px) 32px",
-          background: "rgba(0,0,0,0.3)",
+          padding: "48px clamp(16px, 4vw, 48px) 32px",
+          background: "rgba(0,0,0,0.4)",
         }}>
           <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-            <div className="footer-top" style={{ display: "flex", flexWrap: "wrap", gap: 40, justifyContent: "space-between", marginBottom: 32 }}>
+            <div className="footer-top" style={{ display: "flex", flexWrap: "wrap", gap: 40, justifyContent: "space-between", marginBottom: 36 }}>
               <div style={{ maxWidth: 280 }}>
                 <Logo />
-                <p style={{ color: "#8899aa", fontSize: 14, marginTop: 12, lineHeight: 1.7 }}>
-                  Gambia&apos;s crowdfunding platform powered by Wave mobile money. Fund what matters, transparently.
+                <p style={{ color: "#6b7a8d", fontSize: 14, marginTop: 14, lineHeight: 1.75 }}>
+                  Gambia&apos;s most transparent way to give — powered by Wave, APS Mobile Money, and secure card payments via Stripe.
                 </p>
+                {/* Payment method logos */}
+                <div style={{ display: "flex", gap: 8, marginTop: 16, alignItems: "center" }}>
+                  {[
+                    { label: "Wave", color: "#1dc5ff", bg: "rgba(29,197,255,0.1)", border: "rgba(29,197,255,0.2)" },
+                    { label: "APS", color: "#f59e0b", bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.2)" },
+                    { label: "Visa", color: "#a5b4fc", bg: "rgba(99,102,241,0.1)", border: "rgba(99,102,241,0.2)" },
+                  ].map(({ label, color, bg, border }) => (
+                    <span key={label} style={{ fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 6, color, background: bg, border: `1px solid ${border}`, letterSpacing: "0.05em" }}>{label}</span>
+                  ))}
+                </div>
               </div>
               <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
                 <div>
-                  <p style={{ color: "#f0f6ff", fontWeight: 600, marginBottom: 12, fontSize: 13 }}>Platform</p>
+                  <p style={{ color: "#f0f6ff", fontWeight: 600, marginBottom: 14, fontSize: 12, letterSpacing: "0.07em", textTransform: "uppercase" }}>Platform</p>
                   {[["Browse Campaigns", "/campaigns"], ["Start a Campaign", "/auth/signup"], ["How it Works", "/"]].map(([label, href]) => (
-                    <div key={href} style={{ marginBottom: 8 }}>
-                      <Link href={href} style={{ color: "#8899aa", fontSize: 14, transition: "color 0.2s" }}>{label}</Link>
+                    <div key={label} style={{ marginBottom: 10 }}>
+                      <Link href={href} style={{ color: "#6b7a8d", fontSize: 14, transition: "color 0.2s" }}>{label}</Link>
                     </div>
                   ))}
                 </div>
                 <div>
-                  <p style={{ color: "#f0f6ff", fontWeight: 600, marginBottom: 12, fontSize: 13 }}>Account</p>
+                  <p style={{ color: "#f0f6ff", fontWeight: 600, marginBottom: 14, fontSize: 12, letterSpacing: "0.07em", textTransform: "uppercase" }}>Account</p>
                   {[["Login", "/auth/login"], ["Sign Up", "/auth/signup"], ["Dashboard", "/dashboard"]].map(([label, href]) => (
-                    <div key={href} style={{ marginBottom: 8 }}>
-                      <Link href={href} style={{ color: "#8899aa", fontSize: 14 }}>{label}</Link>
+                    <div key={label} style={{ marginBottom: 10 }}>
+                      <Link href={href} style={{ color: "#6b7a8d", fontSize: 14 }}>{label}</Link>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <p style={{ color: "#f0f6ff", fontWeight: 600, marginBottom: 14, fontSize: 12, letterSpacing: "0.07em", textTransform: "uppercase" }}>Legal</p>
+                  {[
+                    ["Privacy Policy", "/privacy"],
+                    ["Terms & Conditions", "/terms"],
+                    ["Refund Policy", "/refund-policy"],
+                    ["Cookie Policy", "/cookie-policy"],
+                  ].map(([label, href]) => (
+                    <div key={label} style={{ marginBottom: 10 }}>
+                      <Link href={href} style={{ color: "#6b7a8d", fontSize: 14 }}>{label}</Link>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 20, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-              <p style={{ color: "#4a5568", fontSize: 13 }}>© 2026 Kambeng. Built for The Gambia.</p>
-              <p style={{ color: "#4a5568", fontSize: 13 }}>Powered by Wave Mobile Money & HexAI</p>
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 20, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+              <p style={{ color: "#4a5568", fontSize: 13 }}>© 2026 Kambeng. Built for The Gambia. Powered by HexAI.</p>
+              <p style={{ color: "#4a5568", fontSize: 13 }}>🇬🇲 Made with pride in The Gambia</p>
             </div>
           </div>
         </footer>

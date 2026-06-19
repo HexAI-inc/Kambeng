@@ -4,14 +4,24 @@ from sqlalchemy import select
 
 from app.db.database import AsyncSessionLocal
 from app.core.security import get_password_hash
-from app import models as _models  # noqa: F401
+# Import all models so SQLAlchemy can resolve every relationship before queries run
+from app.models.user import User
+from app.models.campaign import Campaign, CampaignMode, CampaignStatus
+from app.models.campaign_goal import CampaignGoal  # noqa: F401
+from app.models.campaign_update import CampaignUpdate  # noqa: F401
+from app.models.update_attachment import UpdateAttachment  # noqa: F401
+from app.models.donation import Donation  # noqa: F401
+from app.models.payout import Payout  # noqa: F401
+from app.models.proof import Proof  # noqa: F401
+from app.models.review import Review  # noqa: F401
 from app.models.kyc import KYC  # noqa: F401
 from app.models.ledger import TransactionLedger  # noqa: F401
 from app.models.audit_log import AdminAuditLog  # noqa: F401
 from app.models.alias import CampaignAlias  # noqa: F401
 from app.models.moderation import ModerationReport  # noqa: F401
-from app.models.user import User
-from app.models.campaign import Campaign, CampaignMode, CampaignStatus
+from app.models.fraud_report import FraudReport  # noqa: F401
+from app.models.fraud_report_notification_email import FraudReportNotificationEmail  # noqa: F401
+from app.models.kyc_notification_email import KYCNotificationEmail  # noqa: F401
 from app.models.recurring_donation import RecurringDonation  # noqa: F401
 
 

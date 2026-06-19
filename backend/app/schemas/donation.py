@@ -22,6 +22,17 @@ class DonationRead(DonationBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class StripePaymentIntentRequest(BaseModel):
+    campaign_id: int
+    goal_id: Optional[int] = None
+    amount: float = Field(..., gt=0)
+    donor_name: Optional[str] = "Anonymous"
+    message: Optional[str] = None
+
+class StripeConfirmRequest(BaseModel):
+    client_reference: str
+    payment_intent_id: str
+
 class DonationManualApproveRequest(BaseModel):
     reason: Optional[str] = None
 

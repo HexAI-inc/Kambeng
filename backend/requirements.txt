@@ -20,5 +20,6 @@ Jinja2==3.1.6
 apscheduler==3.10.4    # For scheduled background jobs (recurring donations)
 cryptography==42.0.8   # For field-level encryption of sensitive data
 psutil==7.2.2          # System metrics for /api/monitor endpoint
+stripe>=7.0.0
 pytest==8.3.5
 pytest-asyncio==0.25.3

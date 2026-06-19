@@ -10,7 +10,7 @@ from app.models.donation import Donation
 from app.models.ledger import TransactionLedger, TransactionStatus
 from app.core.config import settings
 
-ResolutionSource = Literal["WEBHOOK", "MANUAL_ADMIN"]
+ResolutionSource = Literal["WEBHOOK", "MANUAL_ADMIN", "STRIPE"]
 TerminalDonationStatus = Literal["SUCCEEDED", "FAILED"]
 
 

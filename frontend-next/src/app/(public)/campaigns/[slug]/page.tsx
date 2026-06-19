@@ -1028,7 +1028,7 @@ export default function CampaignDetailPage() {
                   boxShadow: "0 6px 24px rgba(29,197,255,0.35)",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 }}>
-                  Donate with Wave <IconArrowRight />
+                  Make a Donation <IconArrowRight />
                 </button>
               </Link>
 
@@ -1379,7 +1379,7 @@ export default function CampaignDetailPage() {
                 boxShadow: "0 6px 24px rgba(29,197,255,0.3)",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               }}>
-                Donate with Wave <IconArrowRight />
+                Make a Donation <IconArrowRight />
               </button>
             </Link>
 

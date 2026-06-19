@@ -22,6 +22,8 @@ from app.schemas.donation import (
     DonationManualApproveRequest,
     DonationManualRejectRequest,
     DonationReconciliationResponse,
+    StripePaymentIntentRequest,
+    StripeConfirmRequest,
 )
 from app.schemas.recurring_donation import (
     RecurringDonationCreate,
@@ -419,6 +421,152 @@ async def withdraw_funds(
         "wave_number": current_user.wave_number,
         "status": "PENDING",
     }
+
+
+@router.post("/stripe/create-payment-intent")
+async def create_stripe_payment_intent(
+    payload: StripePaymentIntentRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a Stripe PaymentIntent and a pending donation record."""
+    import asyncio
+    import stripe as stripe_lib
+
+    if not settings.STRIPE_SECRET_KEY:
+        raise HTTPException(status_code=503, detail="Stripe is not configured on this server.")
+
+    stripe_lib.api_key = settings.STRIPE_SECRET_KEY
+
+    result = await db.execute(select(Campaign).where(Campaign.id == payload.campaign_id))
+    campaign = result.scalars().first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    if campaign.status != CampaignStatus.ACTIVE:
+        raise HTTPException(status_code=400, detail="This campaign is no longer accepting donations.")
+
+    goal = None
+    if payload.goal_id is not None:
+        goal_result = await db.execute(select(CampaignGoal).where(CampaignGoal.id == payload.goal_id))
+        goal = goal_result.scalars().first()
+        if not goal or goal.campaign_id != campaign.id:
+            raise HTTPException(status_code=400, detail="Selected goal does not belong to this campaign")
+        if goal.status != GoalStatus.ACTIVE:
+            raise HTTPException(status_code=400, detail="Selected goal is not accepting funding")
+
+    # Stripe requires integer cents; treat GMD amount as USD cents (1 GMD ≈ 1 cent).
+    # Minimum Stripe charge is 50 cents ($0.50).
+    amount_cents = max(50, int(payload.amount))
+    client_reference = f"STR-{uuid.uuid4().hex[:10].upper()}"
+
+    try:
+        intent = await asyncio.to_thread(
+            stripe_lib.PaymentIntent.create,
+            amount=amount_cents,
+            currency="usd",
+            metadata={
+                "campaign_id": str(campaign.id),
+                "campaign_slug": campaign.slug,
+                "client_reference": client_reference,
+                "donor_name": payload.donor_name or "Anonymous",
+            },
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Stripe error: {exc}")
+
+    new_donation = Donation(
+        campaign_id=campaign.id,
+        goal_id=goal.id if goal else None,
+        client_reference=client_reference,
+        amount=payload.amount,
+        donor_name=payload.donor_name,
+        message=payload.message,
+        status="PENDING",
+    )
+    db.add(new_donation)
+    db.add(TransactionLedger(
+        campaign_id=campaign.id,
+        transaction_type=TransactionType.DONATION,
+        status=TransactionStatus.PENDING,
+        gross_amount=payload.amount,
+        hexai_fee=0.0,
+        platform_commission=0.0,
+        net_amount=payload.amount,
+        external_reference=client_reference,
+        description=f"Stripe donation by {payload.donor_name or 'Anonymous'}",
+        created_by_user_id=None,
+        confirmed_at=None,
+    ))
+    await db.commit()
+
+    logger.info(
+        "Stripe PaymentIntent created",
+        extra={
+            "action": "stripe_create_payment_intent",
+            "campaign_id": campaign.id,
+            "amount": payload.amount,
+            "client_reference": client_reference,
+            "payment_intent_id": intent.id,
+        },
+    )
+
+    return {
+        "client_secret": intent.client_secret,
+        "publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
+        "client_reference": client_reference,
+        "campaign_slug": campaign.slug,
+    }
+
+
+@router.post("/stripe/confirm")
+async def confirm_stripe_payment(
+    payload: StripeConfirmRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Verify a Stripe PaymentIntent server-side and mark the donation as SUCCEEDED."""
+    import asyncio
+    import stripe as stripe_lib
+    from app.services.payment_reconciliation import (
+        reconcile_donation_status,
+        DonationNotFoundError,
+        DonationTransitionConflictError,
+    )
+
+    if not settings.STRIPE_SECRET_KEY:
+        raise HTTPException(status_code=503, detail="Stripe is not configured on this server.")
+
+    stripe_lib.api_key = settings.STRIPE_SECRET_KEY
+
+    try:
+        intent = await asyncio.to_thread(stripe_lib.PaymentIntent.retrieve, payload.payment_intent_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Could not verify payment with Stripe: {exc}")
+
+    if intent.status != "succeeded":
+        raise HTTPException(status_code=400, detail=f"Payment not completed. Stripe status: {intent.status}")
+
+    try:
+        await reconcile_donation_status(
+            db,
+            client_reference=payload.client_reference,
+            target_status="SUCCEEDED",
+            source="STRIPE",
+            reason="stripe_client_confirmed",
+        )
+    except DonationNotFoundError:
+        raise HTTPException(status_code=404, detail="Donation not found")
+    except DonationTransitionConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+    logger.info(
+        "Stripe payment confirmed",
+        extra={
+            "action": "stripe_confirm",
+            "client_reference": payload.client_reference,
+            "payment_intent_id": payload.payment_intent_id,
+        },
+    )
+
+    return {"status": "SUCCEEDED", "client_reference": payload.client_reference}
 
 
 @router.get("/donations/{client_reference}/status")

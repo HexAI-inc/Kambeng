@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     # Storage Strategy ("local" or "do_spaces")
     STORAGE_STRATEGY: str = os.getenv("STORAGE_STRATEGY", "do_spaces")
     
+    # Stripe
+    STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
+    STRIPE_PUBLISHABLE_KEY: str = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
+
     # Fees & Commission
     # HexAI charges 2% on all transactions (collections and payouts)
     HEXAI_COLLECTION_FEE_PERCENT: float = float(os.getenv("HEXAI_COLLECTION_FEE_PERCENT", "0.02"))

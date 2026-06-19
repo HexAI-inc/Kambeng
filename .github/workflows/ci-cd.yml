@@ -94,14 +94,21 @@ jobs:
           script_stop: true
           script: |
             set -euo pipefail
+            export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
             cd /opt/Kambeng
             git fetch origin development
             git reset --hard origin/development
             if docker compose version >/dev/null 2>&1; then
               COMPOSE_CMD="docker compose"
-            else
+            elif command -v docker-compose >/dev/null 2>&1; then
               COMPOSE_CMD="docker-compose"
+            else
+              echo "ERROR: no docker compose found" >&2; exit 1
             fi
+            echo "Using compose: $COMPOSE_CMD"
             $COMPOSE_CMD -f backend/docker-compose.yml up -d --build
+            echo "Waiting for api container to be ready..."
+            sleep 10
             $COMPOSE_CMD -f backend/docker-compose.yml exec -T api alembic upgrade head
             curl -fsS https://api.kambeng.hexai.gm/api/utils/frontend/v1/home-feed >/dev/null
+            echo "Deploy complete"

@@ -11,13 +11,14 @@ const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
 const RED = "#ef4444";
 
-type ResolutionAction = "content_removed" | "content_reinstated" | "user_warned" | "user_suspended";
+type ResolutionAction = "content_removed" | "content_reinstated" | "user_warned" | "user_suspended" | "campaign_suspended";
 
 const RESOLUTION_ACTIONS: Record<ResolutionAction, { label: string; color: string; bg: string; border: string }> = {
   content_removed: { label: "Remove Content", color: RED, bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)" },
   content_reinstated: { label: "Reinstate Content", color: GREEN, bg: "rgba(27,191,136,0.1)", border: "rgba(27,191,136,0.25)" },
   user_warned: { label: "Warn User", color: "#f97316", bg: "rgba(249,115,22,0.1)", border: "rgba(249,115,22,0.25)" },
   user_suspended: { label: "Suspend User", color: RED, bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)" },
+  campaign_suspended: { label: "Suspend Campaign", color: RED, bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)" },
 };
 
 function fadeUp(delay = 0) {
@@ -87,7 +88,7 @@ export default function AdminModerationPage() {
     }
 
     try {
-      await resolveReport.mutateAsync({ reportId: resolvingId, action: selectedAction, note: resolutionNote });
+      await resolveReport.mutateAsync({ reportId: resolvingId, action: selectedAction, note: resolutionNote, status: "RESOLVED" });
       showToast("Report resolved", true);
       setResolvingId(null);
       setSelectedAction(null);
@@ -96,6 +97,18 @@ export default function AdminModerationPage() {
       const message = axios.isAxiosError(error) && typeof error.response?.data?.detail === "string"
         ? error.response.data.detail
         : "Failed to resolve report";
+      showToast(message, false);
+    }
+  };
+
+  const handleDismiss = async (reportId: number) => {
+    try {
+      await resolveReport.mutateAsync({ reportId, status: "DISMISSED" });
+      showToast("Report dismissed", true);
+    } catch (error) {
+      const message = axios.isAxiosError(error) && typeof error.response?.data?.detail === "string"
+        ? error.response.data.detail
+        : "Failed to dismiss report";
       showToast(message, false);
     }
   };
@@ -231,15 +244,22 @@ export default function AdminModerationPage() {
                   {(() => { const r = reportRows.find((x) => x.id === resolvingId); return r ? `Resolve — ${r.reason?.replace(/_/g, " ")} on ${r.reported_entity_type}` : "Resolve Report"; })()}
                 </div>
                 <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 16 }}>Choose an action and add optional notes about your decision.</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, marginBottom: 16 }}>
-                  {(Object.entries(RESOLUTION_ACTIONS) as [ResolutionAction, typeof RESOLUTION_ACTIONS[ResolutionAction]][]).map(([key, { label, color, bg, border }]) => (
-                    <button
-                      key={key}
-                      onClick={() => setSelectedAction(key)}
-                      style={{ padding: "12px 14px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", border: `1px solid ${selectedAction === key ? border : "rgba(255,255,255,0.08)"}`, background: selectedAction === key ? bg : "rgba(255,255,255,0.03)", color: selectedAction === key ? color : "#8899aa", textAlign: "left" }}
-                    >{label}</button>
-                  ))}
-                </div>
+                {(() => {
+                  const resolvingReport = reportRows.find((x) => x.id === resolvingId);
+                  const availableActions = (Object.entries(RESOLUTION_ACTIONS) as [ResolutionAction, typeof RESOLUTION_ACTIONS[ResolutionAction]][])
+                    .filter(([key]) => key !== "campaign_suspended" || !!resolvingReport?.campaign_id);
+                  return (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, marginBottom: 16 }}>
+                      {availableActions.map(([key, { label, color, bg, border }]) => (
+                        <button
+                          key={key}
+                          onClick={() => setSelectedAction(key)}
+                          style={{ padding: "12px 14px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", border: `1px solid ${selectedAction === key ? border : "rgba(255,255,255,0.08)"}`, background: selectedAction === key ? bg : "rgba(255,255,255,0.03)", color: selectedAction === key ? color : "#8899aa", textAlign: "left" }}
+                        >{label}</button>
+                      ))}
+                    </div>
+                  );
+                })()}
                 <textarea
                   value={resolutionNote}
                   onChange={(e) => setResolutionNote(e.target.value)}
@@ -281,7 +301,10 @@ export default function AdminModerationPage() {
                     <div data-label="Actions">
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                         {isOpen && (
-                          <button onClick={() => setResolvingId(r.id)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid rgba(29,197,255,0.25)`, background: "rgba(29,197,255,0.08)", color: BLUE, cursor: "pointer" }}>Review</button>
+                          <>
+                            <button onClick={() => setResolvingId(r.id)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid rgba(29,197,255,0.25)`, background: "rgba(29,197,255,0.08)", color: BLUE, cursor: "pointer" }}>Review</button>
+                            <button onClick={() => void handleDismiss(r.id)} disabled={resolveReport.isPending} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", color: "#6b7a8d", cursor: "pointer" }}>Dismiss</button>
+                          </>
                         )}
                         {(r.campaign_id || r.reported_by_user_id) && (
                           <button

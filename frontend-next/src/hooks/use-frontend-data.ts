@@ -685,15 +685,18 @@ export function useResolveModerationReport() {
       reportId,
       action,
       note,
+      status = "RESOLVED",
     }: {
       reportId: number;
-      action: string;
+      action?: string;
       note?: string;
+      status?: "RESOLVED" | "DISMISSED";
     }) => {
       const response = await api.post<AdminModerationReport>(
         `/moderation/reports/${reportId}/resolve`,
         {
-          action_taken: action,
+          status,
+          action_taken: action ?? null,
           moderation_note: note,
         },
       );

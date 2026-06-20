@@ -17,22 +17,16 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function PhotoGrid({ attachments, onOpen }: {
-  attachments: CampaignUpdate["attachments"];
+function Img({ att, sizes, onOpen, overlay }: {
+  att: CampaignUpdate["attachments"][0];
+  sizes: string;
   onOpen: (url: string) => void;
+  overlay?: string;
 }) {
-  const n = attachments.length;
-  if (n === 0) return null;
-
-  const imgStyle: React.CSSProperties = {
-    position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
-  };
-
-  const cell = (att: CampaignUpdate["attachments"][0], sizes: string, overlay?: string) => (
+  return (
     <div
-      key={att.id}
       onClick={() => onOpen(att.file_url)}
-      style={{ position: "relative", width: "100%", height: "100%", cursor: "zoom-in", overflow: "hidden", background: "rgba(255,255,255,0.04)" }}
+      style={{ position: "relative", aspectRatio: "1", width: "100%", overflow: "hidden", cursor: "zoom-in", background: "#080c16" }}
     >
       <Image src={att.file_url} alt={att.file_name ?? "photo"} fill unoptimized sizes={sizes} style={{ objectFit: "cover" }} />
       {overlay && (
@@ -42,52 +36,51 @@ function PhotoGrid({ attachments, onOpen }: {
       )}
     </div>
   );
+}
+
+function PhotoGrid({ attachments, onOpen }: {
+  attachments: CampaignUpdate["attachments"];
+  onOpen: (url: string) => void;
+}) {
+  const n = attachments.length;
+  if (n === 0) return null;
 
   if (n === 1) {
     return (
-      <div style={{ position: "relative", width: "100%", aspectRatio: "1", overflow: "hidden" }}>
+      <div onClick={() => onOpen(attachments[0].file_url)}
+        style={{ position: "relative", width: "100%", aspectRatio: "1", overflow: "hidden", cursor: "zoom-in", background: "#080c16" }}>
         <Image src={attachments[0].file_url} alt={attachments[0].file_name ?? "photo"} fill unoptimized sizes="760px" style={{ objectFit: "cover" }} />
-        <div onClick={() => onOpen(attachments[0].file_url)} style={{ position: "absolute", inset: 0, cursor: "zoom-in" }} />
       </div>
     );
   }
 
   if (n === 2) {
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, width: "100%" }}>
-        {attachments.map((att) => (
-          <div key={att.id} style={{ position: "relative", aspectRatio: "1" }}>
-            {cell(att, "380px")}
-          </div>
-        ))}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+        {attachments.map((att) => <Img key={att.id} att={att} sizes="380px" onOpen={onOpen} />)}
       </div>
     );
   }
 
   if (n === 3) {
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gridTemplateRows: "1fr 1fr", gap: 2, aspectRatio: "4/3" }}>
-        <div style={{ gridRow: "1 / 3", position: "relative" }}>
-          {cell(attachments[0], "500px")}
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 2 }}>
+        <Img att={attachments[0]} sizes="500px" onOpen={onOpen} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Img att={attachments[1]} sizes="250px" onOpen={onOpen} />
+          <Img att={attachments[2]} sizes="250px" onOpen={onOpen} />
         </div>
-        {attachments.slice(1).map((att) => (
-          <div key={att.id} style={{ position: "relative" }}>
-            {cell(att, "250px")}
-          </div>
-        ))}
       </div>
     );
   }
 
-  // 4+ → 2×2 grid, last cell gets +N overlay
+  // 4+ → 2×2 grid, +N overlay on the 4th cell
   const visible = attachments.slice(0, 4);
   const extra = n - 4;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 2, aspectRatio: "1" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
       {visible.map((att, i) => (
-        <div key={att.id} style={{ position: "relative" }}>
-          {cell(att, "380px", i === 3 && extra > 0 ? `+${extra + 1}` : undefined)}
-        </div>
+        <Img key={att.id} att={att} sizes="380px" onOpen={onOpen} overlay={i === 3 && extra > 0 ? `+${extra + 1}` : undefined} />
       ))}
     </div>
   );

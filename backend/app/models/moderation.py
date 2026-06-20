@@ -37,7 +37,7 @@ class ModerationReport(Base):
     id = Column(Integer, primary_key=True, index=True)
     
     # Report details
-    reported_entity_type = Column(Enum(ReportEntityType), nullable=False, index=True)
+    reported_entity_type = Column(Enum(ReportEntityType, native_enum=False), nullable=False, index=True)
     reported_entity_id = Column(Integer, nullable=False, index=True)
     
     # Campaign context (for correlation)
@@ -47,11 +47,11 @@ class ModerationReport(Base):
     reported_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Nullable for anonymous reports
     
     # Report content
-    reason = Column(Enum(ReportReason), nullable=False, index=True)
+    reason = Column(Enum(ReportReason, native_enum=False), nullable=False, index=True)
     description = Column(Text, nullable=False)
     
     # Moderation
-    status = Column(Enum(ReportStatus), default=ReportStatus.OPEN, index=True)
+    status = Column(Enum(ReportStatus, native_enum=False), default=ReportStatus.OPEN, index=True)
     moderation_note = Column(Text, nullable=True)  # Admin notes
     resolved_by_admin_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     resolved_at = Column(DateTime(timezone=True), nullable=True)

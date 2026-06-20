@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import type { CampaignUpdate } from "@/types/frontend";
 
 const BLUE = "#1dc5ff";
@@ -17,20 +16,22 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function Img({ att, sizes, onOpen, overlay }: {
+const coverImg: React.CSSProperties = { width: "100%", height: "100%", objectFit: "cover", display: "block" };
+
+function Cell({ att, onOpen, overlay }: {
   att: CampaignUpdate["attachments"][0];
-  sizes: string;
   onOpen: (url: string) => void;
   overlay?: string;
 }) {
   return (
     <div
       onClick={() => onOpen(att.file_url)}
-      style={{ position: "relative", aspectRatio: "1", width: "100%", overflow: "hidden", cursor: "zoom-in", background: "#080c16" }}
+      style={{ width: "100%", aspectRatio: "1", overflow: "hidden", cursor: "zoom-in", background: "#080c16", position: "relative", flexShrink: 0 }}
     >
-      <Image src={att.file_url} alt={att.file_name ?? "photo"} fill unoptimized sizes={sizes} style={{ objectFit: "cover" }} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={att.file_url} alt={att.file_name ?? ""} style={coverImg} />
       {overlay && (
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.52)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 20, fontWeight: 800 }}>
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 22, fontWeight: 800 }}>
           {overlay}
         </div>
       )}
@@ -47,9 +48,10 @@ function PhotoGrid({ attachments, onOpen }: {
 
   if (n === 1) {
     return (
-      <div onClick={() => onOpen(attachments[0].file_url)}
-        style={{ position: "relative", width: "100%", aspectRatio: "1", overflow: "hidden", cursor: "zoom-in", background: "#080c16" }}>
-        <Image src={attachments[0].file_url} alt={attachments[0].file_name ?? "photo"} fill unoptimized sizes="760px" style={{ objectFit: "cover" }} />
+      <div style={{ width: "100%", aspectRatio: "1", overflow: "hidden", cursor: "zoom-in", background: "#080c16" }}
+        onClick={() => onOpen(attachments[0].file_url)}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={attachments[0].file_url} alt={attachments[0].file_name ?? ""} style={coverImg} />
       </div>
     );
   }
@@ -57,7 +59,7 @@ function PhotoGrid({ attachments, onOpen }: {
   if (n === 2) {
     return (
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-        {attachments.map((att) => <Img key={att.id} att={att} sizes="380px" onOpen={onOpen} />)}
+        {attachments.map((att) => <Cell key={att.id} att={att} onOpen={onOpen} />)}
       </div>
     );
   }
@@ -65,22 +67,21 @@ function PhotoGrid({ attachments, onOpen }: {
   if (n === 3) {
     return (
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 2 }}>
-        <Img att={attachments[0]} sizes="500px" onOpen={onOpen} />
+        <Cell att={attachments[0]} onOpen={onOpen} />
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Img att={attachments[1]} sizes="250px" onOpen={onOpen} />
-          <Img att={attachments[2]} sizes="250px" onOpen={onOpen} />
+          <Cell att={attachments[1]} onOpen={onOpen} />
+          <Cell att={attachments[2]} onOpen={onOpen} />
         </div>
       </div>
     );
   }
 
-  // 4+ → 2×2 grid, +N overlay on the 4th cell
   const visible = attachments.slice(0, 4);
   const extra = n - 4;
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
       {visible.map((att, i) => (
-        <Img key={att.id} att={att} sizes="380px" onOpen={onOpen} overlay={i === 3 && extra > 0 ? `+${extra + 1}` : undefined} />
+        <Cell key={att.id} att={att} onOpen={onOpen} overlay={i === 3 && extra > 0 ? `+${extra + 1}` : undefined} />
       ))}
     </div>
   );

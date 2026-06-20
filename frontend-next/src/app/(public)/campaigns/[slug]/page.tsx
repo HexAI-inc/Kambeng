@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { AppProgress } from "@/components/ui";
 import { StyledSelect } from "@/components/ui/styled-select";
 import MediaViewer from "@/components/ui/MediaViewer";
+import { UpdateFeedPost } from "@/components/UpdateFeedPost";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { ProofList } from "@/components/ProofList";
 import {
@@ -1095,82 +1096,13 @@ export default function CampaignDetailPage() {
                   </p>
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {updates.map((update: CampaignUpdate, ui) => (
-                    <div key={update.id} style={{
-                      padding: "20px 22px",
-                      borderBottom: ui < updates.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
-                    }}>
-                      {/* Author row */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                        <div style={{
-                          width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                          background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 14, fontWeight: 800, color: "#fff",
-                        }}>
-                          {(update.author_name ?? "C")[0].toUpperCase()}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", lineHeight: 1.2 }}>
-                            {update.author_name ?? "Campaign owner"}
-                          </div>
-                          <div style={{ fontSize: 11, color: "#4a5568", marginTop: 1 }}>
-                            {new Date(update.created_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Title */}
-                      {update.title && (
-                        <div style={{ fontSize: 16, fontWeight: 800, color: "#f0f6ff", marginBottom: 8, lineHeight: 1.3, letterSpacing: "-0.02em" }}>
-                          {update.title}
-                        </div>
-                      )}
-
-                      {/* Body text */}
-                      <p style={{ color: "#a0aec0", fontSize: 14, lineHeight: 1.75, margin: 0, whiteSpace: "pre-wrap" }}>
-                        {update.text}
-                      </p>
-
-                      {/* Photo grid — like an Instagram post */}
-                      {update.attachments.length > 0 && (
-                        <div style={{ marginTop: 14 }}>
-                          {update.attachments.length === 1 ? (
-                            <div
-                              onClick={() => setViewerSrc(update.attachments[0].file_url)}
-                              style={{ position: "relative", width: "100%", aspectRatio: "16/9", borderRadius: 10, overflow: "hidden", cursor: "zoom-in", background: "rgba(255,255,255,0.04)" }}
-                            >
-                              <Image src={update.attachments[0].file_url} alt={update.attachments[0].file_name ?? "photo"} fill unoptimized sizes="600px" style={{ objectFit: "cover" }} />
-                            </div>
-                          ) : update.attachments.length === 2 ? (
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
-                              {update.attachments.map((att) => (
-                                <div key={att.id} onClick={() => setViewerSrc(att.file_url)} style={{ position: "relative", aspectRatio: "1", borderRadius: 8, overflow: "hidden", cursor: "zoom-in", background: "rgba(255,255,255,0.04)" }}>
-                                  <Image src={att.file_url} alt={att.file_name ?? "photo"} fill unoptimized sizes="300px" style={{ objectFit: "cover" }} />
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gridTemplateRows: "auto auto", gap: 4 }}>
-                              <div onClick={() => setViewerSrc(update.attachments[0].file_url)} style={{ position: "relative", aspectRatio: "4/3", borderRadius: 8, overflow: "hidden", cursor: "zoom-in", gridRow: "1 / 3", background: "rgba(255,255,255,0.04)" }}>
-                                <Image src={update.attachments[0].file_url} alt={update.attachments[0].file_name ?? "photo"} fill unoptimized sizes="400px" style={{ objectFit: "cover" }} />
-                              </div>
-                              {update.attachments.slice(1, 3).map((att, i) => (
-                                <div key={att.id} onClick={() => setViewerSrc(att.file_url)} style={{ position: "relative", aspectRatio: "1", borderRadius: 8, overflow: "hidden", cursor: "zoom-in", background: "rgba(255,255,255,0.04)" }}>
-                                  <Image src={att.file_url} alt={att.file_name ?? "photo"} fill unoptimized sizes="200px" style={{ objectFit: "cover" }} />
-                                  {i === 1 && update.attachments.length > 3 && (
-                                    <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 18, fontWeight: 800 }}>
-                                      +{update.attachments.length - 3}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "12px 16px" }}>
+                  {updates.map((update: CampaignUpdate) => (
+                    <UpdateFeedPost
+                      key={update.id}
+                      update={update}
+                      onImageOpen={(url) => setViewerSrc(url)}
+                    />
                   ))}
                 </div>
               )}

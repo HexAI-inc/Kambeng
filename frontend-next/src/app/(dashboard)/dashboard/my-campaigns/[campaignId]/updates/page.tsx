@@ -13,6 +13,7 @@ import {
 } from "@/hooks/use-frontend-data";
 import { useAppFeedback } from "@/components/ui";
 import MediaViewer from "@/components/ui/MediaViewer";
+import { UpdateFeedPost } from "@/components/UpdateFeedPost";
 import type { CampaignUpdate } from "@/types/frontend";
 
 const BLUE = "#1dc5ff";
@@ -319,7 +320,7 @@ export default function CampaignUpdatesPage() {
         </motion.div>
 
         {/* Updates feed */}
-        <motion.div {...fadeUp(0.1)} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <motion.div {...fadeUp(0.1)} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {updatesLoading ? (
             <div style={{ padding: "40px 24px", textAlign: "center" }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", border: `2px solid ${BLUE}`, borderTopColor: "transparent", animation: "spin 0.8s linear infinite", margin: "0 auto" }} />
@@ -338,85 +339,11 @@ export default function CampaignUpdatesPage() {
           ) : (
             updates.map((update: CampaignUpdate, i: number) => (
               <motion.div key={update.id} {...fadeUp(0.05 * i)}>
-                <div style={{
-                  background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
-                  borderRadius: 14, padding: "18px 20px",
-                  position: "relative",
-                }}>
-                  {/* Delete button */}
-                  <button
-                    onClick={() => void handleDelete(update)}
-                    title="Delete update"
-                    style={{
-                      position: "absolute", top: 14, right: 14,
-                      width: 28, height: 28, borderRadius: 7,
-                      border: "1px solid rgba(239,68,68,0.22)",
-                      background: "rgba(239,68,68,0.06)",
-                      color: "#f87171", cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                  >
-                    <IconTrash />
-                  </button>
-
-                  {/* Author + date */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, paddingRight: 40 }}>
-                    <div style={{
-                      width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
-                      background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 12, fontWeight: 700, color: "#fff",
-                    }}>
-                      {(update.author_name ?? "U")[0].toUpperCase()}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#f0f6ff" }}>
-                        {update.author_name ?? "Campaign owner"}
-                      </div>
-                      <div style={{ fontSize: 11, color: "#4a5568" }}>{formatDate(update.created_at)}</div>
-                    </div>
-                  </div>
-
-                  {/* Title */}
-                  {update.title && (
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>
-                      {update.title}
-                    </div>
-                  )}
-
-                  {/* Body */}
-                  <div style={{ fontSize: 13, color: "#8899aa", lineHeight: 1.7, marginBottom: update.attachments.length > 0 ? 12 : 0, whiteSpace: "pre-wrap" }}>
-                    {update.text}
-                  </div>
-
-                  {/* Attachments */}
-                  {update.attachments.length > 0 && (
-                    <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
-                      {update.attachments.map((att) => (
-                        <div
-                          key={att.id}
-                          onClick={() => setViewer({ src: att.file_url, type: att.content_type })}
-                          style={{
-                            flexShrink: 0, width: 100, height: 80, borderRadius: 8,
-                            overflow: "hidden", cursor: "zoom-in",
-                            border: "1px solid rgba(255,255,255,0.07)",
-                            background: "rgba(255,255,255,0.04)",
-                            position: "relative",
-                          }}
-                        >
-                          <Image
-                            src={att.file_url}
-                            alt={att.file_name ?? "attachment"}
-                            fill
-                            unoptimized
-                            sizes="100px"
-                            style={{ objectFit: "cover" }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <UpdateFeedPost
+                  update={update}
+                  onImageOpen={(url) => setViewer({ src: url, type: null })}
+                  onDelete={() => void handleDelete(update)}
+                />
               </motion.div>
             ))
           )}

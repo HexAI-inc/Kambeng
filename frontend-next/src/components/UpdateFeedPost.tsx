@@ -94,7 +94,8 @@ type UpdateFeedPostProps = {
 };
 
 export function UpdateFeedPost({ update, onImageOpen, onDelete }: UpdateFeedPostProps) {
-  const hasImages = update.attachments.length > 0;
+  const atts = update.attachments ?? [];
+  const hasImages = atts.length > 0;
   const initial = (update.author_name ?? "C")[0].toUpperCase();
 
   return (
@@ -144,10 +145,17 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete }: UpdateFeedPost
         )}
       </div>
 
+      {/* DEBUG — remove once images confirmed working */}
+      <div style={{ fontSize: 10, color: "#f59e0b", background: "rgba(245,158,11,0.08)", padding: "4px 14px", borderTop: "1px solid rgba(245,158,11,0.15)" }}>
+        {`[debug] attachments: ${atts.length}`}
+        {atts[0] && <span style={{ marginLeft: 8, wordBreak: "break-all" }}>{atts[0].file_url}</span>}
+      </div>
+
       {/* Images — edge-to-edge */}
       {hasImages && (
         <div style={{ width: "100%" }}>
-          <PhotoGrid attachments={update.attachments} onOpen={onImageOpen} />
+          <PhotoGrid attachments={atts} onOpen={onImageOpen} />
+
         </div>
       )}
 

@@ -146,7 +146,7 @@ export default function CampaignUpdatesPage() {
       const fd = new FormData();
       if (title.trim()) fd.append("title", title.trim());
       fd.append("text", text.trim());
-      attachments.forEach((file) => fd.append("files[]", file));
+      attachments.forEach((file) => fd.append("files", file));
       await postUpdate.mutateAsync({ slug: campaignSlug, formData: fd });
       message.success("Update posted");
       setTitle("");

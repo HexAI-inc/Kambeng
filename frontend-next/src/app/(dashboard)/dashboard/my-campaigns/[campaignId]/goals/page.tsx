@@ -10,6 +10,7 @@ import {
   useMyCampaigns,
 } from "@/hooks/use-frontend-data";
 import { useAppFeedback } from "@/components/ui";
+import { StyledSelect } from "@/components/ui/styled-select";
 import { CampaignGoalStatus } from "@/types/frontend";
 import { motion } from "framer-motion";
 
@@ -170,9 +171,11 @@ export default function CampaignGoalsPage() {
                   onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))}
                 />
               </div>
-              <select style={selectStyle} value={form.status} onChange={(e) => setForm((s) => ({ ...s, status: e.target.value as CampaignGoalStatus }))}>
-                {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <StyledSelect
+                value={form.status}
+                onChange={(v) => setForm((s) => ({ ...s, status: v as CampaignGoalStatus }))}
+                options={STATUS_OPTIONS.map((s) => ({ value: s, label: s }))}
+              />
             </div>
             <button
               onClick={() => void handleCreate()}
@@ -227,9 +230,12 @@ export default function CampaignGoalsPage() {
                         <input style={inputStyle} value={editForm.title} onChange={(e) => setEditForm((s) => ({ ...s, title: e.target.value }))} placeholder="Title" />
                         <div style={{ display: "flex", gap: 10 }}>
                           <input style={{ ...inputStyle, flex: 1 }} type="number" value={editForm.target_amount} onChange={(e) => setEditForm((s) => ({ ...s, target_amount: e.target.value }))} placeholder="Target (GMD)" />
-                          <select style={{ ...selectStyle, flex: 1 }} value={editForm.status} onChange={(e) => setEditForm((s) => ({ ...s, status: e.target.value as CampaignGoalStatus }))}>
-                            {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-                          </select>
+                          <StyledSelect
+                            value={editForm.status}
+                            onChange={(v) => setEditForm((s) => ({ ...s, status: v as CampaignGoalStatus }))}
+                            options={STATUS_OPTIONS.map((s) => ({ value: s, label: s }))}
+                            style={{ flex: 1 }}
+                          />
                         </div>
                         <div style={{ display: "flex", gap: 8 }}>
                           <button onClick={() => void handleUpdate(g.id)} disabled={updateGoal.isPending} style={{

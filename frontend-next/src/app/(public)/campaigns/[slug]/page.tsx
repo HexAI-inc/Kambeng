@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 
 import { AppProgress } from "@/components/ui";
+import { StyledSelect } from "@/components/ui/styled-select";
 import MediaViewer from "@/components/ui/MediaViewer";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { ProofList } from "@/components/ProofList";
@@ -784,15 +785,20 @@ function ReportModal({
 
         <div style={{ marginBottom: 14 }}>
           <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Reason</label>
-          <select value={reason} onChange={(e) => setReason(e.target.value as typeof reason)} style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#f0f6ff", fontSize: 13, outline: "none" }}>
-            <option value="SCAM">Scam</option>
-            <option value="INAPPROPRIATE_CONTENT">Inappropriate content</option>
-            <option value="HATE_SPEECH">Hate speech</option>
-            <option value="FALSE_INFORMATION">False information</option>
-            <option value="HARASSMENT">Harassment</option>
-            <option value="SPAM">Spam</option>
-            <option value="OTHER">Other</option>
-          </select>
+          <StyledSelect
+            value={reason}
+            onChange={(v) => setReason(v as typeof reason)}
+            options={[
+              { value: "SCAM", label: "Scam" },
+              { value: "INAPPROPRIATE_CONTENT", label: "Inappropriate content" },
+              { value: "HATE_SPEECH", label: "Hate speech" },
+              { value: "FALSE_INFORMATION", label: "False information" },
+              { value: "HARASSMENT", label: "Harassment" },
+              { value: "SPAM", label: "Spam" },
+              { value: "OTHER", label: "Other" },
+            ]}
+            style={{ width: "100%" }}
+          />
         </div>
 
         <div style={{ marginBottom: 16 }}>

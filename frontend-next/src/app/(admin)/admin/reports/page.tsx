@@ -13,6 +13,7 @@ import {
   useAdminTransactions,
 } from "@/hooks/use-frontend-data";
 import { AdminAuditLog, AdminPayoutOverview, AdminTransaction } from "@/types/frontend";
+import { StyledSelect } from "@/components/ui/styled-select";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -129,15 +130,24 @@ export default function AdminReportsPage() {
         {/* Filters */}
         <motion.div {...fadeUp(0.1)}>
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "16px 18px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <select value={statusFilter} onChange={(e) => updateParams({ status: e.target.value })} style={selectStyle}>
-              {statusOptions.map((s) => <option key={s} value={s}>{s === "ALL" ? "All statuses" : s}</option>)}
-            </select>
-            <select value={typeFilter} onChange={(e) => updateParams({ type: e.target.value })} style={selectStyle}>
-              {typeOptions.map((t) => <option key={t} value={t}>{t === "ALL" ? "All types" : t}</option>)}
-            </select>
-            <select value={campaignFilter} onChange={(e) => updateParams({ campaign: e.target.value })} style={{ ...selectStyle, minWidth: 200 }}>
-              {campaignOptions.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-            </select>
+            <StyledSelect
+              value={statusFilter}
+              onChange={(v) => updateParams({ status: v })}
+              options={statusOptions.map((s) => ({ value: s, label: s === "ALL" ? "All statuses" : s }))}
+              style={{ minWidth: 130 }}
+            />
+            <StyledSelect
+              value={typeFilter}
+              onChange={(v) => updateParams({ type: v })}
+              options={typeOptions.map((t) => ({ value: t, label: t === "ALL" ? "All types" : t }))}
+              style={{ minWidth: 130 }}
+            />
+            <StyledSelect
+              value={campaignFilter}
+              onChange={(v) => updateParams({ campaign: v })}
+              options={campaignOptions.map((c) => ({ value: c.id, label: c.label }))}
+              style={{ minWidth: 200 }}
+            />
             <button onClick={() => updateParams({ status: null, type: null, campaign: null })} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 12, cursor: "pointer" }}>Reset</button>
             <span style={{ fontSize: 12, color: "#4a5568" }}>{filteredTx.length} transaction{filteredTx.length !== 1 ? "s" : ""}</span>
             {campaignFilter !== "ALL" && (

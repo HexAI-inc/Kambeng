@@ -204,6 +204,11 @@ async function generateSocialCard(opts: {
   qrSrc: string;
   campaignUrl: string;
 }): Promise<string> {
+  // Wait for app fonts (Syne ExtraBold, DM Sans) to be available in the canvas context
+  await document.fonts.ready;
+  const DISPLAY = document.fonts.check("800 16px Syne") ? "Syne" : "sans-serif";
+  const BODY    = document.fonts.check("600 16px DM Sans") ? "DM Sans" : "sans-serif";
+
   const fmt = CARD_FORMATS.find((f) => f.key === opts.format)!;
   const W = fmt.w;
   const H = fmt.h;
@@ -270,7 +275,7 @@ async function generateSocialCard(opts: {
   logoGrad.addColorStop(1, "#079bd4");
   ctx.fillStyle = logoGrad;
   ctx.fill();
-  ctx.font = `900 ${Math.round(logoSize * 0.5)}px sans-serif`;
+  ctx.font = `900 ${Math.round(logoSize * 0.5)}px ${DISPLAY}`;
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -279,7 +284,7 @@ async function generateSocialCard(opts: {
 
   // ── "Kambeng" wordmark ────────────────────────────────────────────────────
   ctx.save();
-  ctx.font = `700 ${isWide ? 28 : 36}px sans-serif`;
+  ctx.font = `700 ${isWide ? 28 : 36}px ${DISPLAY}`;
   ctx.fillStyle = "#f0f6ff";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
@@ -294,7 +299,7 @@ async function generateSocialCard(opts: {
   // Campaign title
   const titleSize = isWide ? 52 : isStory ? 72 : 64;
   ctx.save();
-  ctx.font = `800 ${titleSize}px sans-serif`;
+  ctx.font = `800 ${titleSize}px ${DISPLAY}`;
   ctx.fillStyle = "#f0f6ff";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
@@ -312,7 +317,7 @@ async function generateSocialCard(opts: {
   const pillH = isWide ? 52 : 64;
   const pillPad = 32;
   ctx.save();
-  ctx.font = `700 ${isWide ? 26 : 32}px sans-serif`;
+  ctx.font = `700 ${isWide ? 26 : 32}px ${BODY}`;
   const pillW = ctx.measureText(raisedText).width + pillPad * 2;
   const pillR = pillH / 2;
   ctx.beginPath();
@@ -378,24 +383,23 @@ async function generateSocialCard(opts: {
   ctx.restore();
   ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
-  // "Scan to donate" label under QR
+  // "Scan to donate" label — centered below QR for all formats
   ctx.save();
-  ctx.font = `600 ${isWide ? 22 : 26}px sans-serif`;
+  ctx.font = `600 ${isWide ? 22 : 26}px ${BODY}`;
   ctx.fillStyle = "rgba(255,255,255,0.55)";
-  ctx.textAlign = isStory ? "center" : "right";
+  ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  const labelX = isStory ? W / 2 : qrX + qrSize + 16;
-  ctx.fillText("Scan to donate", labelX, qrY + qrSize + 32 + 16);
+  ctx.fillText("Scan to donate", qrX + qrSize / 2, qrY + qrSize + 26);
   ctx.restore();
 
-  // ── Domain watermark bottom-left ──────────────────────────────────────────
+  // ── Domain watermark bottom-left — hostname only ──────────────────────────
   ctx.save();
-  ctx.font = `500 ${isWide ? 22 : 26}px sans-serif`;
+  ctx.font = `500 ${isWide ? 22 : 26}px ${BODY}`;
   ctx.fillStyle = "rgba(255,255,255,0.3)";
   ctx.textAlign = "left";
   ctx.textBaseline = "bottom";
-  const domain = opts.campaignUrl.replace(/^https?:\/\//, "");
-  ctx.fillText(domain, pad, H - (isWide ? 40 : 56));
+  const hostname = opts.campaignUrl.replace(/^https?:\/\//, "").split("/")[0];
+  ctx.fillText(hostname, pad, H - (isWide ? 40 : 56));
   ctx.restore();
 
   return canvas.toDataURL("image/png");

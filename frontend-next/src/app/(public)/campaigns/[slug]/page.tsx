@@ -171,7 +171,8 @@ type CardFormat = typeof CARD_FORMATS[number]["key"];
 async function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
-    img.crossOrigin = "anonymous";
+    // crossOrigin only needed for direct cross-origin loads; proxied images are same-origin
+    if (!src.startsWith("/api/")) img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = src;
@@ -223,7 +224,9 @@ async function generateSocialCard(opts: {
   // ── Background ────────────────────────────────────────────────────────────
   if (opts.coverUrl) {
     try {
-      const cover = await loadImage(opts.coverUrl);
+      // Proxy through our API route to avoid canvas CORS taint from DO Spaces
+      const proxied = `/api/image-proxy?url=${encodeURIComponent(opts.coverUrl)}`;
+      const cover = await loadImage(proxied);
       // fill canvas with cover, centered crop
       const scale = Math.max(W / cover.width, H / cover.height);
       const sw = cover.width * scale;

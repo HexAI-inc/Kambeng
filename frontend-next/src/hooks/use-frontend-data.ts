@@ -322,12 +322,14 @@ export function useUpdateMyProfile() {
   });
 }
 
-export function useAdminModerationQueue(enabled = true) {
+export function useAdminModerationQueue(enabled = true, statusFilter?: string) {
   return useQuery({
-    queryKey: ["admin-moderation-queue"],
+    queryKey: ["admin-moderation-queue", statusFilter ?? "OPEN"],
     enabled,
     queryFn: async () => {
-      const response = await api.get<AdminModerationReport[]>("/moderation/reports/queue");
+      // Empty string bypasses the backend's default OPEN filter → returns all reports
+      const filter = !statusFilter || statusFilter === "ALL" ? "" : statusFilter;
+      const response = await api.get<AdminModerationReport[]>(`/moderation/reports/queue?status_filter=${filter}`);
       return response.data;
     },
   });

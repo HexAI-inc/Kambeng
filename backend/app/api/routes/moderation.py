@@ -9,9 +9,11 @@ from sqlalchemy import cast, String
 from app.api.routes.auth import get_admin_user
 from app.api.routes.auth import get_current_user_optional
 from app.db.database import get_db
-from app.models.moderation import ModerationReport, ReportStatus
+from app.models.moderation import ModerationReport, ReportStatus, ReportEntityType
 from app.models.user import User
 from app.models.campaign import Campaign
+from app.models.campaign_update import CampaignUpdate
+from app.models.review import Review
 from app.models.audit_log import AdminAuditLog, AuditActionType
 from app.schemas.moderation import ModerationReportCreate, ModerationReportRead, ModerationReportResolve
 from sqlalchemy import func
@@ -108,13 +110,51 @@ async def resolve_report(
     report.resolved_at = datetime.now(UTC)
     report.action_taken = resolution.action_taken
     
-    # If resolving with campaign suspension action, suspend the campaign
+    # Apply side effects based on action_taken
     if resolution.action_taken == "campaign_suspended" and report.campaign_id:
         campaign_result = await db.execute(select(Campaign).where(Campaign.id == report.campaign_id))
         campaign = campaign_result.scalars().first()
         if campaign:
             campaign.status = "SUSPENDED"
-    
+
+    elif resolution.action_taken == "user_suspended":
+        # Determine target user from entity type
+        target_user_id: Optional[int] = None
+        if report.reported_entity_type == ReportEntityType.USER:
+            target_user_id = report.reported_entity_id
+        elif report.campaign_id:
+            camp_res = await db.execute(select(Campaign).where(Campaign.id == report.campaign_id))
+            camp = camp_res.scalars().first()
+            if camp:
+                target_user_id = camp.user_id
+        elif report.reported_entity_type == ReportEntityType.UPDATE:
+            upd_res = await db.execute(select(CampaignUpdate).where(CampaignUpdate.id == report.reported_entity_id))
+            upd = upd_res.scalars().first()
+            if upd:
+                target_user_id = upd.user_id
+        elif report.reported_entity_type == ReportEntityType.REVIEW:
+            rev_res = await db.execute(select(Review).where(Review.id == report.reported_entity_id))
+            rev = rev_res.scalars().first()
+            if rev:
+                target_user_id = rev.user_id
+        if target_user_id:
+            usr_res = await db.execute(select(User).where(User.id == target_user_id))
+            target_user = usr_res.scalars().first()
+            if target_user:
+                target_user.is_active = False
+
+    elif resolution.action_taken == "content_removed":
+        if report.reported_entity_type == ReportEntityType.UPDATE:
+            upd_res = await db.execute(select(CampaignUpdate).where(CampaignUpdate.id == report.reported_entity_id))
+            upd = upd_res.scalars().first()
+            if upd:
+                await db.delete(upd)
+        elif report.reported_entity_type == ReportEntityType.REVIEW:
+            rev_res = await db.execute(select(Review).where(Review.id == report.reported_entity_id))
+            rev = rev_res.scalars().first()
+            if rev:
+                await db.delete(rev)
+
     await db.commit()
     await db.refresh(report)
     

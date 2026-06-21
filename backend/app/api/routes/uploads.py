@@ -208,6 +208,43 @@ async def list_campaign_proofs(
         # ADMIN_ONLY proofs are not shown to non-admin/non-owner viewers
 
     return filtered_proofs
+
+
+@router.delete("/proofs/{slug}/{proof_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_campaign_proof(
+    slug: str,
+    proof_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    campaign_result = await db.execute(select(Campaign).where(Campaign.slug == slug))
+    campaign = campaign_result.scalars().first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Not authorized to modify proofs for this campaign")
+
+    proof_result = await db.execute(
+        select(Proof).where(Proof.id == proof_id, Proof.campaign_id == campaign.id)
+    )
+    proof = proof_result.scalars().first()
+    if not proof:
+        raise HTTPException(status_code=404, detail="Proof not found")
+
+    await db.delete(proof)
+    await db.commit()
+    logger.info(
+        "Campaign proof deleted",
+        extra={
+            "action": "delete_campaign_proof",
+            "user_id": current_user.id,
+            "campaign_id": campaign.id,
+            "proof_id": proof_id,
+        },
+    )
+
+
 @router.post("/campaigns/{slug}/images/presign", response_model=CampaignPresignResponse)
 async def presign_campaign_image(
     slug: str,

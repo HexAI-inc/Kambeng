@@ -884,6 +884,18 @@ export function useUploadCampaignProof() {
   });
 }
 
+export function useDeleteCampaignProof() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ slug, proofId }: { slug: string; proofId: number }) => {
+      await api.delete(`/uploads/proofs/${slug}/${proofId}`);
+    },
+    onSuccess: (_, { slug }) => {
+      queryClient.invalidateQueries({ queryKey: ["campaign-proofs", slug] });
+    },
+  });
+}
+
 // ===== Commissions & Revenue Management =====
 
 export function useCommissionPayoutAccount(enabled = true) {

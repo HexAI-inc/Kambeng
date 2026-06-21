@@ -10,11 +10,12 @@ type StyledSelectProps = {
   options: Option[];
   style?: React.CSSProperties;
   placeholder?: string;
+  disabled?: boolean;
 };
 
 const BLUE = "#1dc5ff";
 
-export function StyledSelect({ value, onChange, options, style, placeholder }: StyledSelectProps) {
+export function StyledSelect({ value, onChange, options, style, placeholder, disabled }: StyledSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -39,8 +40,9 @@ export function StyledSelect({ value, onChange, options, style, placeholder }: S
     <div ref={ref} style={{ position: "relative", ...style }}>
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        onKeyDown={handleKeyDown}
+        onClick={() => !disabled && setOpen((o) => !o)}
+        onKeyDown={!disabled ? handleKeyDown : undefined}
+        disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
         style={{
@@ -53,7 +55,8 @@ export function StyledSelect({ value, onChange, options, style, placeholder }: S
           fontSize: 13,
           fontFamily: "inherit",
           textAlign: "left",
-          cursor: "pointer",
+          cursor: disabled ? "not-allowed" : "pointer",
+          opacity: disabled ? 0.5 : 1,
           outline: "none",
           transition: "border-color 0.15s, background 0.15s",
           userSelect: "none",

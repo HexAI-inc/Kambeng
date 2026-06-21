@@ -10,8 +10,11 @@ import {
   useDeleteCampaignImage,
   useMyCampaigns,
   useUploadCampaignCover,
+  useCampaignProofs,
+  useDeleteCampaignProof,
 } from "@/hooks/use-frontend-data";
 import { ProofUploadForm } from "@/components/ProofUploadForm";
+import { ProofList } from "@/components/ProofList";
 import { useAppFeedback } from "@/components/ui";
 import MediaViewer from "@/components/ui/MediaViewer";
 import { motion } from "framer-motion";
@@ -45,6 +48,8 @@ export default function CampaignImagesPage() {
 
   const campaignSlug = campaign?.slug ?? null;
   const { data: images, isLoading: imagesLoading } = useCampaignImages(campaignSlug ?? undefined, Boolean(campaignSlug));
+  const { data: proofs = [], isLoading: proofsLoading } = useCampaignProofs(campaignSlug ?? undefined, Boolean(campaignSlug));
+  const deleteProof = useDeleteCampaignProof();
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -314,18 +319,38 @@ export default function CampaignImagesPage() {
           </>
         ) : activeTab === "proof" ? (
           /* Proof tab */
-          <motion.div {...fadeUp(0.08)}>
+          <motion.div {...fadeUp(0.08)} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {campaignSlug ? (
-              <div style={{
-                background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 14, padding: "24px",
-              }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Upload Proof & Evidence</div>
-                <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 20 }}>
-                  Add receipts, photos, ID screenshots, or documents that show donors how funds were used.
+              <>
+                {/* Upload form */}
+                <div style={{
+                  background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+                  borderRadius: 14, padding: "24px",
+                }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Upload Proof & Evidence</div>
+                  <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 20 }}>
+                    Add receipts, photos, ID screenshots, or documents that show donors how funds were used.
+                  </div>
+                  <ProofUploadForm slug={campaignSlug} />
                 </div>
-                <ProofUploadForm slug={campaignSlug} />
-              </div>
+
+                {/* Existing proofs */}
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#8899aa", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 12 }}>
+                    Uploaded Documents ({proofs.length})
+                  </div>
+                  {proofsLoading ? (
+                    <div style={{ fontSize: 13, color: "#4a5568", padding: "20px 0" }}>Loading…</div>
+                  ) : (
+                    <ProofList
+                      proofs={proofs}
+                      onDelete={async (proofId) => {
+                        await deleteProof.mutateAsync({ slug: campaignSlug, proofId });
+                      }}
+                    />
+                  )}
+                </div>
+              </>
             ) : (
               <div style={{ fontSize: 13, color: "#4a5568", padding: 24 }}>Loading campaign…</div>
             )}

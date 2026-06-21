@@ -122,13 +122,27 @@ async def upload_campaign_proof(
         raise HTTPException(status_code=400, detail=f"Invalid visibility, must be one of: {', '.join(sorted(allowed_visibility))}")
 
     preferred_extension = ALLOWED_PROOF_TYPES[file.content_type]
-    safe_filename = file.filename or f"proof{preferred_extension}"
-    if "." not in safe_filename:
-        safe_filename = f"{safe_filename}{preferred_extension}"
+    file_name = f"{uuid.uuid4().hex}{preferred_extension}"
 
-    file_url = storage.upload_file(content, safe_filename, file.content_type)
-    if not file_url:
-        raise HTTPException(status_code=500, detail="Unable to upload file to storage")
+    # Upload to DO Spaces if available, otherwise fall back to local disk
+    if hasattr(storage_strategy, "s3_client"):
+        key = _do_spaces_key("proofs", str(campaign.id), file_name)
+        try:
+            storage_strategy.s3_client.put_object(
+                Bucket=settings.DO_SPACES_BUCKET,
+                Key=key,
+                Body=content,
+                ContentType=file.content_type,
+                ACL="public-read",
+            )
+            file_url = _do_spaces_public_url(key)
+        except Exception as upload_err:
+            logger.error("Failed to upload proof to DO Spaces", extra={"error": str(upload_err)})
+            raise HTTPException(status_code=500, detail="Failed to upload proof to storage")
+    else:
+        file_url = storage.upload_file(content, file_name, file.content_type)
+        if not file_url:
+            raise HTTPException(status_code=500, detail="Unable to upload file to storage")
 
     new_proof = Proof(
         campaign_id=campaign.id,
@@ -150,7 +164,7 @@ async def upload_campaign_proof(
             "document_type": document_type,
             "campaign_id": campaign.id,
             "proof_id": new_proof.id,
-            "filename": file.filename,
+            "proof_filename": file.filename,
         },
     )
     return new_proof

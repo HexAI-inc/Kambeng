@@ -195,6 +195,21 @@ def render_withdrawal_confirmed_email(
     )
 
 
+def render_moderation_warning_email(
+    full_name: str,
+    reason: str,
+    warning_message: str,
+    dashboard_link: str,
+) -> str:
+    return render_template(
+        "moderation_warning.html",
+        full_name=full_name,
+        reason=reason,
+        warning_message=warning_message,
+        dashboard_link=dashboard_link,
+    )
+
+
 def render_withdrawal_failed_email(
     full_name: str,
     campaign_title: str,

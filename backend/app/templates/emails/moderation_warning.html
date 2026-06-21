@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block preheader %}Your account has received a formal warning from the Kambeng moderation team.{% endblock %}
+{% block eyebrow %}Moderation Notice{% endblock %}
+{% block heading %}Account warning{% endblock %}
+{% block intro %}Hi {{ full_name }}, we're reaching out because a piece of content on your account has been reviewed by our moderation team and found to be in breach of our community guidelines.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="detail">
+      <div class="detail-label">Violation</div>
+      <div class="detail-value" style="color:#fca5a5;">{{ reason }}</div>
+    </div>
+
+    {% if warning_message %}
+    <div style="height:16px"></div>
+    <div class="detail">
+      <div class="detail-label">Message from moderator</div>
+      <div class="detail-value" style="color:#f0f6ff; line-height:1.7; white-space:pre-wrap;">{{ warning_message }}</div>
+    </div>
+    {% endif %}
+
+    <div style="height:20px"></div>
+
+    <p style="font-size:13px; color:#8899aa; line-height:1.7;">
+      This is a formal warning. Repeated violations may result in suspension of your account or campaigns.
+      If you believe this warning was issued in error, please reply to this email and our team will review your case.
+    </p>
+
+    <div style="height:20px"></div>
+
+    <div style="text-align:center;">
+      <a class="button" href="{{ dashboard_link }}">Go to dashboard</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}Kambeng Moderation Team — reply to this email if you have questions about this warning.{% endblock %}

@@ -16,6 +16,8 @@ from app.models.campaign_update import CampaignUpdate
 from app.models.review import Review
 from app.models.audit_log import AdminAuditLog, AuditActionType
 from app.schemas.moderation import ModerationReportCreate, ModerationReportRead, ModerationReportResolve
+from app.services.email_service import send_email, render_moderation_warning_email
+from app.core.config import settings
 from sqlalchemy import func
 from app.core.logging_config import get_logger
 
@@ -111,14 +113,16 @@ async def resolve_report(
     report.action_taken = resolution.action_taken
     
     # Apply side effects based on action_taken
+    warn_user: Optional[User] = None  # set when action is user_warned, used to send email after commit
+
     if resolution.action_taken == "campaign_suspended" and report.campaign_id:
         campaign_result = await db.execute(select(Campaign).where(Campaign.id == report.campaign_id))
         campaign = campaign_result.scalars().first()
         if campaign:
             campaign.status = "SUSPENDED"
 
-    elif resolution.action_taken == "user_suspended":
-        # Determine target user from entity type
+    elif resolution.action_taken in ("user_suspended", "user_warned"):
+        # Resolve the target user from entity type (shared for both actions)
         target_user_id: Optional[int] = None
         if report.reported_entity_type == ReportEntityType.USER:
             target_user_id = report.reported_entity_id
@@ -137,11 +141,15 @@ async def resolve_report(
             rev = rev_res.scalars().first()
             if rev:
                 target_user_id = rev.user_id
+
         if target_user_id:
             usr_res = await db.execute(select(User).where(User.id == target_user_id))
-            target_user = usr_res.scalars().first()
-            if target_user:
-                target_user.is_active = False
+            found_user = usr_res.scalars().first()
+            if found_user:
+                if resolution.action_taken == "user_suspended":
+                    found_user.is_active = False
+                else:
+                    warn_user = found_user
 
     elif resolution.action_taken == "content_removed":
         if report.reported_entity_type == ReportEntityType.UPDATE:
@@ -171,6 +179,19 @@ async def resolve_report(
     )
     db.add(audit_log)
     await db.commit()
+
+    # Send warning email after all DB work is done
+    if warn_user and warn_user.email:
+        reason_label = report.reason.value.replace("_", " ").capitalize()
+        warning_message = resolution.moderation_note or ""
+        dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard"
+        html = render_moderation_warning_email(
+            full_name=warn_user.full_name or warn_user.email,
+            reason=reason_label,
+            warning_message=warning_message,
+            dashboard_link=dashboard_link,
+        )
+        send_email(warn_user.email, "Account Warning — Kambeng", html)
 
     logger.info(
         "Moderation report resolved",

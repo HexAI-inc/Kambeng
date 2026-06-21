@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 import { usePublicCampaignImages } from "@/hooks/use-frontend-data";
 import MediaViewer from "@/components/ui/MediaViewer";
 import type { CampaignDiscoveryItem, PublicCampaignImage } from "@/types/frontend";

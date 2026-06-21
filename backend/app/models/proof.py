@@ -20,14 +20,14 @@ class Proof(Base):
         TUITION_RECEIPT = "TUITION_RECEIPT"
         OTHER = "OTHER"
 
-    document_type = Column(SAEnum(ProofType), nullable=False, default=ProofType.OTHER)
+    document_type = Column(SAEnum(ProofType, name="proof_document_type", create_type=False), nullable=False, default=ProofType.OTHER)
 
     class VisibilityType(str, enum.Enum):
         PUBLIC = "PUBLIC"
         DONOR_ONLY = "DONOR_ONLY"
         ADMIN_ONLY = "ADMIN_ONLY"
 
-    visibility = Column(SAEnum(VisibilityType), nullable=False, default=VisibilityType.ADMIN_ONLY)
+    visibility = Column(SAEnum(VisibilityType, name="proof_visibility_type", create_type=False), nullable=False, default=VisibilityType.ADMIN_ONLY)
     uploaded_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

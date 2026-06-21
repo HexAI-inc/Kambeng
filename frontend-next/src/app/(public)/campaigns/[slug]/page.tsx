@@ -953,13 +953,13 @@ export default function CampaignDetailPage() {
                 alt={campaign.title}
                 fill
                 unoptimized
-                sizes="45vw"
+                sizes="100vw"
                 style={{ objectFit: "cover" }}
               />
-              {/* Dark scrim so info panel text stays readable when bleeds */}
+              {/* Bottom-up scrim: image clear at top, dark at bottom for text legibility */}
               <div style={{
                 position: "absolute", inset: 0,
-                background: "linear-gradient(to right, transparent 70%, rgba(13,17,32,0.6) 100%)",
+                background: "linear-gradient(to bottom, rgba(13,17,32,0) 0%, rgba(13,17,32,0.55) 55%, rgba(13,17,32,0.94) 100%)",
                 pointerEvents: "none",
               }} />
               {!campaign.cover_image_url && (

@@ -10,13 +10,11 @@ import { motion } from "framer-motion";
 
 import { AppProgress } from "@/components/ui";
 import { StyledSelect } from "@/components/ui/styled-select";
-import MediaViewer from "@/components/ui/MediaViewer";
 import { UpdateFeedPost } from "@/components/UpdateFeedPost";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { ProofList } from "@/components/ProofList";
 import {
   useCampaignGoals,
-  usePublicCampaignImages,
   useCampaignProofs,
   usePublicCampaignReviews,
   useSubmitModerationReport,
@@ -25,7 +23,7 @@ import {
   useCampaignUpdates,
 } from "@/hooks/use-frontend-data";
 import { api } from "@/lib/api";
-import type { CampaignDiscoveryItem, CampaignGoal, CampaignReview, CampaignUpdate, PublicCampaignImage } from "@/types/frontend";
+import type { CampaignDiscoveryItem, CampaignGoal, CampaignReview, CampaignUpdate } from "@/types/frontend";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -851,20 +849,6 @@ export default function CampaignDetailPage() {
   const [showShare, setShowShare] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [reportingUpdateId, setReportingUpdateId] = useState<number | null>(null);
-  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
-
-  const openImage = async (img: PublicCampaignImage) => {
-    try {
-      const q = new URLSearchParams({ url: img.url });
-      const res = await fetch(`/api/backend/media/presign?${q.toString()}`);
-      if (!res.ok) throw new Error("presign failed");
-      const body = await res.json();
-      setViewerSrc(body.url);
-    } catch {
-      setViewerSrc(img.url);
-    }
-  };
-
   const { data: campaign, isLoading, error } = useQuery({
     queryKey: ["campaign-detail", slug],
     enabled: Boolean(slug),
@@ -875,7 +859,6 @@ export default function CampaignDetailPage() {
   });
 
   const { data: reviews = [], isLoading: reviewsLoading } = usePublicCampaignReviews(slug, Boolean(slug));
-  const { data: images = [], isLoading: imagesLoading } = usePublicCampaignImages(slug, Boolean(slug));
   const { data: goals = [] } = useCampaignGoals(slug, Boolean(slug));
   const { data: proofs = [], isLoading: proofsLoading } = useCampaignProofs(slug, Boolean(slug));
   const { data: updates = [], isLoading: updatesLoading } = useCampaignUpdates(slug, Boolean(slug));
@@ -1138,7 +1121,6 @@ export default function CampaignDetailPage() {
             </div>
           </motion.div>
 
-          {viewerSrc && <MediaViewer src={viewerSrc} onClose={() => setViewerSrc(null)} />}
           {reportingUpdateId !== null && campaign && (
             <ReportModal
               campaign={campaign}
@@ -1154,30 +1136,25 @@ export default function CampaignDetailPage() {
               borderRadius: 16, padding: "22px 22px 26px",
             }}>
               <SectionHeader icon={<IconPicture />} title="Campaign Gallery" />
-              {imagesLoading ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px,1fr))", gap: 8 }}>
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} style={{ aspectRatio: "4/3", borderRadius: 8, background: "rgba(255,255,255,0.04)" }} />
-                  ))}
+              <Link href={`/campaigns/${slug}/gallery`}>
+                <div style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "14px 18px", borderRadius: 12, marginTop: 4,
+                  background: "rgba(29,197,255,0.04)", border: "1px solid rgba(29,197,255,0.15)",
+                  cursor: "pointer", transition: "background 0.15s",
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(29,197,255,0.08)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(29,197,255,0.04)"; }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <IconPicture />
+                    <span style={{ color: "#1dc5ff", fontWeight: 700, fontSize: 14 }}>View Campaign Gallery</span>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1dc5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
                 </div>
-              ) : images.length > 0 ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px,1fr))", gap: 8 }}>
-                  {images.map((img: PublicCampaignImage, i) => (
-                    <div key={i} style={{ display: "block", cursor: "zoom-in" }} onClick={() => openImage(img)}>
-                      <div style={{ position: "relative", aspectRatio: "4/3", borderRadius: 8, overflow: "hidden",
-                        border: "1px solid rgba(255,255,255,0.07)" }}>
-                        <Image src={img.url} alt={img.original_name ?? img.file_name} fill unoptimized
-                          sizes="200px" style={{ objectFit: "cover" }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ textAlign: "center", padding: "28px 16px", color: "#4a5568" }}>
-                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, opacity: 0.5 }}><IconPicture /></div>
-                  <p style={{ fontSize: 13 }}>No photos uploaded yet</p>
-                </div>
-              )}
+              </Link>
             </div>
           </motion.div>
 

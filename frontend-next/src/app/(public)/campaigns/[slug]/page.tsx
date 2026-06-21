@@ -227,10 +227,12 @@ async function generateSocialCard(opts: {
       // Proxy through our API route to avoid canvas CORS taint from DO Spaces
       const proxied = `/api/image-proxy?url=${encodeURIComponent(opts.coverUrl)}`;
       const cover = await loadImage(proxied);
-      // fill canvas with cover, centered crop
-      const scale = Math.max(W / cover.width, H / cover.height);
-      const sw = cover.width * scale;
-      const sh = cover.height * scale;
+      // use naturalWidth/naturalHeight — width/height can be 0 for out-of-DOM elements
+      const iw = cover.naturalWidth || cover.width;
+      const ih = cover.naturalHeight || cover.height;
+      const scale = Math.max(W / iw, H / ih);
+      const sw = iw * scale;
+      const sh = ih * scale;
       ctx.drawImage(cover, (W - sw) / 2, (H - sh) / 2, sw, sh);
     } catch {
       // fallback gradient if image fails CORS
@@ -249,14 +251,26 @@ async function generateSocialCard(opts: {
   }
 
   // ── Dark scrim overlay ────────────────────────────────────────────────────
-  // Story: image is hero — scrim starts at 50% so the top half stays vivid
-  const scrimStart = isStory ? H * 0.5 : H * 0.1;
-  const scrim = ctx.createLinearGradient(0, scrimStart, 0, H);
-  scrim.addColorStop(0, "rgba(6,10,20,0)");
-  scrim.addColorStop(isStory ? 0.45 : 0.4, "rgba(6,10,20,0.88)");
-  scrim.addColorStop(1, "rgba(6,10,20,0.97)");
-  ctx.fillStyle = scrim;
-  ctx.fillRect(0, 0, W, H);
+  if (isStory) {
+    // Story: full-bleed background — image must stay visible everywhere.
+    // Light vignette at top (logo legibility), gentle mid fade, capped at 78% at bottom
+    // so the image bleeds through even behind the text panel.
+    const scrim = ctx.createLinearGradient(0, 0, 0, H);
+    scrim.addColorStop(0,    "rgba(6,10,20,0.25)");  // slight top vignette for logo
+    scrim.addColorStop(0.35, "rgba(6,10,20,0)");     // fully clear in the upper-middle
+    scrim.addColorStop(0.60, "rgba(6,10,20,0.45)");  // start darkening
+    scrim.addColorStop(0.85, "rgba(6,10,20,0.75)");  // text area — readable
+    scrim.addColorStop(1,    "rgba(6,10,20,0.82)");  // bottom — cap at 82%, image still visible
+    ctx.fillStyle = scrim;
+    ctx.fillRect(0, 0, W, H);
+  } else {
+    const scrim = ctx.createLinearGradient(0, H * 0.1, 0, H);
+    scrim.addColorStop(0, "rgba(6,10,20,0)");
+    scrim.addColorStop(0.4, "rgba(6,10,20,0.85)");
+    scrim.addColorStop(1,   "rgba(6,10,20,0.97)");
+    ctx.fillStyle = scrim;
+    ctx.fillRect(0, 0, W, H);
+  }
 
   // ── Blue accent bar at top ────────────────────────────────────────────────
   ctx.fillStyle = "#1dc5ff";

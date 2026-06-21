@@ -61,6 +61,27 @@ a { color: inherit; text-decoration: none; }
 ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--wave-blue-deep); }
 
+/* ── Campaign page ──────────────────────────────────────── */
+.campaign-hero {
+  display: grid;
+  grid-template-columns: 45fr 55fr;
+  min-height: 360px;
+}
+
+.campaign-cover {
+  position: relative;
+  min-height: 280px;
+}
+
+@media (max-width: 767px) {
+  .campaign-hero {
+    grid-template-columns: 1fr;
+  }
+  .campaign-cover {
+    min-height: 220px;
+  }
+}
+
 /* ── Dashboard responsive grid ────────────────────────────── */
 .kpi-grid { grid-template-columns: repeat(2, 1fr); }
 

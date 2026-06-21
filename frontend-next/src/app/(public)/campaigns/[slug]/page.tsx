@@ -249,9 +249,11 @@ async function generateSocialCard(opts: {
   }
 
   // ── Dark scrim overlay ────────────────────────────────────────────────────
-  const scrim = ctx.createLinearGradient(0, isStory ? H * 0.3 : H * 0.1, 0, H);
+  // Story: image is hero — scrim starts at 50% so the top half stays vivid
+  const scrimStart = isStory ? H * 0.5 : H * 0.1;
+  const scrim = ctx.createLinearGradient(0, scrimStart, 0, H);
   scrim.addColorStop(0, "rgba(6,10,20,0)");
-  scrim.addColorStop(isStory ? 0.5 : 0.4, "rgba(6,10,20,0.82)");
+  scrim.addColorStop(isStory ? 0.45 : 0.4, "rgba(6,10,20,0.88)");
   scrim.addColorStop(1, "rgba(6,10,20,0.97)");
   ctx.fillStyle = scrim;
   ctx.fillRect(0, 0, W, H);
@@ -295,7 +297,8 @@ async function generateSocialCard(opts: {
   ctx.restore();
 
   // ── Content area (bottom portion) ────────────────────────────────────────
-  const contentY = isStory ? H * 0.52 : H * 0.38;
+  // Story: push content into the dark lower half so the image breathes above it
+  const contentY = isStory ? H * 0.58 : H * 0.38;
   const pad = isWide ? 56 : 80;
   const maxTextW = isWide ? W * 0.55 : W - pad * 2;
 

@@ -343,7 +343,7 @@ export function useSubmitModerationReport() {
       reason,
       description,
     }: {
-      reportedEntityType: "CAMPAIGN" | "REVIEW" | "USER";
+      reportedEntityType: "CAMPAIGN" | "REVIEW" | "USER" | "UPDATE";
       reportedEntityId: number;
       campaignId?: number | null;
       reason: "SCAM" | "INAPPROPRIATE_CONTENT" | "HATE_SPEECH" | "FALSE_INFORMATION" | "HARASSMENT" | "SPAM" | "OTHER";

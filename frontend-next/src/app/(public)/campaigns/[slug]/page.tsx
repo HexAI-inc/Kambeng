@@ -735,14 +735,17 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
 function ReportModal({
   campaign,
   onClose,
+  updateId,
 }: {
   campaign: CampaignDiscoveryItem;
   onClose: () => void;
+  updateId?: number;
 }) {
   const submitReport = useSubmitModerationReport();
   const [reason, setReason] = useState<"SCAM" | "INAPPROPRIATE_CONTENT" | "HATE_SPEECH" | "FALSE_INFORMATION" | "HARASSMENT" | "SPAM" | "OTHER">("SCAM");
   const [description, setDescription] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const isUpdate = updateId != null;
 
   const handleSubmit = async () => {
     if (!description.trim()) {
@@ -752,8 +755,8 @@ function ReportModal({
 
     try {
       await submitReport.mutateAsync({
-        reportedEntityType: "CAMPAIGN",
-        reportedEntityId: campaign.id,
+        reportedEntityType: isUpdate ? "UPDATE" : "CAMPAIGN",
+        reportedEntityId: isUpdate ? updateId : campaign.id,
         campaignId: campaign.id,
         reason,
         description,
@@ -776,7 +779,7 @@ function ReportModal({
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff" }}>Report Campaign</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff" }}>{isUpdate ? "Report Update" : "Report Campaign"}</div>
             <div style={{ fontSize: 12, color: "#4a5568", marginTop: 2, maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{campaign.title}</div>
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}>×</button>
@@ -823,6 +826,7 @@ export default function CampaignDetailPage() {
   const isLoggedIn = Boolean(session?.id);
   const [showShare, setShowShare] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [reportingUpdateId, setReportingUpdateId] = useState<number | null>(null);
   const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   const openImage = async (img: PublicCampaignImage) => {
@@ -1102,6 +1106,7 @@ export default function CampaignDetailPage() {
                       key={update.id}
                       update={update}
                       onImageOpen={(url) => setViewerSrc(url)}
+                      onReport={() => setReportingUpdateId(update.id)}
                     />
                   ))}
                 </div>
@@ -1110,6 +1115,13 @@ export default function CampaignDetailPage() {
           </motion.div>
 
           {viewerSrc && <MediaViewer src={viewerSrc} onClose={() => setViewerSrc(null)} />}
+          {reportingUpdateId !== null && campaign && (
+            <ReportModal
+              campaign={campaign}
+              updateId={reportingUpdateId}
+              onClose={() => setReportingUpdateId(null)}
+            />
+          )}
 
           {/* Gallery */}
           <motion.div {...fadeUp(0.15)}>

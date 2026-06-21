@@ -10,6 +10,7 @@ class ReportEntityType(str, enum.Enum):
     CAMPAIGN = "CAMPAIGN"
     REVIEW = "REVIEW"
     USER = "USER"
+    UPDATE = "UPDATE"
 
 
 class ReportStatus(str, enum.Enum):

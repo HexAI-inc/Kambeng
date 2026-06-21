@@ -13,6 +13,7 @@ import {
 } from "@/hooks/use-frontend-data";
 import { useAppFeedback } from "@/components/ui";
 import MediaViewer from "@/components/ui/MediaViewer";
+import { StyledSelect } from "@/components/ui/styled-select";
 import { UpdateFeedPost } from "@/components/UpdateFeedPost";
 import type { CampaignUpdate } from "@/types/frontend";
 
@@ -90,6 +91,8 @@ export default function CampaignUpdatesPage() {
   // Composer state
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
+  const [category, setCategory] = useState("");
+  const [amountSpent, setAmountSpent] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachPreviews, setAttachPreviews] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -146,11 +149,15 @@ export default function CampaignUpdatesPage() {
       const fd = new FormData();
       if (title.trim()) fd.append("title", title.trim());
       fd.append("text", text.trim());
+      if (category) fd.append("category", category);
+      if (amountSpent && !isNaN(Number(amountSpent))) fd.append("amount_spent", amountSpent);
       attachments.forEach((file) => fd.append("files", file));
       await postUpdate.mutateAsync({ slug: campaignSlug, formData: fd });
       message.success("Update posted");
       setTitle("");
       setText("");
+      setCategory("");
+      setAmountSpent("");
       setAttachments([]);
       setAttachPreviews([]);
     } catch {
@@ -248,6 +255,35 @@ export default function CampaignUpdatesPage() {
                 boxSizing: "border-box", lineHeight: 1.65,
               }}
             />
+
+            {/* Category + Amount row */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <StyledSelect
+                value={category}
+                onChange={setCategory}
+                placeholder="Category (optional)"
+                options={[
+                  { value: "GENERAL", label: "General Update" },
+                  { value: "FINANCIAL_UPDATE", label: "Financial Update" },
+                  { value: "MILESTONE", label: "Milestone Reached" },
+                  { value: "THANK_YOU", label: "Thank You" },
+                  { value: "URGENT", label: "Urgent" },
+                ]}
+              />
+              <input
+                type="number"
+                value={amountSpent}
+                onChange={(e) => setAmountSpent(e.target.value)}
+                placeholder="GMD spent (optional)"
+                min="0"
+                step="0.01"
+                style={{
+                  width: "100%", padding: "10px 14px", borderRadius: 9,
+                  border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.04)",
+                  color: "#f0f6ff", fontSize: 13, outline: "none", boxSizing: "border-box",
+                }}
+              />
+            </div>
 
             {/* Attachment thumbnails */}
             {attachPreviews.length > 0 && (

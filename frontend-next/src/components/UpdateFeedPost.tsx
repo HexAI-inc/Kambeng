@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { CampaignUpdate } from "@/types/frontend";
 
 const BLUE = "#1dc5ff";
@@ -87,16 +88,27 @@ function PhotoGrid({ attachments, onOpen }: {
   );
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  GENERAL: "General Update",
+  FINANCIAL_UPDATE: "Financial Update",
+  MILESTONE: "Milestone",
+  THANK_YOU: "Thank You",
+  URGENT: "Urgent",
+};
+
 type UpdateFeedPostProps = {
   update: CampaignUpdate;
   onImageOpen: (url: string) => void;
   onDelete?: () => void;
+  onReport?: () => void;
 };
 
-export function UpdateFeedPost({ update, onImageOpen, onDelete }: UpdateFeedPostProps) {
+export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: UpdateFeedPostProps) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const atts = update.attachments ?? [];
   const hasImages = atts.length > 0;
   const initial = (update.author_name ?? "C")[0].toUpperCase();
+  const categoryLabel = update.category ? (CATEGORY_LABELS[update.category] ?? update.category) : null;
 
   return (
     <div style={{
@@ -121,11 +133,37 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete }: UpdateFeedPost
           </div>
           <div style={{ fontSize: 12, color: "#4a5568", marginTop: 1 }}>
             {timeAgo(update.created_at)}
+            {categoryLabel && <span style={{ marginLeft: 6, color: BLUE, fontWeight: 600 }}>· {categoryLabel}</span>}
           </div>
         </div>
-        {onDelete && (
+
+        {/* Report button (donors) */}
+        {onReport && !onDelete && (
           <button
-            onClick={onDelete}
+            onClick={onReport}
+            title="Report this update"
+            style={{
+              width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: "transparent",
+              color: "#4a5568", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "color 0.15s",
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#f87171"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#4a5568"; }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+              <line x1="4" y1="22" x2="4" y2="15"/>
+            </svg>
+          </button>
+        )}
+
+        {/* Delete button (owner) — two-step confirm */}
+        {onDelete && !confirmDelete && (
+          <button
+            onClick={() => setConfirmDelete(true)}
             title="Delete update"
             style={{
               width: 30, height: 30, borderRadius: 8, flexShrink: 0,
@@ -143,19 +181,32 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete }: UpdateFeedPost
             </svg>
           </button>
         )}
-      </div>
-
-      {/* DEBUG — remove once images confirmed working */}
-      <div style={{ fontSize: 10, color: "#f59e0b", background: "rgba(245,158,11,0.08)", padding: "4px 14px", borderTop: "1px solid rgba(245,158,11,0.15)" }}>
-        {`[debug] attachments: ${atts.length}`}
-        {atts[0] && <span style={{ marginLeft: 8, wordBreak: "break-all" }}>{atts[0].file_url}</span>}
+        {onDelete && confirmDelete && (
+          <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+            <button
+              onClick={() => { onDelete(); setConfirmDelete(false); }}
+              style={{
+                padding: "4px 10px", borderRadius: 7, border: "none",
+                background: "#ef4444", color: "#fff",
+                fontSize: 11, fontWeight: 700, cursor: "pointer",
+              }}
+            >Delete</button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              style={{
+                padding: "4px 8px", borderRadius: 7,
+                border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
+                color: "#6b7a8d", fontSize: 11, fontWeight: 600, cursor: "pointer",
+              }}
+            >Cancel</button>
+          </div>
+        )}
       </div>
 
       {/* Images — edge-to-edge */}
       {hasImages && (
         <div style={{ width: "100%" }}>
           <PhotoGrid attachments={atts} onOpen={onImageOpen} />
-
         </div>
       )}
 

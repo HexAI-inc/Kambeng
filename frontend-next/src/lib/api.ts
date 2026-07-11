@@ -3,6 +3,7 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 export type AuthUser = {
   id: number;
   full_name: string;
+  bio?: string | null;
   email: string;
   wave_number: string;
   is_email_verified: boolean;

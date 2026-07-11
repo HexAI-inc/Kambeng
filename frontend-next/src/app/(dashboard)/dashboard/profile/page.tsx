@@ -35,7 +35,7 @@ function Avatar({ name, size = 60 }: { name: string; size?: number }) {
   );
 }
 
-type DetailsOverrides = { full_name?: string; email?: string; wave_number?: string };
+type DetailsOverrides = { full_name?: string; email?: string; wave_number?: string; bio?: string };
 
 export default function ProfilePage() {
   const { data: me, isLoading } = useSessionProfile(true);
@@ -53,6 +53,7 @@ export default function ProfilePage() {
   const fullName   = detailOverrides.full_name   ?? me?.full_name   ?? "";
   const email      = detailOverrides.email       ?? me?.email       ?? "";
   const waveNumber = detailOverrides.wave_number ?? me?.wave_number ?? "";
+  const bio        = detailOverrides.bio         ?? me?.bio         ?? "";
 
   const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3500); };
 
@@ -62,6 +63,7 @@ export default function ProfilePage() {
     if (fullName   !== me.full_name)   payload.full_name   = fullName;
     if (email      !== me.email)       payload.email       = email;
     if (waveNumber !== me.wave_number) payload.wave_number = waveNumber;
+    if (bio        !== (me.bio ?? "")) payload.bio         = bio;
     if (!Object.keys(payload).length) { showToast("Nothing changed", false); return; }
     setSaving(true);
     try {
@@ -116,8 +118,8 @@ export default function ProfilePage() {
         )}
 
         <motion.div {...fade(0)}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>My Profile</div>
-          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Manage your personal details and security</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Profile &amp; Settings</div>
+          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Manage your personal details, public profile, and security</div>
         </motion.div>
 
         {/* Identity card */}
@@ -158,6 +160,34 @@ export default function ProfilePage() {
             </div>
             <button onClick={() => void handleSaveDetails()} disabled={saving} style={{ marginTop: 18, padding: "10px 24px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(29,197,255,0.3)", opacity: saving ? 0.7 : 1 }}>
               {saving ? "Saving…" : "Save details"}
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Public profile */}
+        <motion.div {...fade(0.095)}>
+          <div style={{ background: "#0d1120", border: "1px solid rgba(29,197,255,0.12)", borderRadius: 16, padding: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 4 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff" }}>Public profile</div>
+              <a href={`/profiles/${me.id}`} target="_blank" rel="noreferrer" style={{ fontSize: 12, fontWeight: 700, color: BLUE, textDecoration: "none" }}>
+                View public profile →
+              </a>
+            </div>
+            <div style={{ fontSize: 12, color: "#6b7a8d", marginBottom: 18 }}>
+              Your name and this bio are shown publicly on your campaigns, so donors know who they&apos;re giving to.
+            </div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>Bio</label>
+            <textarea
+              value={bio}
+              maxLength={500}
+              rows={4}
+              placeholder="Tell donors who you are and why you fundraise…"
+              onChange={(e) => setDetailOverrides((p) => ({ ...p, bio: e.target.value }))}
+              style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5 }}
+            />
+            <div style={{ fontSize: 11, color: "#4a5568", marginTop: 6, textAlign: "right" }}>{bio.length}/500</div>
+            <button onClick={() => void handleSaveDetails()} disabled={saving} style={{ marginTop: 10, padding: "10px 24px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(29,197,255,0.3)", opacity: saving ? 0.7 : 1 }}>
+              {saving ? "Saving…" : "Save public profile"}
             </button>
           </div>
         </motion.div>

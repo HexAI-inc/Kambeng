@@ -63,6 +63,12 @@ export type BootstrapResponse = {
   };
 };
 
+export type CampaignOwner = {
+  id: number;
+  full_name: string | null;
+  kyc_verified: boolean;
+};
+
 export type CampaignDiscoveryItem = {
   id: number;
   user_id: number;
@@ -75,6 +81,28 @@ export type CampaignDiscoveryItem = {
   status: string;
   created_at: string;
   cover_image_url: string | null;
+  owner?: CampaignOwner | null;
+};
+
+export type PublicProfileCampaign = {
+  id: number;
+  title: string;
+  slug: string;
+  mode: string;
+  status: string;
+  amount_raised: number;
+  target_amount: number | null;
+  cover_image_url: string | null;
+  created_at: string;
+};
+
+export type PublicProfile = {
+  id: number;
+  full_name: string | null;
+  bio: string | null;
+  kyc_verified: boolean;
+  member_since: string;
+  campaigns: PublicProfileCampaign[];
 };
 
 export type AdminCampaign = CampaignDiscoveryItem;

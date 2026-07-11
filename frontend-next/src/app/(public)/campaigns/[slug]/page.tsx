@@ -1007,6 +1007,45 @@ export default function CampaignDetailPage() {
                 {campaign.title}
               </h1>
 
+              {campaign.owner && (
+                <Link href={`/profiles/${campaign.owner.id}`} style={{ textDecoration: "none", alignSelf: "flex-start" }}>
+                  <div
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 9,
+                      padding: "6px 12px 6px 7px", borderRadius: 24, marginBottom: 14,
+                      background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)",
+                      transition: "border-color 0.2s",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.35)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; }}
+                  >
+                    <div style={{
+                      width: 26, height: 26, borderRadius: "50%", flexShrink: 0,
+                      background: "linear-gradient(135deg, #0d2340, #0a3d5c)",
+                      border: "1px solid rgba(29,197,255,0.35)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 11, fontWeight: 800, color: BLUE,
+                    }}>
+                      {(campaign.owner.full_name ?? "?").split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
+                    </div>
+                    <span style={{ fontSize: 13, color: "#8899aa" }}>
+                      Organized by <span style={{ color: "#f0f6ff", fontWeight: 700 }}>{campaign.owner.full_name ?? "Kambeng organizer"}</span>
+                    </span>
+                    {campaign.owner.kyc_verified && (
+                      <span title="Identity verified" style={{
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        width: 16, height: 16, borderRadius: "50%",
+                        background: "rgba(27,191,136,0.15)", border: "1px solid rgba(27,191,136,0.4)",
+                      }}>
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={GREEN} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              )}
+
               <p style={{ color: "#8899aa", fontSize: 14, lineHeight: 1.75, marginBottom: 24 }}>
                 {campaign.description}
               </p>

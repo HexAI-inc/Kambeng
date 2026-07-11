@@ -308,6 +308,7 @@ export function useUpdateMyProfile() {
   return useMutation({
     mutationFn: async (payload: {
       full_name?: string;
+      bio?: string;
       email?: string;
       wave_number?: string;
       current_password?: string;
@@ -318,6 +319,7 @@ export function useUpdateMyProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["session", "me"] });
     },
   });
 }

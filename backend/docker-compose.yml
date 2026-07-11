@@ -27,6 +27,6 @@ services:
     network_mode: host
     environment:
       PYTHONUNBUFFERED: "1"
-    command: ["python", "-m", "app.workers.recurring_donations_worker"]
+    command: ["python", "-m", "app.workers.scheduler_worker"]
     volumes:
       - ./uploads:/app/uploads

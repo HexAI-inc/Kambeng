@@ -10,34 +10,18 @@ import platform
 import time
 import uuid
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-
 from app.core.config import settings
 from app.core.logging_config import LOG_FILE_PATH, clear_request_context, get_logger, set_request_context
 from app.api.routes import admin, aliases, auth, campaign_updates, campaigns, fraud_report_notification_emails, goals, kyc, moderation, payments, reviews, search, uploads, utils, webhooks, websockets, kyc_notification_emails
-from app.services.recurring_charge_service import process_recurring_charges
 import psutil
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    scheduler = AsyncIOScheduler(timezone="UTC")
-    scheduler.add_job(
-        process_recurring_charges,
-        CronTrigger(hour=2, minute=0, timezone="UTC"),
-        id="process_recurring_charges",
-        name="Process Recurring Donations",
-        replace_existing=True,
-        misfire_grace_time=3600,  # allow up to 1h late if server was down
-    )
-    scheduler.start()
-    _logger = get_logger("kambeng")
-    _logger.info("Recurring donation scheduler started", extra={"action": "scheduler_startup"})
+    # Scheduled jobs run ONLY in the dedicated worker process
+    # (app/workers/scheduler_worker.py) — scheduling them here too would make
+    # every API replica execute them in duplicate.
     yield
-    if scheduler.running:
-        scheduler.shutdown(wait=False)
-    _logger.info("Recurring donation scheduler stopped", extra={"action": "scheduler_shutdown"})
 
 
 app = FastAPI(

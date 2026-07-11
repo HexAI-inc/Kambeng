@@ -8,6 +8,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String, index=True)
+    bio = Column(String, nullable=True)  # public organizer bio shown on profile pages
     email = Column(String, unique=True, index=True)
     wave_number = Column(String, unique=True, index=True) # e.g., +220...
     password_hash = Column(String)

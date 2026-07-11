@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from typing import List
 import re
 import time
@@ -13,7 +14,7 @@ from app.models.fraud_report import FraudReport
 from app.models.fraud_report_notification_email import FraudReportNotificationEmail
 from app.models.payout import Payout
 from app.models.user import User
-from app.schemas.campaign import CampaignCreate, CampaignRead
+from app.schemas.campaign import CampaignCreate, CampaignDetailRead, CampaignOwner, CampaignRead
 from app.schemas.donation import DonationRead
 from app.schemas.fraud_report import FraudReportCreate, FraudReportRead
 from app.api.routes.auth import get_current_user
@@ -109,15 +110,25 @@ async def get_my_campaigns(
     )
     return result.scalars().all()
 
-@router.get("/{slug}", response_model=CampaignRead)
+@router.get("/{slug}", response_model=CampaignDetailRead)
 async def get_campaign_by_slug(slug: str, db: AsyncSession = Depends(get_db)):
-    """Get a specific campaign using its URL slug"""
-    result = await db.execute(select(Campaign).where(Campaign.slug == slug))
+    """Get a specific campaign using its URL slug, including public organizer attribution."""
+    result = await db.execute(
+        select(Campaign).options(selectinload(Campaign.owner)).where(Campaign.slug == slug)
+    )
     campaign = result.scalars().first()
-    
+
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
-    return campaign
+
+    detail = CampaignDetailRead.model_validate(campaign)
+    if campaign.owner:
+        detail.owner = CampaignOwner(
+            id=campaign.owner.id,
+            full_name=campaign.owner.full_name,
+            kyc_verified=campaign.owner.kyc_status == "APPROVED",
+        )
+    return detail
 
 @router.put("/{slug}", response_model=CampaignRead)
 async def update_campaign(

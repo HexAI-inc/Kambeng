@@ -337,6 +337,9 @@ async def update_my_profile(
     if payload.full_name is not None:
         current_user.full_name = payload.full_name.strip()
 
+    if payload.bio is not None:
+        current_user.bio = payload.bio.strip() or None
+
     if payload.email is not None and payload.email != current_user.email:
         existing = await db.execute(select(User).where(User.email == payload.email, User.id != current_user.id))
         if existing.scalars().first():

@@ -24,3 +24,18 @@ class CampaignRead(CampaignBase):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CampaignOwner(BaseModel):
+    """Public organizer attribution — who a campaign belongs to."""
+    id: int
+    full_name: Optional[str] = None
+    kyc_verified: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CampaignDetailRead(CampaignRead):
+    """Campaign detail including the owner. Only used by endpoints that
+    eagerly load the owner relationship."""
+    owner: Optional[CampaignOwner] = None

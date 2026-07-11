@@ -1,5 +1,6 @@
 import hmac
 import hashlib
+import json
 from fastapi import APIRouter, Request, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -14,19 +15,49 @@ from app.services.payment_reconciliation import (
     DonationTransitionConflictError,
     reconcile_donation_status,
 )
-from app.services.email_service import (
-    send_email,
-    render_withdrawal_confirmed_email,
-    render_withdrawal_failed_email,
-)
+from app.services.payout_service import apply_payout_status, normalize_gateway_status
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 logger = get_logger("webhooks")
+
+PAYOUT_REFERENCE_PREFIXES = ("PAYOUT-", "OUT-", "ADMIN-COMM-")
+DONATION_REFERENCE_PREFIXES = ("DON-", "REC-")
 
 
 class WebhookPayload(BaseModel):
     event: str
     transaction: Dict[str, Any]
+
+
+def _parse_webhook_body(raw_body: bytes) -> tuple[str, dict]:
+    """Leniently extract (event, transaction-like dict) from a webhook body.
+
+    HexAI's payout notifications have not always matched the documented
+    {event, transaction} shape — a strict model meant those requests were
+    rejected with 422 before we even logged them. Accept the transaction
+    object under any of the known keys, or fields at the top level.
+    """
+    try:
+        data = json.loads(raw_body.decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=400, detail="Invalid webhook payload")
+
+    event = str(data.get("event") or data.get("event_type") or data.get("type") or "")
+
+    transaction = None
+    for key in ("transaction", "payout", "collection", "data"):
+        candidate = data.get(key)
+        if isinstance(candidate, dict):
+            transaction = candidate
+            break
+    if transaction is None:
+        # Fields may sit at the top level next to `event`
+        transaction = data
+
+    return event, transaction
 
 
 # HexAI may use any of these header names for the HMAC signature.
@@ -79,7 +110,6 @@ def _verify_signature(payload_body: bytes, signature: str) -> bool:
 
 @router.post("/hexai")
 async def hexai_webhook(
-    payload: WebhookPayload,
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
@@ -117,11 +147,15 @@ async def hexai_webhook(
         )
         raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
-    data = payload.model_dump()
-    event = data.get("event")
-    transaction = data.get("transaction", {})
-    client_ref = transaction.get("client_reference", "")
-    status = transaction.get("status")
+    event, transaction = _parse_webhook_body(raw_body)
+    client_ref = str(
+        transaction.get("client_reference")
+        or transaction.get("payout_reference")
+        or transaction.get("reference")
+        or ""
+    )
+    raw_status = transaction.get("status")
+    status = normalize_gateway_status(raw_status)
 
     logger.info(
         "Webhook received",
@@ -129,15 +163,47 @@ async def hexai_webhook(
             "action": "hexai_webhook_received",
             "eventType": event,
             "client_reference": client_ref,
-            "webhook_status": status,
+            "webhook_status": raw_status,
+            "normalized_status": status,
         },
     )
+
+    # -----------------------------------------
+    # SCENARIO B: CAMPAIGN PAYOUT OR ADMIN COMMISSION PAYOUT
+    # Payout events have arrived under varying event names, so match on the
+    # reference prefix rather than the event string.
+    # -----------------------------------------
+    if client_ref.startswith(PAYOUT_REFERENCE_PREFIXES):
+        if status is None:
+            logger.info(
+                "Payout webhook with non-terminal status ignored",
+                extra={
+                    "action": "payout_webhook_nonterminal",
+                    "client_reference": client_ref,
+                    "webhook_status": raw_status,
+                    "event": event,
+                },
+            )
+            return {"status": "success", "message": "Webhook processed successfully"}
+
+        from app.models.payout import Payout
+        result = await db.execute(select(Payout).where(Payout.client_reference == client_ref))
+        payout = result.scalars().first()
+
+        if payout:
+            await apply_payout_status(db, payout, status, source="WEBHOOK")
+        else:
+            logger.warning(
+                "Payout webhook reference not found",
+                extra={"action": "payout_webhook_reference_not_found", "client_reference": client_ref},
+            )
+        return {"status": "success", "message": "Webhook processed successfully"}
 
     if event == "transaction.completed":
         # -----------------------------------------
         # SCENARIO A: DONATION
         # -----------------------------------------
-        if client_ref.startswith("DON-") or client_ref.startswith("REC-"):
+        if client_ref.startswith(DONATION_REFERENCE_PREFIXES):
             if status in {"SUCCEEDED", "FAILED"}:
                 try:
                     result = await reconcile_donation_status(
@@ -174,92 +240,6 @@ async def hexai_webhook(
                             "error": str(exc),
                         },
                     )
-
-        # -----------------------------------------
-        # SCENARIO B: CAMPAIGN PAYOUT OR ADMIN COMMISSION PAYOUT
-        # -----------------------------------------
-        elif (
-            client_ref.startswith("PAYOUT-")
-            or client_ref.startswith("OUT-")
-            or client_ref.startswith("ADMIN-COMM-")
-        ):
-            from app.models.payout import Payout
-            result = await db.execute(select(Payout).where(Payout.client_reference == client_ref))
-            payout = result.scalars().first()
-
-            if payout:
-                if status == "FAILED" and payout.status != "FAILED":
-                    payout.status = "FAILED"
-                    await db.commit()
-                    logger.warning(
-                        "Payout failed",
-                        extra={"action": "payout_webhook_failed", "client_reference": client_ref},
-                    )
-                    # Send failure email if this is a campaign payout
-                    if payout.campaign_id:
-                        try:
-                            from app.models.campaign import Campaign
-                            from app.models.user import User
-                            camp_r = await db.execute(select(Campaign).where(Campaign.id == payout.campaign_id))
-                            camp = camp_r.scalars().first()
-                            if camp:
-                                user_r = await db.execute(select(User).where(User.id == camp.user_id))
-                                user = user_r.scalars().first()
-                                if user and user.email:
-                                    dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard"
-                                    send_email(
-                                        user.email,
-                                        f"Withdrawal failed — {camp.title}",
-                                        render_withdrawal_failed_email(
-                                            full_name=user.full_name or user.email,
-                                            campaign_title=camp.title,
-                                            gross_amount=payout.gross_amount or 0.0,
-                                            wave_number=user.wave_number,
-                                            reference=client_ref,
-                                            dashboard_link=dashboard_link,
-                                        ),
-                                    )
-                        except Exception:
-                            pass
-
-                elif status == "SUCCEEDED" and payout.status != "SUCCEEDED":
-                    payout.status = "SUCCEEDED"
-                    await db.commit()
-                    logger.info(
-                        "Payout confirmed",
-                        extra={"action": "payout_webhook_succeeded", "client_reference": client_ref},
-                    )
-                    # Send confirmation email if this is a campaign payout
-                    if payout.campaign_id:
-                        try:
-                            from app.models.campaign import Campaign
-                            from app.models.user import User
-                            camp_r = await db.execute(select(Campaign).where(Campaign.id == payout.campaign_id))
-                            camp = camp_r.scalars().first()
-                            if camp:
-                                user_r = await db.execute(select(User).where(User.id == camp.user_id))
-                                user = user_r.scalars().first()
-                                if user and user.email:
-                                    dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard"
-                                    send_email(
-                                        user.email,
-                                        f"Withdrawal confirmed — {payout.net_amount:,.2f} GMD sent",
-                                        render_withdrawal_confirmed_email(
-                                            full_name=user.full_name or user.email,
-                                            campaign_title=camp.title,
-                                            net_amount=payout.net_amount or 0.0,
-                                            wave_number=user.wave_number,
-                                            reference=client_ref,
-                                            dashboard_link=dashboard_link,
-                                        ),
-                                    )
-                        except Exception:
-                            pass
-            else:
-                logger.warning(
-                    "Payout webhook reference not found",
-                    extra={"action": "payout_webhook_reference_not_found", "client_reference": client_ref},
-                )
 
         else:
             logger.info(

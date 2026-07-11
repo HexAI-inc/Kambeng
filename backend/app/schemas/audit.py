@@ -38,6 +38,7 @@ class UserOverviewItem(BaseModel):
 class PayoutOverviewItem(BaseModel):
     """Summary of recent payouts for oversight."""
     payout_id: int
+    client_reference: Optional[str] = None
     campaign_id: int
     campaign_title: str
     user_id: int

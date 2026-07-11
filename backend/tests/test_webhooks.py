@@ -5,7 +5,7 @@ import json
 import pytest
 
 import app.models.proof  # noqa: F401
-from app.api.routes.webhooks import WebhookPayload, hexai_webhook
+from app.api.routes.webhooks import hexai_webhook
 from app.api.routes.webhooks import _verify_signature as verify_hexai_signature
 from app.models.campaign import Campaign, CampaignMode, CampaignStatus
 from app.models.donation import Donation
@@ -83,7 +83,6 @@ async def test_hexai_webhook_marks_donation_success():
     db = FakeDB(donation=donation, campaign=campaign)
 
     response = await hexai_webhook(
-        payload=WebhookPayload(**payload_dict),
         request=FakeRequest(payload_bytes, signature=signature),
         db=db,
     )

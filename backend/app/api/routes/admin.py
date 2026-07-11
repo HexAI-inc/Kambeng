@@ -24,8 +24,11 @@ from app.schemas.commissions import CommissionSummary, CommissionSourceItem, Adm
 from app.schemas.user import AdminUserUpdate, UserRead
 from app.services.email_service import render_kyc_approved_email, render_kyc_rejected_email, send_email
 from app.services.hexai_service import HexAIPaymentService
+from app.services.payout_service import apply_payout_status, normalize_gateway_status
+from app.core.logging_config import get_logger
 
 hexai_service = HexAIPaymentService()
+logger = get_logger("admin")
 from app.core.config import settings
 from sqlalchemy import func
 
@@ -820,6 +823,7 @@ async def list_payouts_overview(
             
             overview.append(PayoutOverviewItem(
                 payout_id=payout.id,
+                client_reference=payout.client_reference,
                 campaign_id=campaign.id,
                 campaign_title=campaign.title,
                 user_id=user.id if user else 0,
@@ -834,6 +838,102 @@ async def list_payouts_overview(
     
     return overview
 
+
+@router.post("/payouts/{payout_id}/verify")
+async def verify_payout_with_gateway(
+    payout_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(get_admin_user),
+):
+    """Guard rail: ask HPG for the payout's real status and reconcile ours.
+    Applies the transition only when the gateway reports a terminal state."""
+    result = await db.execute(select(Payout).where(Payout.id == payout_id))
+    payout = result.scalars().first()
+    if not payout:
+        raise HTTPException(status_code=404, detail="Payout not found")
+
+    try:
+        gateway_response = await hexai_service.get_payout_status(payout.client_reference)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Payout Gateway Error: {exc}")
+
+    if not gateway_response:
+        return {
+            "payout_id": payout.id,
+            "client_reference": payout.client_reference,
+            "gateway_status": "NOT_FOUND",
+            "previous_status": payout.status,
+            "status": payout.status,
+            "applied": False,
+        }
+
+    gateway_data = gateway_response.get("data") or gateway_response
+    raw_status = gateway_data.get("status")
+    normalized = normalize_gateway_status(raw_status)
+
+    previous_status = payout.status
+    applied = False
+    if normalized:
+        applied = await apply_payout_status(db, payout, normalized, source="VERIFY")
+
+    logger.info(
+        "Payout verified against gateway",
+        extra={
+            "action": "payout_gateway_verified",
+            "payout_id": payout.id,
+            "client_reference": payout.client_reference,
+            "gateway_status": raw_status,
+            "applied": applied,
+            "admin_id": admin_user.id,
+        },
+    )
+
+    return {
+        "payout_id": payout.id,
+        "client_reference": payout.client_reference,
+        "gateway_status": raw_status,
+        "previous_status": previous_status,
+        "status": payout.status,
+        "applied": applied,
+    }
+
+
+@router.post("/payouts/{payout_id}/mark-succeeded")
+async def mark_payout_succeeded(
+    payout_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(get_admin_user),
+):
+    """Guard rail: manually move a PENDING payout to SUCCEEDED when the money
+    verifiably left but the webhook never arrived. Audited."""
+    result = await db.execute(select(Payout).where(Payout.id == payout_id))
+    payout = result.scalars().first()
+    if not payout:
+        raise HTTPException(status_code=404, detail="Payout not found")
+
+    if payout.status != "PENDING":
+        raise HTTPException(status_code=409, detail=f"Payout is {payout.status}; only PENDING payouts can be manually marked succeeded")
+
+    await apply_payout_status(db, payout, "SUCCEEDED", source="MANUAL")
+
+    await _log_audit_action(
+        db,
+        action_type=AuditActionType.PAYOUT_MANUAL_OVERRIDE,
+        performed_by_admin_id=admin_user.id,
+        target_entity_type="payout",
+        target_entity_id=payout.id,
+        description=f"Manually marked payout {payout.client_reference} as SUCCEEDED",
+        campaign_id=payout.campaign_id,
+        old_value="PENDING",
+        new_value="SUCCEEDED",
+    )
+
+    return {
+        "payout_id": payout.id,
+        "client_reference": payout.client_reference,
+        "previous_status": "PENDING",
+        "status": payout.status,
+    }
 
 
 @router.get("/donations/pending")

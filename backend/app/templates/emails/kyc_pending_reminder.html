@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block preheader %}{{ pending_count }} KYC submission{{ 's' if pending_count != 1 else '' }} still awaiting review.{% endblock %}
+{% block eyebrow %}KYC Reminder{% endblock %}
+{% block heading %}{{ pending_count }} KYC submission{{ 's' if pending_count != 1 else '' }} awaiting review{% endblock %}
+{% block intro %}These identity submissions are still pending. This reminder repeats daily at 08:00 GMT until the queue is clear.{% endblock %}
+
+{% block content %}
+  {% for s in submissions %}
+  <div class="card" style="margin-bottom:12px;">
+    <div style="display:flex; justify-content:space-between; gap:16px; align-items:center;">
+      <div>
+        <div style="font-size:14px; color:#8899aa;">Name</div>
+        <div style="font-weight:800; font-size:16px; margin-top:6px;">{{ s.full_name }}</div>
+      </div>
+      <div>
+        <div style="font-size:14px; color:#8899aa;">Waiting</div>
+        <div style="font-weight:800; font-size:16px; margin-top:6px; color:{% if s.days_pending >= 3 %}#ff6b6b{% else %}{{ brand_color }}{% endif %};">{{ s.days_pending }} day{{ 's' if s.days_pending != 1 else '' }}</div>
+      </div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div class="detail">
+      <div class="detail-label">Email</div>
+      <div class="detail-value">{{ s.user_email }}</div>
+    </div>
+    <div class="detail">
+      <div class="detail-label">Document type</div>
+      <div class="detail-value">{{ s.document_type }}</div>
+    </div>
+    <div class="detail">
+      <div class="detail-label">Status</div>
+      <div class="detail-value">{{ s.status }}</div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div style="text-align:center;">
+      <a class="button" href="{{ s.review_link }}">Review submission</a>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div style="text-align:center; padding-top:8px;">
+    <a class="button" href="{{ queue_link }}">Open full KYC queue</a>
+  </div>
+{% endblock %}
+
+{% block footer %}You are receiving this because your address is on the Kambeng KYC notification list. Reminders stop once every submission is reviewed.{% endblock %}

@@ -136,6 +136,15 @@ def render_kyc_submission_review(full_name: str, user_email: str, document_type:
     )
 
 
+def render_kyc_pending_reminder(pending_count: int, submissions: list, queue_link: str) -> str:
+    return render_template(
+        "kyc_pending_reminder.html",
+        pending_count=pending_count,
+        submissions=submissions,
+        queue_link=queue_link,
+    )
+
+
 def render_kyc_approved_email(full_name: str, dashboard_link: str) -> str:
     return render_template(
         "kyc_approved.html",

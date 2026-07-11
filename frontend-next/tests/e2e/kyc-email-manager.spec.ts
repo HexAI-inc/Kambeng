@@ -16,8 +16,8 @@ function makeEmail(id: number, email: string, isActive: boolean): NotificationEm
   return { id, email, is_active: isActive, created_at: now, updated_at: now };
 }
 
-async function mockFraudEmailApi(page: Page, emails: NotificationEmail[]) {
-  await page.route("**/api/backend/admin/fraud-report-notification-emails**", async (route: Route) => {
+async function mockKycEmailApi(page: Page, emails: NotificationEmail[]) {
+  await page.route("**/api/backend/admin/kyc-notification-emails**", async (route: Route) => {
     const request = route.request();
     const method = request.method();
     const url = new URL(request.url());
@@ -86,10 +86,10 @@ async function mockFraudEmailApi(page: Page, emails: NotificationEmail[]) {
   });
 }
 
-test.describe("admin fraud email manager", () => {
+test.describe("admin KYC email manager", () => {
   test.skip(!adminUsername || !adminPassword, "Set E2E_ADMIN_USERNAME and E2E_ADMIN_PASSWORD to run authenticated smoke tests");
 
-  test("can manage fraud-report notification emails", async ({ page }) => {
+  test("can manage KYC notification emails", async ({ page }) => {
     await page.goto("/auth/login");
 
     await page.getByPlaceholder("+220XXXXXXXX or you@example.com").fill(adminUsername!);
@@ -98,20 +98,20 @@ test.describe("admin fraud email manager", () => {
 
     await expect(page).toHaveURL(/\/dashboard/);
 
-    const emails: NotificationEmail[] = [makeEmail(1, "security@example.com", true)];
-    await mockFraudEmailApi(page, emails);
+    const emails: NotificationEmail[] = [makeEmail(1, "compliance@example.com", true)];
+    await mockKycEmailApi(page, emails);
 
-    await page.goto("/admin/fraud-report-notification-emails");
-    await expect(page.getByText("Fraud Alert Emails")).toBeVisible();
-    await expect(page.getByText("security@example.com")).toBeVisible();
+    await page.goto("/admin/kyc-notification-emails");
+    await expect(page.getByText("KYC Alert Emails")).toBeVisible();
+    await expect(page.getByText("compliance@example.com")).toBeVisible();
 
-    await page.getByPlaceholder("security@example.com").fill("alerts@example.com");
+    await page.getByPlaceholder("admin@example.com").fill("alerts@example.com");
     await page.getByRole("button", { name: "Add email" }).click();
     await expect(page.getByText("alerts@example.com")).toBeVisible();
 
     await page.getByRole("button", { name: "Edit" }).last().click();
     await expect(page.getByText("Edit recipient")).toBeVisible();
-    await page.getByPlaceholder("security@example.com").last().fill("ops@example.com");
+    await page.getByPlaceholder("admin@example.com").last().fill("ops@example.com");
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page.getByText("ops@example.com")).toBeVisible();
 
@@ -122,7 +122,7 @@ test.describe("admin fraud email manager", () => {
     await page.getByRole("button", { name: "Delete" }).last().click();
     await expect(page.getByText("ops@example.com")).toHaveCount(0);
 
-    await expect(page.getByText("Fraud Alert Emails")).toBeVisible();
+    await expect(page.getByText("KYC Alert Emails")).toBeVisible();
   });
 
   test("sidebar link opens the page directly", async ({ page }) => {
@@ -134,15 +134,15 @@ test.describe("admin fraud email manager", () => {
 
     await expect(page).toHaveURL(/\/dashboard/);
 
-    const emails: NotificationEmail[] = [makeEmail(1, "security@example.com", true)];
-    await mockFraudEmailApi(page, emails);
+    const emails: NotificationEmail[] = [makeEmail(1, "compliance@example.com", true)];
+    await mockKycEmailApi(page, emails);
 
     await page.goto("/admin/campaigns");
     await expect(page).toHaveURL(/\/admin\/campaigns/);
 
-    await page.getByRole("link", { name: "Fraud Emails" }).click();
-    await expect(page).toHaveURL(/\/admin\/fraud-report-notification-emails/);
-    await expect(page.getByText("Fraud Alert Emails")).toBeVisible();
-    await expect(page.getByText("security@example.com")).toBeVisible();
+    await page.getByRole("link", { name: "KYC Emails" }).click();
+    await expect(page).toHaveURL(/\/admin\/kyc-notification-emails/);
+    await expect(page.getByText("KYC Alert Emails")).toBeVisible();
+    await expect(page.getByText("compliance@example.com")).toBeVisible();
   });
 });

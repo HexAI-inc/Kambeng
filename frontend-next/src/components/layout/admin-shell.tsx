@@ -7,7 +7,7 @@ import {
   AppstoreOutlined, FundProjectionScreenOutlined, TeamOutlined,
   HeartOutlined, ReconciliationOutlined, PercentageOutlined,
   WalletOutlined, AuditOutlined, BarChartOutlined,
-  FileProtectOutlined, WarningOutlined,
+  FileProtectOutlined, WarningOutlined, MailOutlined, AlertOutlined,
   MenuOutlined, CloseOutlined, LogoutOutlined, SwapOutlined,
   MenuFoldOutlined, MenuUnfoldOutlined,
 } from "@ant-design/icons";
@@ -48,7 +48,9 @@ const NAV: NavSection[] = [
     label: "Compliance",
     items: [
       { key: "kyc", label: "KYC Queue", href: "/admin/kyc-queue", icon: FileProtectOutlined },
+      { key: "kyc-emails", label: "KYC Emails", href: "/admin/kyc-notification-emails", icon: MailOutlined },
       { key: "moderation", label: "Moderation", href: "/admin/moderation", icon: WarningOutlined },
+      { key: "fraud-emails", label: "Fraud Emails", href: "/admin/fraud-report-notification-emails", icon: AlertOutlined },
     ],
   },
 ];

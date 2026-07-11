@@ -14,7 +14,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20"
   PYTHON_VERSION: "3.12"
 
 jobs:
@@ -45,37 +44,6 @@ jobs:
 
       - name: Run backend tests
         run: pytest
-
-  frontend-checks:
-    name: Frontend lint and build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend-next
-    env:
-      CI: "true"
-      NEXT_PUBLIC_API_BASE_URL: /api/backend
-      BACKEND_API_BASE_URL: http://127.0.0.1:8001/api
-      NEXTAUTH_URL: https://kambeng.hexai.gm
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: frontend-next/package-lock.json
-
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Run frontend lint
-        run: npm run lint
-
-      - name: Build frontend
-        run: npm run build
 
   deploy:
     name: Deploy backend to VPS

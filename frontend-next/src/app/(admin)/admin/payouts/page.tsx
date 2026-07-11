@@ -1,7 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
+
+import { api } from "@/lib/api";
 import { useAdminPayoutsOverview } from "@/hooks/use-frontend-data";
 import type { AdminPayoutOverview } from "@/types/frontend";
 
@@ -22,9 +26,65 @@ function StatusChip({ status }: { status: string }) {
   return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>{status}</span>;
 }
 
+function getServerErrorMessage(error: unknown): string {
+  if (isAxiosError(error)) {
+    const detail = (error.response?.data as { detail?: string } | undefined)?.detail;
+    if (typeof detail === "string" && detail.trim()) return detail;
+  }
+  return "Request failed";
+}
+
 export default function PayoutsPage() {
   const { data: payouts } = useAdminPayoutsOverview(true);
+  const queryClient = useQueryClient();
   const rows = payouts ?? [];
+
+  const [busyId, setBusyId] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+
+  const showToast = (msg: string, ok: boolean) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 4500);
+  };
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin-payouts-overview"] });
+
+  const verifyPayout = async (p: AdminPayoutOverview) => {
+    setBusyId(p.payout_id);
+    try {
+      const response = await api.post<{ gateway_status: string; status: string; applied: boolean }>(
+        `/admin/payouts/${p.payout_id}/verify`,
+      );
+      const { gateway_status, status, applied } = response.data;
+      if (applied) {
+        showToast(`Gateway says ${gateway_status} — payout updated to ${status}`, true);
+      } else if (gateway_status === "NOT_FOUND") {
+        showToast("Gateway has no record of this payout reference", false);
+      } else {
+        showToast(`Gateway says ${gateway_status} — no change (payout is ${status})`, true);
+      }
+      await refresh();
+    } catch (error) {
+      showToast(getServerErrorMessage(error), false);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const markPaid = async (p: AdminPayoutOverview) => {
+    const ref = p.client_reference ?? `payout #${p.payout_id}`;
+    if (!window.confirm(`Mark ${ref} (${Number(p.net_amount).toFixed(2)} GMD to ${p.user_name}) as SUCCEEDED?\n\nOnly do this after confirming with HPG or Wave that the money actually left. This action is audited.`)) return;
+    setBusyId(p.payout_id);
+    try {
+      await api.post(`/admin/payouts/${p.payout_id}/mark-succeeded`);
+      showToast("Payout marked as succeeded", true);
+      await refresh();
+    } catch (error) {
+      showToast(getServerErrorMessage(error), false);
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const totalGross = rows.reduce((s, p) => s + (p.gross_amount || 0), 0);
   const totalNet   = rows.reduce((s, p) => s + (p.net_amount || 0), 0);
@@ -34,9 +94,15 @@ export default function PayoutsPage() {
     <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
+        {toast && (
+          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, maxWidth: 420, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : "#ef4444", fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
+            {toast.msg}
+          </div>
+        )}
+
         <motion.div {...fadeUp(0)}>
           <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Payouts</div>
-          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Campaign withdrawal history</div>
+          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Campaign withdrawal history — verify pending payouts against HPG or resolve them manually</div>
         </motion.div>
 
         <motion.div {...fadeUp(0.06)}>
@@ -57,24 +123,55 @@ export default function PayoutsPage() {
         <motion.div {...fadeUp(0.1)}>
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
             <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>All payouts</div>
-            <div className="admin-table-wrap" style={{ minWidth: 680 }}>
-              <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "160px 1fr 160px 110px 110px 110px 90px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-                {["Reference", "Campaign", "Recipient", "Gross", "Net", "Status", "Date"].map((h) => <div key={h}>{h}</div>)}
+            <div className="admin-table-wrap" style={{ minWidth: 860 }}>
+              <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "150px 1fr 140px 100px 100px 100px 80px 170px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                {["Reference", "Campaign", "Recipient", "Gross", "Net", "Status", "Date", "Actions"].map((h) => <div key={h}>{h}</div>)}
               </div>
               {rows.length === 0 ? (
                 <div style={{ padding: "36px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No payouts yet</div>
-              ) : rows.map((p: AdminPayoutOverview, i) => (
-                <div key={i} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "160px 1fr 160px 110px 110px 110px 90px", padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
+              ) : rows.map((p: AdminPayoutOverview) => (
+                <div key={p.payout_id} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "150px 1fr 140px 100px 100px 100px 80px 170px", padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                 >
-                  <div data-label="Reference" style={{ fontSize: 11, fontFamily: "monospace", color: "#8899aa" }}>{(p as unknown as { client_reference?: string }).client_reference ?? `OUT-${p.payout_id}`}</div>
+                  <div data-label="Reference" style={{ fontSize: 11, fontFamily: "monospace", color: "#8899aa", overflowWrap: "anywhere" }}>{p.client_reference ?? `#${p.payout_id}`}</div>
                   <div data-label="Campaign" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600 }}>{p.campaign_title}</div>
                   <div data-label="Recipient" style={{ fontSize: 12, color: "#8899aa" }}>{p.user_name}</div>
                   <div data-label="Gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(p.gross_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
                   <div data-label="Net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
                   <div data-label="Status"><StatusChip status={p.status} /></div>
                   <div data-label="Date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</div>
+                  <div data-label="Actions" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {p.status === "PENDING" ? (
+                      <>
+                        <button
+                          onClick={() => void verifyPayout(p)}
+                          disabled={busyId === p.payout_id}
+                          title="Check the real status with the payment gateway"
+                          style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(29,197,255,0.25)", background: "rgba(29,197,255,0.08)", color: BLUE, cursor: "pointer", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                        >
+                          {busyId === p.payout_id ? "…" : "Verify with HPG"}
+                        </button>
+                        <button
+                          onClick={() => void markPaid(p)}
+                          disabled={busyId === p.payout_id}
+                          title="Manually mark as succeeded (audited)"
+                          style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(27,191,136,0.25)", background: "rgba(27,191,136,0.08)", color: GREEN, cursor: "pointer", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                        >
+                          Mark paid
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => void verifyPayout(p)}
+                        disabled={busyId === p.payout_id}
+                        title="Re-check the gateway status"
+                        style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                      >
+                        {busyId === p.payout_id ? "…" : "Re-verify"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

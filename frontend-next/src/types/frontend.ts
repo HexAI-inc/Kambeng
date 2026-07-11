@@ -216,6 +216,7 @@ export type AdminTransactionSummary = {
 
 export type AdminPayoutOverview = {
   payout_id: number;
+  client_reference?: string | null;
   campaign_id: number;
   campaign_title: string;
   user_id: number;

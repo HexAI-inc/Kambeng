@@ -24,4 +24,4 @@ __pycache__/
 dist/
 build/
 *.egg
-*.egg-info/
+*.egg-info/test-results/

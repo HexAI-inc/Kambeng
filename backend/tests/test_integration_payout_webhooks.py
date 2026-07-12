@@ -8,6 +8,7 @@ from sqlalchemy.future import select
 from app.api.routes.auth import get_admin_user
 from app.models.audit_log import AdminAuditLog, AuditActionType
 from app.models.campaign import Campaign, CampaignMode
+from app.models.ledger import TransactionLedger, TransactionStatus, TransactionType
 from app.models.payout import Payout
 from app.models.user import User
 
@@ -41,10 +42,31 @@ async def _seed_payout(db_session, reference: str, wave="+2207005555", email="pa
         amount=980.0,
         status="PENDING",
     )
-    db_session.add(payout)
+    ledger = TransactionLedger(
+        campaign_id=campaign.id,
+        transaction_type=TransactionType.WITHDRAWAL,
+        status=TransactionStatus.PENDING,
+        gross_amount=1000.0,
+        hexai_fee=10.0,
+        platform_commission=10.0,
+        net_amount=980.0,
+        external_reference=reference,
+        description="Test withdrawal",
+    )
+    db_session.add_all([payout, ledger])
     await db_session.commit()
     await db_session.refresh(payout)
     return payout
+
+
+async def _ledger_status(db_session, reference: str) -> TransactionStatus:
+    await db_session.commit()
+    result = await db_session.execute(
+        select(TransactionLedger).where(TransactionLedger.external_reference == reference)
+    )
+    ledger = result.scalars().first()
+    await db_session.refresh(ledger)
+    return ledger.status
 
 
 async def _payout_status(db_session, payout_id: int) -> str:
@@ -69,6 +91,8 @@ async def test_payout_webhook_handles_alternate_event_and_shape(async_client, db
     assert resp.status_code == 200, resp.text
 
     assert await _payout_status(db_session, payout.id) == "SUCCEEDED"
+    # the WITHDRAWAL ledger row must move with the payout — revenue stats sum it
+    assert await _ledger_status(db_session, "PAYOUT-ALT-1") == TransactionStatus.SUCCEEDED
 
 
 @pytest.mark.asyncio

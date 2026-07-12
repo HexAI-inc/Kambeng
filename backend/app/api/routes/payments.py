@@ -36,14 +36,13 @@ from app.services.email_service import (
     send_email,
     render_recurring_donation_confirmation_email,
     render_withdrawal_initiated_email,
-    render_withdrawal_confirmed_email,
-    render_withdrawal_failed_email,
 )
 from app.services.payment_reconciliation import (
     DonationNotFoundError,
     DonationTransitionConflictError,
     reconcile_donation_status,
 )
+from app.services.payout_service import apply_payout_status, normalize_gateway_status
 from app.core.logging_config import get_logger
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
@@ -64,7 +63,10 @@ async def get_campaign_withdrawal_summary(
     # Use net_amount (what actually left our HexAI account) to stay consistent
     # with amount_raised which is already net of the 2% HexAI collection fee.
     total_net_withdrawn = sum((payout.net_amount or payout.amount or 0.0) for payout in payouts if payout.status == "SUCCEEDED")
-    available_balance = campaign.amount_raised - total_net_withdrawn
+    # PENDING payouts are already in flight at the gateway — reserve them so a
+    # second withdrawal can't spend the same balance. FAILED releases the hold.
+    pending_reserved = sum((payout.net_amount or payout.amount or 0.0) for payout in payouts if payout.status == "PENDING")
+    available_balance = campaign.amount_raised - total_net_withdrawn - pending_reserved
     return available_balance, total_net_withdrawn, payouts
 
 
@@ -684,65 +686,15 @@ async def get_payout_status(
         try:
             hexai_data = await hexai_service.get_payout_status(client_reference)
             hexai_status = (
-                hexai_data.get("data", {}).get("status")
-                or hexai_data.get("status")
+                (hexai_data or {}).get("data", {}).get("status")
+                or (hexai_data or {}).get("status")
                 or ""
-            ).upper()
+            )
 
-            new_status: str | None = None
-            if hexai_status in ("SUCCEEDED", "SUCCESS", "COMPLETED", "DELIVERED"):
-                new_status = "SUCCEEDED"
-            elif hexai_status in ("FAILED", "CANCELLED", "REJECTED", "EXPIRED"):
-                new_status = "FAILED"
-
+            # Shared transition: updates payout + ledger, notifies the owner
+            new_status = normalize_gateway_status(hexai_status)
             if new_status:
-                payout.status = new_status
-                # Also update the ledger entry
-                ledger_result = await db.execute(
-                    select(TransactionLedger).where(TransactionLedger.external_reference == client_reference)
-                )
-                ledger = ledger_result.scalars().first()
-                if ledger:
-                    ledger.status = TransactionStatus.SUCCEEDED if new_status == "SUCCEEDED" else TransactionStatus.FAILED
-                    if new_status == "SUCCEEDED":
-                        ledger.confirmed_at = datetime.now(UTC)
-                await db.commit()
-
-                # Send email
-                dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard"
-                if new_status == "SUCCEEDED" and campaign:
-                    try:
-                        send_email(
-                            current_user.email,
-                            f"Withdrawal confirmed — {payout.net_amount:,.2f} GMD sent to your Wave",
-                            render_withdrawal_confirmed_email(
-                                full_name=current_user.full_name or current_user.email,
-                                campaign_title=campaign.title,
-                                net_amount=payout.net_amount or 0.0,
-                                wave_number=current_user.wave_number,
-                                reference=client_reference,
-                                dashboard_link=dashboard_link,
-                            ),
-                        )
-                    except Exception:
-                        pass
-                elif new_status == "FAILED" and campaign:
-                    try:
-                        send_email(
-                            current_user.email,
-                            f"Withdrawal failed — {campaign.title}",
-                            render_withdrawal_failed_email(
-                                full_name=current_user.full_name or current_user.email,
-                                campaign_title=campaign.title,
-                                gross_amount=payout.gross_amount or 0.0,
-                                wave_number=current_user.wave_number,
-                                reference=client_reference,
-                                dashboard_link=dashboard_link,
-                            ),
-                        )
-                    except Exception:
-                        pass
-
+                await apply_payout_status(db, payout, new_status, source="POLL")
                 logger.info(
                     "Payout poll reconciled",
                     extra={

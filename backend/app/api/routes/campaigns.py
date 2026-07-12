@@ -261,76 +261,10 @@ async def report_campaign_fraud(
     return report
 
 
-class _WithdrawBody:
-    pass
-
-
-from pydantic import BaseModel as _BaseModel
-
-
-class _WithdrawRequest(_BaseModel):
-    amount: float
-
-
-@router.post("/{slug}/withdraw")
-async def withdraw_campaign_funds(
-    slug: str,
-    body: _WithdrawRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Withdraw funds from a campaign to the owner's Wave account"""
-    result = await db.execute(select(Campaign).where(Campaign.slug == slug))
-    campaign = result.scalars().first()
-    if not campaign:
-        raise HTTPException(status_code=404, detail="Campaign not found")
-
-    if campaign.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only the campaign owner can withdraw funds")
-
-    gross_amount = body.amount
-    hexai_fee = gross_amount * settings.HEXAI_WITHDRAWAL_FEE_PERCENT
-    platform_commission = settings.PLATFORM_FIXED_COMMISSION_GMD
-    net_amount = gross_amount - hexai_fee - platform_commission
-
-    if net_amount <= 0:
-        raise HTTPException(status_code=400, detail="Withdrawal amount too small after fees")
-
-    client_reference = f"PAYOUT-{int(time.time() * 1000)}"
-
-    try:
-        await hexai_service.initiate_payout(
-            requested_amount=net_amount,
-            recipient_mobile=current_user.wave_number,
-            payout_reference=client_reference,
-            recipient_name=current_user.full_name,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Payout Gateway Error: {str(e)}")
-
-    new_payout = Payout(
-        campaign_id=campaign.id,
-        client_reference=client_reference,
-        gross_amount=gross_amount,
-        hexai_fee=hexai_fee,
-        platform_commission=platform_commission,
-        net_amount=net_amount,
-        amount=net_amount,
-        status="PENDING",
-    )
-    db.add(new_payout)
-    await db.commit()
-    await db.refresh(new_payout)
-
-    return {
-        "id": new_payout.id,
-        "client_reference": new_payout.client_reference,
-        "gross_amount": new_payout.gross_amount,
-        "hexai_fee": new_payout.hexai_fee,
-        "platform_commission": new_payout.platform_commission,
-        "net_amount": new_payout.net_amount,
-        "status": new_payout.status,
-    }
+# NOTE: the old POST /{slug}/withdraw endpoint was removed deliberately.
+# It initiated real payouts without the KYC gate, available-balance check,
+# or ledger entry that POST /payments/withdraw enforces. All withdrawals
+# must go through /payments/withdraw.
 
 
 @router.get("/{slug}/withdrawals")

@@ -50,7 +50,7 @@ Every external transaction carries a `client_reference` whose **prefix determine
 |---|---|---|
 | `DON-` | One-time donation | `POST /payments/donate` |
 | `REC-` | Recurring-donation charge | Scheduler worker (`recurring_charge_service`) |
-| `PAYOUT-` | Organizer withdrawal | `POST /payments/withdraw` (also legacy `POST /campaigns/{slug}/withdraw`) |
+| `PAYOUT-` | Organizer withdrawal | `POST /payments/withdraw` (the only withdrawal endpoint — a legacy unguarded one was removed 2026-07-12) |
 | `OUT-` | Organizer withdrawal (older format, still recognized) | historical |
 | `ADMIN-COMM-` | Platform commission withdrawal | `POST /admin/commissions/withdraw` |
 
@@ -120,7 +120,7 @@ Recurring donations are **donor-initiated, not auto-charged** — Wave has no ca
 
 1. **KYC gate**: `current_user.kyc_status == "APPROVED"` or 403.
 2. **Ownership**: only the campaign owner.
-3. **Balance**: `available = campaign.amount_raised − Σ net_amount of SUCCEEDED payouts`. Because `amount_raised` is already net of collection fees and we subtract *net* payout amounts, this equals what genuinely remains in the HPG wallet for this campaign. PENDING payouts do **not** reduce the balance (see §10, gap 3).
+3. **Balance**: `available = campaign.amount_raised − Σ net of SUCCEEDED payouts − Σ net of PENDING payouts`. Because `amount_raised` is already net of collection fees and we subtract *net* payout amounts, this equals what genuinely remains in the HPG wallet for this campaign. PENDING payouts reserve their amount (they're already in flight at the gateway); a FAILED payout releases its hold.
 4. **Fees**: `net = gross − 2% HPG fee − D10 platform commission`; rejected if net ≤ 0.
 
 ### Execution order (deliberate)
@@ -133,12 +133,12 @@ HPG's `payouts/send` is called **before** anything is written to the DB — if t
 
 ### Resolution — four paths, one function
 
-All payout state changes go through `payout_service.apply_payout_status` (idempotent; sends the confirmed/failed email to the organizer; logs every transition with its source):
+All payout state changes go through `payout_service.apply_payout_status` (idempotent; updates the matching `WITHDRAWAL` ledger row in the same commit; sends the confirmed/failed email to the organizer; logs every transition with its source):
 
 | Path | Trigger | Source tag |
 |---|---|---|
-| **Webhook** | HPG notifies. Matched by `PAYOUT-`/`OUT-`/`ADMIN-COMM-` prefix on **any** event name; body parsed leniently (transaction under `transaction`/`payout`/`data` or top-level); status wording normalized (`SUCCESS`, `COMPLETED`, `PAID` → SUCCEEDED; `CANCELLED`, `REJECTED`, `EXPIRED`, … → FAILED) | `WEBHOOK` |
-| **Owner poll** | `GET /payments/withdraw/status/{ref}` — the dashboard polls; if PENDING, asks HPG `payouts/status/{ref}` directly and reconciles | poll |
+| **Webhook** | HPG notifies. Matched by `PAYOUT-`/`OUT-`/`ADMIN-COMM-` prefix on **any** event name; body parsed leniently (transaction under `transaction`/`payout`/`data` or top-level); status wording normalized (`SUCCESS`, `COMPLETED`, `PAID`, `DELIVERED` → SUCCEEDED; `CANCELLED`, `REJECTED`, `EXPIRED`, … → FAILED) | `WEBHOOK` |
+| **Owner poll** | `GET /payments/withdraw/status/{ref}` — the dashboard polls; if PENDING, asks HPG `payouts/status/{ref}` directly and reconciles | `POLL` |
 | **Admin verify** (guard rail 1) | `POST /admin/payouts/{id}/verify` — "Verify with HPG" button on `/admin/payouts`; fetches the gateway's real status and applies it if terminal | `VERIFY` |
 | **Manual override** (guard rail 2) | `POST /admin/payouts/{id}/mark-succeeded` — "Mark paid" button; **only** PENDING→SUCCEEDED (409 otherwise), written to the admin audit log as `PAYOUT_MANUAL_OVERRIDE` | `MANUAL` |
 
@@ -175,14 +175,17 @@ Supporting records: `admin_audit_logs` (manual approvals/overrides/commission wi
 
 ## 10. Known gaps and sharp edges
 
-Ordered by risk. These are documented findings, not yet fixed:
+Ordered by risk:
 
-1. **Legacy withdrawal endpoint skips every safeguard.** `POST /campaigns/{slug}/withdraw` ([campaigns.py](../backend/app/api/routes/campaigns.py)) initiates a real HPG payout with **no KYC check, no available-balance check, and no ledger entry**. A non-KYC organizer — or one who already withdrew everything — could pull money out through it. It predates `/payments/withdraw` and should be deleted or made a thin proxy.
-2. **Ledger rows go stale on webhook/verify/manual payout resolution.** `apply_payout_status` updates the `Payout` but not the matching `WITHDRAWAL` ledger row; only the owner-poll path updates the ledger. Consequence: `total_platform_revenue` in `/admin/system/stats` (which sums **ledger** rows with `status=SUCCEEDED`) undercounts, while `/admin/commissions` (which sums the **payouts** table) is correct — the two admin screens can disagree. Fix: update the ledger inside `apply_payout_status`.
-3. **PENDING payouts don't reserve balance.** Available balance only subtracts SUCCEEDED payouts, so an organizer can fire two quick withdrawals that together exceed their balance — both go to HPG. Fix: include PENDING payouts in `total_net_withdrawn`, releasing the reservation on FAILED.
-4. **Commission double-spend window.** Same shape as (3) but narrower: `available_commissions` does subtract pending admin withdrawals, but two concurrent requests can both pass validation before either row commits (no lock around read-then-write).
-5. **Unpaid recurring links accumulate as PENDING donations** with PENDING ledger rows, indistinguishable at a glance from payment failures. Consider expiring them after N days.
-6. **Fee assumptions are config, not contract.** The 2% figures mirror what HPG currently charges. If HPG changes its fee and the env vars don't move in lockstep, `amount_raised` silently drifts from wallet reality. The reconciliation script is the safety net.
+1. **Commission double-spend window.** `available_commissions` subtracts pending admin withdrawals, but two concurrent requests can both pass validation before either row commits (no lock around read-then-write).
+2. **Unpaid recurring links accumulate as PENDING donations** with PENDING ledger rows, indistinguishable at a glance from payment failures. Consider expiring them after N days.
+3. **Fee assumptions are config, not contract.** The 2% figures mirror what HPG currently charges. If HPG changes its fee and the env vars don't move in lockstep, `amount_raised` silently drifts from wallet reality. The reconciliation script is the safety net.
+
+**Fixed 2026-07-12** (kept here for history):
+
+- ~~Legacy `POST /campaigns/{slug}/withdraw` skipped KYC, balance check, and ledger~~ — endpoint deleted; `/payments/withdraw` is the only withdrawal path, and a regression test asserts the old route stays dead.
+- ~~Ledger rows went stale on webhook/verify/manual payout resolution~~ — `apply_payout_status` now updates the `WITHDRAWAL` ledger row in the same commit, and the owner-poll endpoint routes through the same service instead of duplicating the logic.
+- ~~PENDING payouts didn't reserve balance~~ — in-flight payouts now reduce `available_balance`; FAILED releases the hold.
 
 ## 11. Quick reference — where to look when money misbehaves
 
@@ -191,5 +194,5 @@ Ordered by risk. These are documented findings, not yet fixed:
 | Donation paid but campaign total didn't move | `GET /payments/donations/{ref}/status` (self-heals via HPG poll), then `/admin/donations/pending` → manual approve |
 | Payout stuck PENDING | `/admin/payouts` → **Verify with HPG**, then **Mark paid** if confirmed out-of-band |
 | Campaign total looks wrong | `scripts/reconcile_campaign_totals.py` (dry-run by default) |
-| Revenue numbers disagree between admin screens | Known gap #2 above — trust `/admin/commissions` (payouts table) over `/admin/system/stats` (ledger) |
+| Revenue numbers disagree between admin screens | Ledger rows resolved before 2026-07-12 may still be PENDING (the sync fix isn't retroactive) — reconcile old `WITHDRAWAL` ledger rows against the payouts table |
 | Webhook signature failures in logs | `HEXAI_WEBHOOK_SECRET` mismatch; check `sig_preview` in the `hexai_webhook_invalid_signature` log entries |

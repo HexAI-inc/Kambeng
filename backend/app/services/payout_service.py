@@ -10,8 +10,11 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from datetime import UTC, datetime
+
 from app.core.config import settings
 from app.models.campaign import Campaign
+from app.models.ledger import TransactionLedger, TransactionStatus
 from app.models.payout import Payout
 from app.models.user import User
 from app.services.email_service import (
@@ -24,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 # Gateway wording varies (and has changed before); accept every spelling that
 # unambiguously means "money moved" or "money did not move".
-_SUCCESS_STATUSES = {"SUCCEEDED", "SUCCESS", "SUCCESSFUL", "COMPLETED", "COMPLETE", "PAID"}
+_SUCCESS_STATUSES = {"SUCCEEDED", "SUCCESS", "SUCCESSFUL", "COMPLETED", "COMPLETE", "PAID", "DELIVERED"}
 _FAILURE_STATUSES = {"FAILED", "FAILURE", "CANCELLED", "CANCELED", "REJECTED", "DECLINED", "EXPIRED"}
 
 
@@ -68,6 +71,19 @@ async def apply_payout_status(
 
     previous = payout.status
     payout.status = new_status
+
+    # Keep the WITHDRAWAL ledger row in sync — admin revenue stats sum the
+    # ledger, so leaving it PENDING undercounts platform revenue.
+    ledger_result = await db.execute(
+        select(TransactionLedger).where(TransactionLedger.external_reference == payout.client_reference)
+    )
+    ledger = ledger_result.scalars().first()
+    if ledger is not None:
+        ledger.status = TransactionStatus.SUCCEEDED if new_status == "SUCCEEDED" else TransactionStatus.FAILED
+        ledger.confirmed_at = datetime.now(UTC) if new_status == "SUCCEEDED" else None
+        ledger.reconciliation_source = source
+        ledger.reconciled_at = datetime.now(UTC)
+
     await db.commit()
 
     logger.info(

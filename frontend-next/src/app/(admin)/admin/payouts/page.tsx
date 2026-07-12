@@ -16,6 +16,20 @@ function fadeUp(delay = 0) {
   return { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay, ease: "easeOut" as const } };
 }
 
+// One source of truth so header and rows can never drift apart
+const TABLE_GRID = "155px 1fr 130px 95px 95px 95px 75px 150px";
+
+const actionBtnBase: React.CSSProperties = {
+  padding: "6px 10px",
+  borderRadius: 7,
+  fontSize: 11,
+  fontWeight: 700,
+  cursor: "pointer",
+  whiteSpace: "nowrap",
+  textAlign: "center",
+  width: "100%",
+};
+
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string; border: string }> = {
     PENDING:   { color: "#f97316", bg: "rgba(249,115,22,0.1)",  border: "rgba(249,115,22,0.25)" },
@@ -123,14 +137,14 @@ export default function PayoutsPage() {
         <motion.div {...fadeUp(0.1)}>
           <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
             <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>All payouts</div>
-            <div className="admin-table-wrap" style={{ minWidth: 860 }}>
-              <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "150px 1fr 140px 100px 100px 100px 80px 170px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+            <div className="admin-table-wrap" style={{ minWidth: 920 }}>
+              <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: TABLE_GRID, gap: "0 12px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                 {["Reference", "Campaign", "Recipient", "Gross", "Net", "Status", "Date", "Actions"].map((h) => <div key={h}>{h}</div>)}
               </div>
               {rows.length === 0 ? (
                 <div style={{ padding: "36px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No payouts yet</div>
               ) : rows.map((p: AdminPayoutOverview) => (
-                <div key={p.payout_id} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "150px 1fr 140px 100px 100px 100px 80px 170px", padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
+                <div key={p.payout_id} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: TABLE_GRID, gap: "0 12px", padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                 >
@@ -141,14 +155,14 @@ export default function PayoutsPage() {
                   <div data-label="Net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
                   <div data-label="Status"><StatusChip status={p.status} /></div>
                   <div data-label="Date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</div>
-                  <div data-label="Actions" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <div data-label="Actions" className="payout-actions" style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 6, minWidth: 0 }}>
                     {p.status === "PENDING" ? (
                       <>
                         <button
                           onClick={() => void verifyPayout(p)}
                           disabled={busyId === p.payout_id}
                           title="Check the real status with the payment gateway"
-                          style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(29,197,255,0.25)", background: "rgba(29,197,255,0.08)", color: BLUE, cursor: "pointer", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                          style={{ ...actionBtnBase, border: "1px solid rgba(29,197,255,0.25)", background: "rgba(29,197,255,0.08)", color: BLUE, opacity: busyId === p.payout_id ? 0.6 : 1 }}
                         >
                           {busyId === p.payout_id ? "…" : "Verify with HPG"}
                         </button>
@@ -156,7 +170,7 @@ export default function PayoutsPage() {
                           onClick={() => void markPaid(p)}
                           disabled={busyId === p.payout_id}
                           title="Manually mark as succeeded (audited)"
-                          style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(27,191,136,0.25)", background: "rgba(27,191,136,0.08)", color: GREEN, cursor: "pointer", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                          style={{ ...actionBtnBase, border: "1px solid rgba(27,191,136,0.25)", background: "rgba(27,191,136,0.08)", color: GREEN, opacity: busyId === p.payout_id ? 0.6 : 1 }}
                         >
                           Mark paid
                         </button>
@@ -166,7 +180,7 @@ export default function PayoutsPage() {
                         onClick={() => void verifyPayout(p)}
                         disabled={busyId === p.payout_id}
                         title="Re-check the gateway status"
-                        style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                        style={{ ...actionBtnBase, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", opacity: busyId === p.payout_id ? 0.6 : 1 }}
                       >
                         {busyId === p.payout_id ? "…" : "Re-verify"}
                       </button>
@@ -178,7 +192,14 @@ export default function PayoutsPage() {
           </div>
         </motion.div>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Inside the mobile card layout, action buttons sit side by side */
+        @media (max-width: 767px) {
+          .payout-actions { flex-direction: row !important; }
+          .payout-actions button { width: auto !important; flex: 1; }
+        }
+      `}</style>
     </div>
   );
 }

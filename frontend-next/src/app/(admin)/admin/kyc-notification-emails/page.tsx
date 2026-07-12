@@ -495,6 +495,7 @@ function actionBtnStyle(variant: "default" | "green" | "amber" | "red"): React.C
     background: map.bg,
     color: map.color,
     cursor: "pointer",
+    whiteSpace: "nowrap",
   };
 }
 

@@ -370,7 +370,7 @@ export default function FraudReportNotificationEmailsPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "52px 1fr 120px 120px 180px",
+                gridTemplateColumns: "52px 1fr 120px 120px 200px",
                 padding: "10px 18px",
                 borderBottom: "1px solid rgba(255,255,255,0.06)",
                 fontSize: 10,
@@ -402,7 +402,7 @@ export default function FraudReportNotificationEmailsPage() {
                 {...fadeUp(0.03 * index)}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "52px 1fr 120px 120px 180px",
+                  gridTemplateColumns: "52px 1fr 120px 120px 200px",
                   padding: "13px 18px",
                   alignItems: "center",
                   borderBottom: "1px solid rgba(255,255,255,0.04)",
@@ -484,6 +484,7 @@ function actionBtnStyle(variant: "default" | "green" | "amber" | "red"): React.C
     background: map.bg,
     color: map.color,
     cursor: "pointer",
+    whiteSpace: "nowrap",
   };
 }
 

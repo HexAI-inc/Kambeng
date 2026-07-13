@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block preheader %}{{ campaign_title }} posted a new update.{% endblock %}
+{% block eyebrow %}Campaign Update{% endblock %}
+{% block heading %}{{ campaign_title }} posted an update{% endblock %}
+{% block intro %}Hi {{ full_name }}, a campaign you follow just shared news.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    {% if update_title %}
+    <div style="font-weight:800; font-size:16px; margin-bottom:10px;">{{ update_title }}</div>
+    {% endif %}
+    <p style="font-size:14px; color:#8899aa; line-height:1.7; margin:0;">{{ update_preview }}</p>
+
+    <div style="height:16px"></div>
+
+    <div style="text-align:center;">
+      <a class="button" href="{{ campaign_link }}">Read the full update</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}You get these emails because you follow this campaign on Kambeng. Unfollow it from the campaign page to stop.{% endblock %}

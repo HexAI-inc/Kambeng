@@ -12,7 +12,7 @@ import uuid
 
 from app.core.config import settings
 from app.core.logging_config import LOG_FILE_PATH, clear_request_context, get_logger, set_request_context
-from app.api.routes import admin, aliases, auth, campaign_updates, campaigns, fraud_report_notification_emails, goals, kyc, moderation, payments, profiles, reviews, search, uploads, utils, webhooks, websockets, kyc_notification_emails
+from app.api.routes import admin, aliases, auth, campaign_updates, campaigns, fraud_report_notification_emails, goals, kyc, moderation, payments, profiles, reviews, search, subscriptions, uploads, utils, webhooks, websockets, kyc_notification_emails
 import psutil
 
 
@@ -124,6 +124,7 @@ app.include_router(reviews.router, prefix="/api")
 app.include_router(kyc.router, prefix="/api")
 app.include_router(kyc_notification_emails.router, prefix="/api")
 app.include_router(profiles.router, prefix="/api")
+app.include_router(subscriptions.router, prefix="/api")
 app.include_router(fraud_report_notification_emails.router, prefix="/api")
 from app.api.routes import media as media_router
 app.include_router(media_router.router, prefix="/api")

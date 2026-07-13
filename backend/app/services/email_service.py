@@ -136,6 +136,23 @@ def render_kyc_submission_review(full_name: str, user_email: str, document_type:
     )
 
 
+def render_campaign_update_notification(
+    full_name: str,
+    campaign_title: str,
+    update_title: str | None,
+    update_preview: str,
+    campaign_link: str,
+) -> str:
+    return render_template(
+        "campaign_update_notification.html",
+        full_name=full_name,
+        campaign_title=campaign_title,
+        update_title=update_title,
+        update_preview=update_preview,
+        campaign_link=campaign_link,
+    )
+
+
 def render_kyc_pending_reminder(pending_count: int, submissions: list, queue_link: str) -> str:
     return render_template(
         "kyc_pending_reminder.html",

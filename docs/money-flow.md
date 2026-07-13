@@ -75,7 +75,7 @@ sequenceDiagram
 
 Step by step:
 
-1. **Initiate.** The API asks HPG for a collection session *first*; only if HPG accepts does it write a `Donation` row (`status=PENDING`, optionally attributed to a `CampaignGoal` via `goal_id`) and a mirrored `TransactionLedger` row (`DONATION`, `PENDING`, gross = net at this point since fees aren't known to be owed until success).
+1. **Initiate.** The API asks HPG for a collection session *first*; only if HPG accepts does it write a `Donation` row (`status=PENDING`, optionally attributed to a `CampaignGoal` via `goal_id`, and linked to the donor's account via `user_id` when they're logged in — anonymous quick-pay stays unlinked) and a mirrored `TransactionLedger` row (`DONATION`, `PENDING`, gross = net at this point since fees aren't known to be owed until success). Linked donations power the donor's giving history at `GET /payments/donations/me`.
 2. **Donor pays** on the Wave page HPG returned. Kambeng is not in that loop.
 3. **Resolution.** Exactly one of four paths finalizes the donation — all of them funnel through `reconcile_donation_status`, which is the **only** function allowed to move donation money state:
    - **Webhook** (`POST /webhooks/hexai`, HMAC-verified against `HEXAI_WEBHOOK_SECRET`): `DON-`/`REC-` references with a terminal status.

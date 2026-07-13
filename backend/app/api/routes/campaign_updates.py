@@ -139,6 +139,48 @@ async def create_campaign_update(
 
     await db.commit()
 
+    # Notify followers — failures must never break posting the update
+    try:
+        from app.models.campaign_subscription import CampaignSubscription
+        from app.services.email_service import render_campaign_update_notification, send_email
+        from app.core.config import settings as app_settings
+
+        subscribers_result = await db.execute(
+            select(User)
+            .join(CampaignSubscription, CampaignSubscription.user_id == User.id)
+            .where(CampaignSubscription.campaign_id == campaign.id, User.is_active.is_(True))
+        )
+        subscribers = subscribers_result.scalars().all()
+        if subscribers:
+            campaign_link = f"{app_settings.FRONTEND_URL.rstrip('/')}/campaigns/{campaign.slug}"
+            preview = update.text if len(update.text) <= 280 else update.text[:277] + "…"
+            for subscriber in subscribers:
+                if not subscriber.email:
+                    continue
+                try:
+                    send_email(
+                        subscriber.email,
+                        f"New update from {campaign.title}",
+                        render_campaign_update_notification(
+                            full_name=subscriber.full_name or "there",
+                            campaign_title=campaign.title,
+                            update_title=update.title,
+                            update_preview=preview,
+                            campaign_link=campaign_link,
+                        ),
+                    )
+                except Exception:
+                    logger.exception(
+                        "Failed to email campaign update to subscriber",
+                        extra={"action": "update_notify_failed", "campaign_id": campaign.id, "recipient": subscriber.email},
+                    )
+            logger.info(
+                "Campaign update notifications sent",
+                extra={"action": "update_notify", "campaign_id": campaign.id, "subscriber_count": len(subscribers)},
+            )
+    except Exception:
+        logger.exception("Failed to fan out campaign update notifications", extra={"campaign_id": campaign.id})
+
     fresh_result = await db.execute(
         select(CampaignUpdate)
         .where(CampaignUpdate.id == update.id)

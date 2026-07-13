@@ -55,7 +55,7 @@ async def test_initiate_donation_success(monkeypatch):
     monkeypatch.setattr(payments.hexai_service, "initiate_donation", fake_initiate_donation)
 
     payload = DonationCreate(campaign_id=1, amount=100.0, donor_name="Alice", message="Good luck")
-    result = await initiate_donation(payload, db=db)
+    result = await initiate_donation(payload, db=db, current_user=None)
 
     assert result["redirect_url"] == "https://pay.example/redirect"
     assert result["client_reference"].startswith("DON-")

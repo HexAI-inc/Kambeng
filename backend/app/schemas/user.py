@@ -36,6 +36,7 @@ class UserProfileUpdate(BaseModel):
     """Fields a user can update on their own account."""
     full_name: Optional[str] = None
     bio: Optional[str] = Field(default=None, max_length=500)
+    account_purpose: Optional[str] = Field(default=None, pattern="^(DONATE|FUNDRAISE)$")
     email: Optional[EmailStr] = None
     wave_number: Optional[str] = None
     current_password: Optional[str] = None
@@ -59,6 +60,7 @@ class AdminUserUpdate(BaseModel):
 class UserRead(UserBase):
     id: int
     bio: Optional[str] = None
+    account_purpose: Optional[str] = None
     email: str
     is_email_verified: bool
     role: str

@@ -16,6 +16,9 @@ class User(Base):
     email_verification_code_hash = Column(String, nullable=True)
     email_verification_expires_at = Column(DateTime(timezone=True), nullable=True)
     role = Column(String, default="USER") # USER or ADMIN
+    # Persona preference (not a permission): DONATE or FUNDRAISE. Tailors the
+    # default dashboard experience; users can do everything either way.
+    account_purpose = Column(String, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     
     # KYC fields for withdrawal eligibility

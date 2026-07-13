@@ -9,6 +9,9 @@ class Donation(Base):
     id = Column(Integer, primary_key=True, index=True)
     campaign_id = Column(Integer, ForeignKey("campaigns.id"))
     goal_id = Column(Integer, ForeignKey("campaign_goals.id"), nullable=True, index=True)
+    # Set when the donor was logged in — powers "my donations" history.
+    # Anonymous quick-pay donations keep this NULL.
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     
     # HexAI details
     client_reference = Column(String, unique=True, index=True) # e.g., DON-12345

@@ -7,7 +7,7 @@ from app.models.payout import Payout
 from app.models.user import User
 from app.models.ledger import TransactionLedger, TransactionType, TransactionStatus
 from app.models.audit_log import AdminAuditLog, AuditActionType
-from app.api.routes.auth import get_admin_user, get_current_user
+from app.api.routes.auth import get_admin_user, get_current_user, get_current_user_optional
 from app.schemas.payout import PayoutRequest, CampaignWithdrawalSummaryResponse, WithdrawalHistoryItem
 from app.core.config import settings
 from sqlalchemy import func
@@ -191,8 +191,14 @@ async def reject_pending_donation(
     )
 
 @router.post("/donate")
-async def initiate_donation(donation_in: DonationCreate, db: AsyncSession = Depends(get_db)):
-    """Initiates a Wave payment for a specific campaign"""
+async def initiate_donation(
+    donation_in: DonationCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
+):
+    """Initiates a Wave payment for a specific campaign.
+    Works anonymously; a logged-in donor gets the donation linked to their
+    account for giving history."""
     
     # 1. Verify the campaign exists and is active
     result = await db.execute(select(Campaign).where(Campaign.id == donation_in.campaign_id))
@@ -235,6 +241,7 @@ async def initiate_donation(donation_in: DonationCreate, db: AsyncSession = Depe
     new_donation = Donation(
         campaign_id=campaign.id,
         goal_id=goal.id if goal else None,
+        user_id=current_user.id if current_user else None,
         client_reference=client_reference,
         amount=donation_in.amount,
         donor_name=donation_in.donor_name,
@@ -429,6 +436,7 @@ async def withdraw_funds(
 async def create_stripe_payment_intent(
     payload: StripePaymentIntentRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
 ):
     """Create a Stripe PaymentIntent and a pending donation record."""
     import asyncio
@@ -478,6 +486,7 @@ async def create_stripe_payment_intent(
     new_donation = Donation(
         campaign_id=campaign.id,
         goal_id=goal.id if goal else None,
+        user_id=current_user.id if current_user else None,
         client_reference=client_reference,
         amount=payload.amount,
         donor_name=payload.donor_name,
@@ -759,6 +768,39 @@ async def get_withdrawal_summary(
             for payout in payouts
         ],
     )
+
+
+@router.get("/donations/me")
+async def list_my_donations(
+    skip: int = 0,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """The logged-in user's giving history (donations made while signed in)."""
+    result = await db.execute(
+        select(Donation, Campaign)
+        .join(Campaign, Donation.campaign_id == Campaign.id)
+        .where(Donation.user_id == current_user.id)
+        .order_by(Donation.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    rows = result.all()
+    return [
+        {
+            "id": donation.id,
+            "client_reference": donation.client_reference,
+            "amount": donation.amount,
+            "status": donation.status,
+            "message": donation.message,
+            "created_at": donation.created_at.isoformat() if donation.created_at else None,
+            "campaign_id": campaign.id,
+            "campaign_title": campaign.title,
+            "campaign_slug": campaign.slug,
+        }
+        for donation, campaign in rows
+    ]
 
 
 # ===== Recurring Donation Endpoints =====

@@ -46,6 +46,14 @@ function IcProfile({ c }: { c: string }) {
   );
 }
 
+function IcGiving({ c }: { c: string }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <path d="M12 21s-7.5-4.6-9.5-9C1.2 9 2.6 5.9 5.6 5.2c1.8-.4 3.6.3 4.7 1.7L12 8.6l1.7-1.7c1.1-1.4 2.9-2.1 4.7-1.7 3 .7 4.4 3.8 3.1 6.8-2 4.4-9.5 9-9.5 9z" stroke={c} strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function IcLogout({ c }: { c: string }) {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -72,6 +80,7 @@ type Tab = { key: string; label: string; href: string; icon: (c: string) => Reac
 const BASE_TABS: Tab[] = [
   { key: "home",      label: "Home",      href: "/dashboard",              icon: (c) => <IcHome c={c} /> },
   { key: "campaigns", label: "Campaigns", href: "/dashboard/my-campaigns", icon: (c) => <IcCampaigns c={c} /> },
+  { key: "giving",    label: "Giving",    href: "/dashboard/my-donations", icon: (c) => <IcGiving c={c} /> },
   { key: "kyc",       label: "KYC",       href: "/dashboard/kyc",          icon: (c) => <IcKYC c={c} /> },
   { key: "profile",   label: "Profile",   href: "/dashboard/profile",      icon: (c) => <IcProfile c={c} /> },
 ];

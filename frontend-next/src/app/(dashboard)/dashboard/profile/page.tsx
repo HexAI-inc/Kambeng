@@ -35,7 +35,7 @@ function Avatar({ name, size = 60 }: { name: string; size?: number }) {
   );
 }
 
-type DetailsOverrides = { full_name?: string; email?: string; wave_number?: string; bio?: string };
+type DetailsOverrides = { full_name?: string; email?: string; wave_number?: string; bio?: string; account_purpose?: string };
 
 export default function ProfilePage() {
   const { data: me, isLoading } = useSessionProfile(true);
@@ -54,6 +54,7 @@ export default function ProfilePage() {
   const email      = detailOverrides.email       ?? me?.email       ?? "";
   const waveNumber = detailOverrides.wave_number ?? me?.wave_number ?? "";
   const bio        = detailOverrides.bio         ?? me?.bio         ?? "";
+  const purpose    = detailOverrides.account_purpose ?? me?.account_purpose ?? "";
 
   const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3500); };
 
@@ -64,6 +65,7 @@ export default function ProfilePage() {
     if (email      !== me.email)       payload.email       = email;
     if (waveNumber !== me.wave_number) payload.wave_number = waveNumber;
     if (bio        !== (me.bio ?? "")) payload.bio         = bio;
+    if (purpose && purpose !== (me.account_purpose ?? "")) payload.account_purpose = purpose;
     if (!Object.keys(payload).length) { showToast("Nothing changed", false); return; }
     setSaving(true);
     try {
@@ -156,6 +158,19 @@ export default function ProfilePage() {
               <div>
                 <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>Wave number</label>
                 <input type="tel" value={waveNumber} onChange={(e) => setDetailOverrides((p) => ({ ...p, wave_number: e.target.value }))} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>What brings you to Kambeng?</label>
+                <select
+                  value={purpose}
+                  onChange={(e) => setDetailOverrides((p) => ({ ...p, account_purpose: e.target.value }))}
+                  style={{ ...inputStyle, appearance: "none", cursor: "pointer" }}
+                >
+                  <option value="" disabled style={{ background: "#0d1120" }}>Choose one (optional)</option>
+                  <option value="DONATE" style={{ background: "#0d1120" }}>I&apos;m mainly here to give</option>
+                  <option value="FUNDRAISE" style={{ background: "#0d1120" }}>I want to fundraise</option>
+                </select>
+                <div style={{ fontSize: 11, color: "#4a5568", marginTop: 5 }}>Just a preference — you can donate and fundraise either way.</div>
               </div>
             </div>
             <button onClick={() => void handleSaveDetails()} disabled={saving} style={{ marginTop: 18, padding: "10px 24px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(29,197,255,0.3)", opacity: saving ? 0.7 : 1 }}>

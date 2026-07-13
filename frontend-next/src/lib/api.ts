@@ -4,6 +4,7 @@ export type AuthUser = {
   id: number;
   full_name: string;
   bio?: string | null;
+  account_purpose?: string | null;
   email: string;
   wave_number: string;
   is_email_verified: boolean;

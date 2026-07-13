@@ -21,6 +21,8 @@ import {
   useSessionProfile,
   useCampaignQRCode,
   useCampaignUpdates,
+  useCampaignSubscription,
+  useToggleCampaignSubscription,
 } from "@/hooks/use-frontend-data";
 import { api } from "@/lib/api";
 import type { CampaignDiscoveryItem, CampaignGoal, CampaignReview, CampaignUpdate } from "@/types/frontend";
@@ -846,6 +848,9 @@ export default function CampaignDetailPage() {
   const slug = params?.slug;
   const { data: session } = useSessionProfile(true);
   const isLoggedIn = Boolean(session?.id);
+  const { data: subscriptionStatus } = useCampaignSubscription(slug ?? "", isLoggedIn && Boolean(slug));
+  const toggleSubscription = useToggleCampaignSubscription();
+  const isSubscribed = Boolean(subscriptionStatus?.subscribed);
   const [showShare, setShowShare] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [reportingUpdateId, setReportingUpdateId] = useState<number | null>(null);
@@ -987,6 +992,25 @@ export default function CampaignDetailPage() {
                 >
                   <IconShare /> Share <span style={{ color: "rgba(29,197,255,0.5)" }}>/ QR</span>
                 </button>
+                {isLoggedIn && (
+                  <button
+                    onClick={() => toggleSubscription.mutate({ slug: slug!, subscribe: !isSubscribed })}
+                    disabled={toggleSubscription.isPending}
+                    title={isSubscribed ? "Stop receiving update emails for this campaign" : "Get an email when this campaign posts an update"}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "7px 14px", borderRadius: 8,
+                      border: `1px solid ${isSubscribed ? "rgba(27,191,136,0.3)" : "rgba(255,255,255,0.14)"}`,
+                      background: isSubscribed ? "rgba(27,191,136,0.1)" : "rgba(255,255,255,0.04)",
+                      color: isSubscribed ? GREEN : "#8899aa",
+                      fontSize: 13, fontWeight: 600, cursor: "pointer",
+                      transition: "background 0.2s",
+                      opacity: toggleSubscription.isPending ? 0.6 : 1,
+                    }}
+                  >
+                    {isSubscribed ? "✓ Following" : "Get updates"}
+                  </button>
+                )}
                 <button
                   onClick={() => setShowReport(true)}
                   style={{

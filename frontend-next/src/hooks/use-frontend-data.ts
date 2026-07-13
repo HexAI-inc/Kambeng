@@ -309,6 +309,7 @@ export function useUpdateMyProfile() {
     mutationFn: async (payload: {
       full_name?: string;
       bio?: string;
+      account_purpose?: string;
       email?: string;
       wave_number?: string;
       current_password?: string;
@@ -1061,6 +1062,79 @@ export function useUploadCampaignCover() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-campaigns"] });
+    },
+  });
+}
+
+// ===== Donor features: giving history, campaign subscriptions =====
+
+export type MyDonationItem = {
+  id: number;
+  client_reference: string;
+  amount: number;
+  status: string;
+  message: string | null;
+  created_at: string | null;
+  campaign_id: number;
+  campaign_title: string;
+  campaign_slug: string;
+};
+
+export type MySubscriptionItem = {
+  campaign_id: number;
+  campaign_title: string;
+  campaign_slug: string;
+  campaign_status: string;
+  cover_image_url: string | null;
+  subscribed_at: string | null;
+};
+
+export function useMyDonations(enabled = true) {
+  return useQuery({
+    queryKey: ["my-donations-history"],
+    enabled,
+    queryFn: async () => {
+      const response = await api.get<MyDonationItem[]>("/payments/donations/me", { params: { limit: 100 } });
+      return response.data;
+    },
+  });
+}
+
+export function useMySubscriptions(enabled = true) {
+  return useQuery({
+    queryKey: ["my-subscriptions"],
+    enabled,
+    queryFn: async () => {
+      const response = await api.get<MySubscriptionItem[]>("/me/subscriptions");
+      return response.data;
+    },
+  });
+}
+
+export function useCampaignSubscription(slug: string, enabled = true) {
+  return useQuery({
+    queryKey: ["campaign-subscription", slug],
+    enabled,
+    retry: false,
+    queryFn: async () => {
+      const response = await api.get<{ subscribed: boolean }>(`/campaigns/${slug}/subscription`);
+      return response.data;
+    },
+  });
+}
+
+export function useToggleCampaignSubscription() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ slug, subscribe }: { slug: string; subscribe: boolean }) => {
+      const response = subscribe
+        ? await api.post<{ subscribed: boolean }>(`/campaigns/${slug}/subscribe`)
+        : await api.delete<{ subscribed: boolean }>(`/campaigns/${slug}/subscribe`);
+      return response.data;
+    },
+    onSuccess: (_data, { slug }) => {
+      queryClient.invalidateQueries({ queryKey: ["campaign-subscription", slug] });
+      queryClient.invalidateQueries({ queryKey: ["my-subscriptions"] });
     },
   });
 }

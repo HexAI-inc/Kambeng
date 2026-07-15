@@ -70,9 +70,20 @@ export default function CampaignWithdrawalsPage() {
   const [grossAmount, setGrossAmount] = useState("");
 
   const kycApproved = me?.kyc_status === "APPROVED";
-  const availableBalance = summary?.available_balance ?? 0;
+  // Clamp: legacy over-withdrawn campaigns can report a negative balance
+  const availableBalance = Math.max(0, summary?.available_balance ?? 0);
   const withdrawalHistory = summary?.withdrawal_history ?? [];
-  const canWithdraw = kycApproved && Boolean(summary);
+  const canWithdraw = kycApproved && Boolean(summary) && availableBalance > 0;
+
+  // Live payout preview — estimates mirroring the server's fee structure
+  // (2% Wave processing + D10 platform commission); the server recomputes
+  // exact figures on submit.
+  const WAVE_FEE_RATE = 0.02;
+  const PLATFORM_FEE_GMD = 10;
+  const parsedAmount = Number(grossAmount);
+  const previewValid = Number.isFinite(parsedAmount) && parsedAmount > 0;
+  const previewWaveFee = previewValid ? parsedAmount * WAVE_FEE_RATE : 0;
+  const previewNet = previewValid ? parsedAmount - previewWaveFee - PLATFORM_FEE_GMD : 0;
 
   const handleWithdraw = async () => {
     if (!summary) {
@@ -119,7 +130,7 @@ export default function CampaignWithdrawalsPage() {
               Withdraw Funds
             </div>
             <div style={{ fontSize: 13, color: "#6b7a8d" }}>
-              Request a campaign withdrawal. A Wave processing fee and platform fee are automatically deducted, and the net amount is sent to your Wave wallet.
+              {summary?.campaign_title ?? ""}
             </div>
           </div>
 
@@ -141,90 +152,104 @@ export default function CampaignWithdrawalsPage() {
           </div>
         ) : (
           <>
-            <motion.div {...fadeUp(0.06)} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-              <div style={{ padding: "20px 22px", background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16 }}>
-                <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>Campaign</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: "#f0f6ff", marginBottom: 6 }}>{summary.campaign_title}</div>
-                <div style={{ fontSize: 12, color: "#6b7a8d" }}>Withdrawal balance dashboard</div>
+            {!kycApproved && (
+              <motion.div {...fadeUp(0.04)} style={{ padding: "14px 18px", borderRadius: 12, background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.25)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <div style={{ fontSize: 13, color: "#f97316", fontWeight: 600 }}>Identity verification is required before you can withdraw.</div>
+                <Link href="/dashboard/kyc" style={{ fontSize: 12, fontWeight: 700, color: "#f97316", textDecoration: "underline" }}>Complete KYC →</Link>
+              </motion.div>
+            )}
+
+            <motion.div {...fadeUp(0.06)} style={{ background: "#0d1120", border: "1px solid rgba(29,197,255,0.18)", borderRadius: 16, padding: "22px 24px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontSize: 11, color: BLUE, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 6 }}>Available to withdraw</div>
+                <div style={{ fontSize: "clamp(30px, 5vw, 40px)", fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                  {availableBalance.toLocaleString()} <span style={{ fontSize: 16, color: "#4a5568", fontWeight: 700 }}>GMD</span>
+                </div>
               </div>
-              <div style={{ padding: "20px 22px", background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16 }}>
-                <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>Raised</div>
-                <div style={{ fontSize: 26, fontWeight: 900, color: GREEN, letterSpacing: "-0.03em" }}>{fmt(summary.amount_raised)} GMD</div>
-                <div style={{ fontSize: 12, color: "#4a5568", marginTop: 6 }}>Total campaign funds received</div>
-              </div>
-              <div style={{ padding: "20px 22px", background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16 }}>
-                <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>KYC</div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: kycApproved ? GREEN : "#f97316", letterSpacing: "-0.03em" }}>{kycApproved ? "Approved" : "Required"}</div>
-                <div style={{ fontSize: 12, color: "#4a5568", marginTop: 6 }}>{kycApproved ? "You can withdraw now." : "Approve KYC before withdrawing funds."}</div>
+              <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, marginBottom: 4 }}>Raised</div>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: GREEN }}>{fmt(summary.amount_raised)} GMD</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, marginBottom: 4 }}>Withdrawn</div>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: "#8899aa" }}>{fmt(summary.total_withdrawn)} GMD</div>
+                </div>
               </div>
             </motion.div>
 
-            <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "minmax(0, 1fr) 320px" : "1fr", gap: 16, alignItems: "start" }}>
-              <motion.div {...fadeUp(0.1)} style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: 24 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: "#f0f6ff", marginBottom: 4 }}>Request Withdrawal</div>
-                <div style={{ fontSize: 13, color: "#6b7a8d", lineHeight: 1.7, marginBottom: 20 }}>
-                  Enter the amount to withdraw. A Wave processing fee and platform fee are deducted automatically — the net amount goes straight to your Wave account.
-                </div>
+            <motion.div {...fadeUp(0.1)} style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: 24, maxWidth: isDesktop ? 560 : undefined }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#f0f6ff", marginBottom: 16 }}>Request Withdrawal</div>
 
-                <div style={{ display: "grid", gap: 14 }}>
-                  <div>
-                    <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", display: "block", marginBottom: 6 }}>Gross amount (GMD)</label>
+              <div style={{ display: "grid", gap: 14 }}>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", display: "block", marginBottom: 6 }}>Amount (GMD)</label>
+                  <div style={{ position: "relative" }}>
                     <input
                       type="number"
                       min="1"
                       max={availableBalance > 0 ? availableBalance : undefined}
                       value={grossAmount}
                       onChange={(e) => setGrossAmount(e.target.value)}
-                      placeholder={availableBalance > 0 ? `Up to ${fmt(availableBalance)}` : "Enter amount"}
+                      placeholder={availableBalance > 0 ? `Up to ${availableBalance.toLocaleString()}` : "Nothing available yet"}
                       disabled={!canWithdraw}
                       style={{
-                        width: "100%", padding: "12px 14px", borderRadius: 10,
+                        width: "100%", padding: "12px 64px 12px 14px", borderRadius: 10,
                         border: "1px solid rgba(255,255,255,0.1)", background: canWithdraw ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.03)",
                         color: canWithdraw ? "#f0f6ff" : "#4a5568", fontSize: 14, outline: "none", boxSizing: "border-box",
                       }}
                     />
+                    {canWithdraw && (
+                      <button
+                        onClick={() => setGrossAmount(String(availableBalance))}
+                        style={{
+                          position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+                          padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(29,197,255,0.3)",
+                          background: "rgba(29,197,255,0.1)", color: BLUE, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                        }}
+                      >
+                        Max
+                      </button>
+                    )}
                   </div>
+                </div>
 
-                  <div style={{ padding: 16, borderRadius: 12, background: "rgba(29,197,255,0.04)", border: "1px solid rgba(29,197,255,0.14)" }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: BLUE, marginBottom: 6 }}>How the payout works</div>
-                    <div style={{ fontSize: 12, color: "#6b7a8d", lineHeight: 1.7 }}>
-                      The balance shown here comes from the server. It already reflects previous withdrawals, so the form won’t overstate what is actually available.
+                {previewValid && (
+                  <div style={{ padding: "14px 16px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", display: "grid", gap: 7, fontSize: 13 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#8899aa" }}>
+                      <span>Withdrawal</span><span>{parsedAmount.toLocaleString()} GMD</span>
                     </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#6b7a8d" }}>
+                      <span>Wave processing fee (2%)</span><span>−{previewWaveFee.toLocaleString(undefined, { maximumFractionDigits: 2 })} GMD</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#6b7a8d" }}>
+                      <span>Platform fee</span><span>−{PLATFORM_FEE_GMD} GMD</span>
+                    </div>
+                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 8, display: "flex", justifyContent: "space-between", fontWeight: 800, color: previewNet > 0 ? GREEN : "#ef4444" }}>
+                      <span>You receive{me?.wave_number ? ` on ${me.wave_number}` : ""}</span>
+                      <span>{previewNet > 0 ? previewNet.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "0"} GMD</span>
+                    </div>
+                    {previewNet <= 0 && (
+                      <div style={{ fontSize: 12, color: "#ef4444" }}>Amount is too small to cover the fees.</div>
+                    )}
                   </div>
+                )}
 
-                  <button
-                    onClick={() => void handleWithdraw()}
-                    disabled={!canWithdraw || withdrawMutation.isPending}
-                    style={{
-                      padding: "12px 20px", borderRadius: 10, border: "none",
-                      background: canWithdraw ? `linear-gradient(135deg, ${BLUE}, #079bd4)` : "rgba(255,255,255,0.06)",
-                      color: canWithdraw ? "#fff" : "#4a5568", fontSize: 14, fontWeight: 700,
-                      cursor: canWithdraw ? "pointer" : "not-allowed",
-                      boxShadow: canWithdraw ? "0 4px 16px rgba(29,197,255,0.3)" : "none",
-                    }}
-                  >
-                    {withdrawMutation.isPending ? "Submitting…" : "Withdraw funds"}
-                  </button>
-                </div>
-              </motion.div>
-
-              <motion.div {...fadeUp(0.14)} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: 20 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 8 }}>Notes</div>
-                  <ul style={{ margin: 0, paddingLeft: 18, color: "#6b7a8d", fontSize: 12, lineHeight: 1.75 }}>
-                    <li>Your verified identity (KYC) is required before any payout.</li>
-                    <li>Enter the total amount — fees are deducted automatically.</li>
-                    <li>You can only withdraw what remains after previous payouts.</li>
-                  </ul>
-                </div>
-
-                <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: 20 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 8 }}>Campaign owner</div>
-                  <div style={{ fontSize: 13, color: "#6b7a8d", lineHeight: 1.7 }}>{me?.full_name ?? "—"}</div>
-                  <div style={{ fontSize: 12, color: "#4a5568", marginTop: 6 }}>{me?.wave_number ?? "—"}</div>
-                </div>
-              </motion.div>
-            </div>
+                <button
+                  onClick={() => void handleWithdraw()}
+                  disabled={!canWithdraw || withdrawMutation.isPending}
+                  style={{
+                    padding: "12px 20px", borderRadius: 10, border: "none",
+                    background: canWithdraw ? `linear-gradient(135deg, ${BLUE}, #079bd4)` : "rgba(255,255,255,0.06)",
+                    color: canWithdraw ? "#fff" : "#4a5568", fontSize: 14, fontWeight: 700,
+                    cursor: canWithdraw ? "pointer" : "not-allowed",
+                    boxShadow: canWithdraw ? "0 4px 16px rgba(29,197,255,0.3)" : "none",
+                  }}
+                >
+                  {withdrawMutation.isPending ? "Submitting…" : "Withdraw funds"}
+                </button>
+              </div>
+            </motion.div>
 
             <motion.div {...fadeUp(0.18)} style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
               <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>

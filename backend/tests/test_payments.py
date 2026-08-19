@@ -83,14 +83,16 @@ async def test_initiate_donation_waychit_card_forwards_provider(monkeypatch):
     assert result["redirect_url"] == "https://pay.example/card-redirect"
 
 
-def test_donation_create_rejects_aps_without_mobile_or_email():
-    """APS requires both a mobile number (for the OTP) and an email (the
-    gateway's authorize-customer step) — reject early rather than letting
-    an incomplete request reach the gateway."""
+def test_donation_create_rejects_aps_without_mobile():
+    """APS requires a mobile number (for the OTP) — reject early rather
+    than letting an incomplete request reach the gateway. Confirmed via
+    live testing that APS does NOT require an email, unlike Waychit Card."""
     with pytest.raises(Exception):
         DonationCreate(campaign_id=1, amount=100.0, provider="aps")
-    with pytest.raises(Exception):
-        DonationCreate(campaign_id=1, amount=100.0, provider="aps", customer_mobile="+2207123456")
+
+    # Mobile alone is sufficient — no email needed for APS.
+    payload = DonationCreate(campaign_id=1, amount=100.0, provider="aps", customer_mobile="7123456")
+    assert payload.customer_email is None
 
 
 def test_donation_create_rejects_waychit_card_without_email():

@@ -113,9 +113,21 @@ export default function QuickPayPage() {
     return parsed;
   };
 
-  // Card and APS both require an email on the gateway's side (an identity
-  // step) — Wave doesn't, so this is only checked for those two methods.
+  // Card requires an email on the gateway's side (an identity step) —
+  // Wave and APS don't, so this is only checked for the card tab.
   const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+  // Gambian mobile numbers are +220 followed by 7 digits. Donors commonly
+  // type a leading 0 (a habit from local dialing) or re-type the 220
+  // country code out of caution — normalize both instead of silently
+  // truncating to the wrong 7 digits, which is what a hard 7-char cap on
+  // the raw input field was doing before.
+  const normalizeApsMobile = (raw: string): string | null => {
+    let digits = raw.replace(/\D/g, "");
+    if (digits.length === 10 && digits.startsWith("220")) digits = digits.slice(3);
+    if (digits.length === 8 && digits.startsWith("0")) digits = digits.slice(1);
+    return digits.length === 7 ? digits : null;
+  };
 
   const handleWaveDonate = async () => {
     const parsed = validateCommon();
@@ -180,8 +192,8 @@ export default function QuickPayPage() {
   const handleApsSendCode = async () => {
     const parsed = validateCommon();
     if (parsed === null || !campaign) return;
-    if (apsPhone.trim().length < 6) { setError("Enter a valid mobile number."); return; }
-    if (!isValidEmail(donorEmail)) { setError("Enter a valid email address."); return; }
+    const normalizedMobile = normalizeApsMobile(apsPhone);
+    if (!normalizedMobile) { setError("Enter a valid 7-digit Gambian mobile number."); return; }
     setIsSubmitting(true);
     setError(null);
     try {
@@ -195,8 +207,9 @@ export default function QuickPayPage() {
           donor_name: donorName.trim() || "Anonymous",
           message: message.trim() || undefined,
           provider: "aps",
-          customer_mobile: `+220${apsPhone}`,
-          customer_email: donorEmail.trim(),
+          // No "+220" prefix — the gateway's authorize-customer step wants
+          // just the local 7-digit number.
+          customer_mobile: normalizedMobile,
         }),
       });
       const payload = await res.json().catch(() => ({})) as { client_reference?: string; otp_required?: boolean; detail?: string };
@@ -440,7 +453,11 @@ export default function QuickPayPage() {
                         <input
                           type="tel" placeholder="7XX XXXX"
                           value={apsPhone}
-                          onChange={(e) => setApsPhone(e.target.value.replace(/\D/g, "").slice(0, 7))}
+                          // Allow up to 10 raw digits so a leading 0 or an
+                          // accidentally re-typed 220 country code isn't cut
+                          // off mid-entry — normalizeApsMobile resolves the
+                          // final 7 digits at submit time.
+                          onChange={(e) => setApsPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                           style={{ ...inputStyle, paddingLeft: 62 }}
                           onFocus={(e) => { e.target.style.borderColor = "rgba(245,158,11,0.5)"; }}
                           onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
@@ -449,16 +466,6 @@ export default function QuickPayPage() {
                       <p style={{ fontSize: 11, color: "#4a5568", marginTop: 6 }}>
                         APS will text a one-time code to this number to confirm the payment.
                       </p>
-                    </div>
-                    <div style={{ marginBottom: 14 }}>
-                      <label style={labelStyle}>EMAIL</label>
-                      <input
-                        type="email" placeholder="you@example.com"
-                        value={donorEmail} onChange={(e) => setDonorEmail(e.target.value)}
-                        style={inputStyle}
-                        onFocus={(e) => { e.target.style.borderColor = "rgba(245,158,11,0.5)"; }}
-                        onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
-                      />
                     </div>
                     <button
                       onClick={() => void handleApsSendCode()}
@@ -494,7 +501,7 @@ export default function QuickPayPage() {
                         onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
                       />
                       <p style={{ fontSize: 11, color: "#4a5568", marginTop: 6 }}>
-                        Enter the code sent to +220{apsPhone}.{" "}
+                        Enter the code sent to +220{normalizeApsMobile(apsPhone) ?? apsPhone}.{" "}
                         <button
                           type="button"
                           onClick={() => { setApsStep("phone"); setApsOtp(""); setError(null); }}

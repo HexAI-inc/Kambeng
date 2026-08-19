@@ -28,7 +28,7 @@ async def test_aps_donate_stores_gateway_tokens_and_signals_otp_required(async_c
     async def fake_initiate_donation(**kwargs):
         assert kwargs["provider"] == "APS"
         assert kwargs["customer_mobile"] == "+2207123456"
-        assert kwargs["customer_email"] == "awa@example.com"
+        assert kwargs.get("customer_email") is None  # APS does not require/use email
         return {
             "status": "success",
             "data": {
@@ -47,7 +47,7 @@ async def test_aps_donate_stores_gateway_tokens_and_signals_otp_required(async_c
         "/api/payments/donate",
         json={
             "campaign_id": campaign.id, "amount": 50.0, "donor_name": "Awa", "provider": "aps",
-            "customer_mobile": "+2207123456", "customer_email": "awa@example.com",
+            "customer_mobile": "+2207123456",
         },
     )
     assert resp.status_code == 200, resp.text
@@ -59,7 +59,6 @@ async def test_aps_donate_stores_gateway_tokens_and_signals_otp_required(async_c
     assert donation.provider == "aps"
     assert donation.gateway_transaction_id == "txn-aps-1"
     assert donation.gateway_request_token == "rt_abc123"
-    assert donation.donor_email == "awa@example.com"
     assert donation.status == "PENDING"
 
 
@@ -69,16 +68,6 @@ async def test_aps_donate_without_mobile_is_rejected(async_client, db_session):
     resp = await async_client.post(
         "/api/payments/donate",
         json={"campaign_id": campaign.id, "amount": 50.0, "provider": "aps"},
-    )
-    assert resp.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_aps_donate_without_email_is_rejected(async_client, db_session):
-    campaign = await _seed_campaign(db_session, slug="aps-no-email")
-    resp = await async_client.post(
-        "/api/payments/donate",
-        json={"campaign_id": campaign.id, "amount": 50.0, "provider": "aps", "customer_mobile": "+2207123456"},
     )
     assert resp.status_code == 422
 

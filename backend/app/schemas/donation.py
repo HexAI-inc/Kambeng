@@ -5,13 +5,12 @@ from datetime import datetime
 # Gateway-supported rails for /collections/initiate (see HPG API reference).
 DonationProvider = Literal["wave", "waychit_card", "aps"]
 
-# Waychit Card and APS both require a customer_email on the gateway's side
-# (an identity/KYC step) — confirmed for Waychit via its explicit error
-# ("Waychit card sessions require a customer email"), and inferred for APS
-# from its generic "authorize-customer ... Validation errors" response,
-# since neither field was documented in HPG's public API reference. Wave
-# has run without it since before this change, so it's left optional there.
-PROVIDERS_REQUIRING_EMAIL = {"waychit_card", "aps"}
+# Waychit Card requires a customer_email on the gateway's side (an identity
+# step) — confirmed via its explicit error ("Waychit card sessions require
+# a customer email"), undocumented in HPG's public API reference. APS does
+# NOT require it (confirmed) — its "authorize-customer ... Validation
+# errors" failure was something else (see customer_mobile handling below).
+PROVIDERS_REQUIRING_EMAIL = {"waychit_card"}
 
 class DonationBase(BaseModel):
     amount: float = Field(..., gt=0, description="Donation amount must be greater than 0")
@@ -39,7 +38,7 @@ class DonationCreate(DonationBase):
         return self
 
     @model_validator(mode="after")
-    def require_email_for_card_and_aps(self) -> "DonationCreate":
+    def require_email_for_card(self) -> "DonationCreate":
         if self.provider in PROVIDERS_REQUIRING_EMAIL and not self.customer_email:
             raise ValueError(f"customer_email is required for {self.provider} donations")
         return self

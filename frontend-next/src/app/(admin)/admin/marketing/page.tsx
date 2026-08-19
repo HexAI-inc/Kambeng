@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { isAxiosError } from "axios";
 
 import { api } from "@/lib/api";
+import { StyledSelect } from "@/components/ui/styled-select";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -279,14 +280,15 @@ export default function AdminMarketingPage() {
             placeholder="Search email…"
             style={{ ...inputStyle, width: 190 }}
           />
-          <select
+          <StyledSelect
             value={sourceFilter}
-            onChange={(e) => { setSourceFilter(e.target.value); setPage(1); }}
-            style={{ ...inputStyle, width: 180, appearance: "auto" }}
-          >
-            <option value="">All sources</option>
-            {Object.entries(SOURCE_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-          </select>
+            onChange={(v) => { setSourceFilter(v); setPage(1); }}
+            options={[
+              { value: "", label: "All sources" },
+              ...Object.entries(SOURCE_LABELS).map(([key, label]) => ({ value: key, label })),
+            ]}
+            style={{ width: 180 }}
+          />
         </div>
 
         {loading ? (

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { isAxiosError } from "axios";
 
 import { api } from "@/lib/api";
+import { StyledSelect } from "@/components/ui/styled-select";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -298,12 +299,17 @@ export default function AdminGatewayPage() {
       <motion.div {...fadeUp(0.25)} style={cardStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
           <div style={{ fontSize: 14, fontWeight: 800, color: "#f0f6ff" }}>Gateway transactions</div>
-          <select value={txStatus} onChange={(e) => setTxStatus(e.target.value)} style={{ ...inputStyle, appearance: "auto" }}>
-            <option value="">All statuses</option>
-            <option value="PENDING">Pending</option>
-            <option value="SUCCEEDED">Succeeded</option>
-            <option value="FAILED">Failed</option>
-          </select>
+          <StyledSelect
+            value={txStatus}
+            onChange={setTxStatus}
+            options={[
+              { value: "", label: "All statuses" },
+              { value: "PENDING", label: "Pending" },
+              { value: "SUCCEEDED", label: "Succeeded" },
+              { value: "FAILED", label: "Failed" },
+            ]}
+            style={{ width: 160 }}
+          />
         </div>
         {txLoading ? (
           <div style={{ padding: "24px 0", textAlign: "center", color: "#4a5568", fontSize: 13 }}>Loading…</div>

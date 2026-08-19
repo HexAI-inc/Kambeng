@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useSessionProfile, useUpdateMyProfile } from "@/hooks/use-frontend-data";
 import { kycLabel } from "@/lib/fmt";
+import { StyledSelect } from "@/components/ui/styled-select";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -161,15 +162,16 @@ export default function ProfilePage() {
               </div>
               <div>
                 <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>What brings you to Kambeng?</label>
-                <select
+                <StyledSelect
                   value={purpose}
-                  onChange={(e) => setDetailOverrides((p) => ({ ...p, account_purpose: e.target.value }))}
-                  style={{ ...inputStyle, appearance: "none", cursor: "pointer" }}
-                >
-                  <option value="" disabled style={{ background: "#0d1120" }}>Choose one (optional)</option>
-                  <option value="DONATE" style={{ background: "#0d1120" }}>I&apos;m mainly here to give</option>
-                  <option value="FUNDRAISE" style={{ background: "#0d1120" }}>I want to fundraise</option>
-                </select>
+                  onChange={(v) => setDetailOverrides((p) => ({ ...p, account_purpose: v }))}
+                  placeholder="Choose one (optional)"
+                  options={[
+                    { value: "DONATE", label: "I'm mainly here to give" },
+                    { value: "FUNDRAISE", label: "I want to fundraise" },
+                  ]}
+                  style={{ width: "100%" }}
+                />
                 <div style={{ fontSize: 11, color: "#4a5568", marginTop: 5 }}>Just a preference — you can donate and fundraise either way.</div>
               </div>
             </div>

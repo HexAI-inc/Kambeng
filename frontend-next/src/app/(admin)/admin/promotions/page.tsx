@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { isAxiosError } from "axios";
 
 import { api } from "@/lib/api";
+import { StyledSelect } from "@/components/ui/styled-select";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -232,9 +233,12 @@ export default function AdminPromotionsPage() {
           </div>
           <div style={{ marginBottom: 12 }}>
             <label style={labelStyle}>Type</label>
-            <select value={form.promo_type} onChange={(e) => setForm((f) => ({ ...f, promo_type: e.target.value }))} style={{ ...inputStyle, appearance: "auto" }}>
-              {PROMO_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-            </select>
+            <StyledSelect
+              value={form.promo_type}
+              onChange={(v) => setForm((f) => ({ ...f, promo_type: v }))}
+              options={PROMO_TYPES}
+              style={{ width: "100%" }}
+            />
           </div>
           <div style={{ marginBottom: 12 }}>
             <label style={labelStyle}>Description (optional)</label>

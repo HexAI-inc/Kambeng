@@ -132,21 +132,17 @@ class HexAIPaymentService:
 
             return response.json()
 
-    async def get_payout_status(self, client_reference: str) -> dict:
-        """Check the current status of a payout using the client reference."""
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{self.base_url}/payouts/status/{client_reference}",
-                headers=self.headers,
-            )
+    async def get_payout_status(self, transaction_id: str) -> dict:
+        """Check the current status of a payout using HPG's own transaction
+        id (Payout.gateway_transaction_id) — NOT our client_reference.
 
-            if response.status_code == 404:
-                raise Exception(f"Payout {client_reference!r} not found at HexAI")
-
-            if response.status_code not in (200, 201):
-                raise Exception(f"HexAI Error ({response.status_code}): {response.text}")
-
-            return response.json()
+        GET /payouts/status/{client_reference} (the endpoint this used to
+        call) does not exist on the current gateway — confirmed live: it
+        404s even for a payout HPG's own /client/transactions list shows as
+        genuinely SUCCEEDED. GET /client/transactions/{id} is the correct,
+        working replacement (it covers both collections and payouts)."""
+        response_body = await self._request("GET", f"/client/transactions/{transaction_id}")
+        return response_body
 
     async def initiate_payout(
         self,

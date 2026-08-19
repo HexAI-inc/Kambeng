@@ -675,9 +675,9 @@ async def get_payout_status(
     else:
         campaign = None
 
-    if payout.status == "PENDING":
+    if payout.status == "PENDING" and payout.gateway_transaction_id:
         try:
-            hexai_data = await hexai_service.get_payout_status(client_reference)
+            hexai_data = await hexai_service.get_payout_status(payout.gateway_transaction_id)
             hexai_status = (
                 (hexai_data or {}).get("data", {}).get("status")
                 or (hexai_data or {}).get("status")

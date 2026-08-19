@@ -21,7 +21,7 @@ def _signed(payload: dict) -> tuple[bytes, dict]:
     return raw, {"x-hexai-signature": signature, "content-type": "application/json"}
 
 
-async def _seed_payout(db_session, reference: str, wave="+2207005555", email="payout-owner@example.com"):
+async def _seed_payout(db_session, reference: str, wave="+2207005555", email="payout-owner@example.com", gateway_transaction_id=None):
     user = User(full_name="Payout Owner", email=email, wave_number=wave, password_hash="x")
     db_session.add(user)
     await db_session.commit()
@@ -41,6 +41,7 @@ async def _seed_payout(db_session, reference: str, wave="+2207005555", email="pa
         net_amount=980.0,
         amount=980.0,
         status="PENDING",
+        gateway_transaction_id=gateway_transaction_id,
     )
     ledger = TransactionLedger(
         campaign_id=campaign.id,
@@ -120,7 +121,7 @@ async def test_payout_webhook_failure_and_nonterminal_statuses(async_client, db_
 
 @pytest.mark.asyncio
 async def test_admin_verify_payout_against_gateway(async_client, db_session, monkeypatch):
-    payout = await _seed_payout(db_session, "PAYOUT-VERIFY-1", wave="+2207007777", email="verify-owner@example.com")
+    payout = await _seed_payout(db_session, "PAYOUT-VERIFY-1", wave="+2207007777", email="verify-owner@example.com", gateway_transaction_id="txn-verify-1")
 
     admin = User(full_name="Admin", email="payout-admin@example.com", wave_number="+2207008888", password_hash="x", role="ADMIN")
     db_session.add(admin)
@@ -161,6 +162,34 @@ async def test_admin_verify_payout_against_gateway(async_client, db_session, mon
         resp3 = await async_client.post(f"/api/admin/payouts/{payout.id}/verify")
         assert resp3.json()["gateway_status"] == "NOT_FOUND"
         assert resp3.json()["applied"] is False
+    finally:
+        fastapi_app.dependency_overrides.pop(get_admin_user, None)
+
+
+@pytest.mark.asyncio
+async def test_admin_verify_payout_without_gateway_transaction_id(async_client, db_session):
+    """Payouts made before gateway_transaction_id was captured have no way
+    to be looked up on the current gateway (the old client_reference-based
+    endpoint is dead) — verify degrades to NOT_FOUND instead of erroring."""
+    payout = await _seed_payout(db_session, "PAYOUT-LEGACY-1", wave="+2207007778", email="legacy-owner@example.com")
+    assert payout.gateway_transaction_id is None
+
+    admin = User(full_name="Admin Legacy", email="payout-admin-legacy@example.com", wave_number="+2207008889", password_hash="x", role="ADMIN")
+    db_session.add(admin)
+    await db_session.commit()
+    await db_session.refresh(admin)
+
+    from app.main import app as fastapi_app
+
+    async def _admin_override():
+        return admin
+
+    fastapi_app.dependency_overrides[get_admin_user] = _admin_override
+    try:
+        resp = await async_client.post(f"/api/admin/payouts/{payout.id}/verify")
+        assert resp.status_code == 200, resp.text
+        assert resp.json()["gateway_status"] == "NOT_FOUND"
+        assert resp.json()["applied"] is False
     finally:
         fastapi_app.dependency_overrides.pop(get_admin_user, None)
 

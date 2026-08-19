@@ -852,8 +852,31 @@ async def verify_payout_with_gateway(
     if not payout:
         raise HTTPException(status_code=404, detail="Payout not found")
 
+    if not payout.gateway_transaction_id:
+        # Predates gateway_transaction_id being captured — there is no
+        # working client_reference-based lookup on the current gateway.
+        return {
+            "payout_id": payout.id,
+            "client_reference": payout.client_reference,
+            "gateway_status": "NOT_FOUND",
+            "previous_status": payout.status,
+            "status": payout.status,
+            "applied": False,
+        }
+
     try:
-        gateway_response = await hexai_service.get_payout_status(payout.client_reference)
+        gateway_response = await hexai_service.get_payout_status(payout.gateway_transaction_id)
+    except HexAIGatewayError as exc:
+        if exc.status_code == 404:
+            return {
+                "payout_id": payout.id,
+                "client_reference": payout.client_reference,
+                "gateway_status": "NOT_FOUND",
+                "previous_status": payout.status,
+                "status": payout.status,
+                "applied": False,
+            }
+        raise HTTPException(status_code=502, detail=f"Payout Gateway Error: {exc.message}")
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Payout Gateway Error: {exc}")
 

@@ -21,6 +21,12 @@ class Payout(Base):
     # Legacy compatibility field (will be deprecated)
     amount = Column(Float, nullable=True)  # The net amount sent to the user (after your 2% fee)
 
+    # HPG's own transaction id for this payout (from /payouts/send's
+    # response) — needed to call /payouts/{id}/reverse, since that endpoint
+    # takes HPG's id, not our client_reference.
+    gateway_transaction_id = Column(String, nullable=True)
+    reversed_at = Column(DateTime(timezone=True), nullable=True)
+
     # Promotions engine — set if a campaign/withdrawal-level fee waiver
     # (Founding Campaigns, referral reward, NGO onboarding, rebate) applied.
     # use_alter breaks the payouts<->promo_applications FK cycle, same as

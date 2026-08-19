@@ -435,6 +435,32 @@ async def withdraw_funds(
         # If they entered 07834351, strip the 0. Otherwise just prepend +220.
         formatted_mobile = f"+220{formatted_mobile.lstrip('0')}"
 
+    # 5.6 Pre-flight: verify the recipient is a registered Wave user before
+    # sending, to avoid a failed payout to an unregistered number. Fails
+    # open on any gateway/network error — this is a safety net, not a
+    # blocker for real money movement — and only hard-blocks on the one
+    # unambiguous signal (receive limit reached); a name mismatch alone
+    # can be legitimate (nicknames, formatting) so it's logged, not blocked.
+    verify_data: dict = {}
+    try:
+        verification = await hexai_service.verify_payout_recipient(
+            mobile=formatted_mobile, name=current_user.full_name, amount=net_amount,
+        )
+        verify_data = verification.get("data", {})
+    except Exception as exc:
+        logger.warning(
+            "Recipient verification unavailable — proceeding with payout anyway",
+            extra={"action": "payout_verify_recipient_failed", "user_id": current_user.id, "error": str(exc)},
+        )
+
+    if verify_data.get("receive_limit_reached"):
+        raise HTTPException(status_code=400, detail="This Wave number has reached its receive limit for this amount.")
+    if verify_data.get("name_match") is False:
+        logger.warning(
+            "Payout recipient name mismatch — proceeding anyway",
+            extra={"action": "payout_verify_name_mismatch", "user_id": current_user.id, "gateway_name": verify_data.get("name")},
+        )
+
     # 6. Process Payout with HexAI
     try:
         hexai_response, hexai_net_amount = await hexai_service.initiate_payout(
@@ -456,6 +482,7 @@ async def withdraw_funds(
         net_amount=net_amount,
         amount=net_amount,
         status="PENDING",
+        gateway_transaction_id=(hexai_response or {}).get("data", {}).get("transaction_id"),
     )
     db.add(new_payout)
 

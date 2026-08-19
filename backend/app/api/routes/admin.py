@@ -23,7 +23,7 @@ from app.schemas.audit import AdminAuditLogRead, UserOverviewItem, PayoutOvervie
 from app.schemas.commissions import CommissionSummary, CommissionSourceItem, AdminCommissionWithdrawalRequest, AdminCommissionWithdrawalResponse
 from app.schemas.user import AdminUserUpdate, UserRead
 from app.services.email_service import render_kyc_approved_email, render_kyc_rejected_email, send_email
-from app.services.hexai_service import HexAIPaymentService
+from app.services.hexai_service import HexAIGatewayError, HexAIPaymentService
 from app.services.payout_service import apply_payout_status, normalize_gateway_status
 from app.core.logging_config import get_logger
 
@@ -933,6 +933,68 @@ async def mark_payout_succeeded(
         "client_reference": payout.client_reference,
         "previous_status": "PENDING",
         "status": payout.status,
+    }
+
+
+@router.post("/payouts/{payout_id}/reverse")
+async def reverse_payout(
+    payout_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(get_admin_user),
+):
+    """Reverse a dispatched Wave payout via HPG (3-day window from send).
+    Idempotent on HPG's side; restores the campaign's available balance by
+    moving the payout out of SUCCEEDED/PENDING (both of which are deducted
+    from available_balance — see get_campaign_withdrawal_summary)."""
+    result = await db.execute(select(Payout).where(Payout.id == payout_id))
+    payout = result.scalars().first()
+    if not payout:
+        raise HTTPException(status_code=404, detail="Payout not found")
+    if not payout.gateway_transaction_id:
+        raise HTTPException(status_code=400, detail="This payout has no gateway transaction id on file — it predates reversal support or was never dispatched")
+    if payout.status == "REVERSED":
+        return {"payout_id": payout.id, "client_reference": payout.client_reference, "status": "REVERSED", "already_reversed": True}
+
+    try:
+        gateway_response = await hexai_service.reverse_payout(payout.gateway_transaction_id)
+    except HexAIGatewayError as exc:
+        raise HTTPException(status_code=exc.status_code if exc.status_code < 500 else 502, detail=exc.message)
+
+    previous_status = payout.status
+    payout.status = "REVERSED"
+    payout.reversed_at = datetime.now(UTC)
+
+    db.add(TransactionLedger(
+        campaign_id=payout.campaign_id,
+        transaction_type=TransactionType.REFUND,
+        status=TransactionStatus.SUCCEEDED,
+        gross_amount=payout.gross_amount,
+        net_amount=payout.net_amount,
+        external_reference=payout.client_reference,
+        description=f"Payout reversed by {admin_user.email}",
+        created_by_user_id=admin_user.id,
+        confirmed_at=payout.reversed_at,
+    ))
+
+    await _log_audit_action(
+        db,
+        action_type=AuditActionType.PAYOUT_REVERSED,
+        performed_by_admin_id=admin_user.id,
+        target_entity_type="payout",
+        target_entity_id=payout.id,
+        description=f"Reversed payout {payout.client_reference} via gateway",
+        campaign_id=payout.campaign_id,
+        old_value=previous_status,
+        new_value="REVERSED",
+    )
+    await db.commit()
+
+    return {
+        "payout_id": payout.id,
+        "client_reference": payout.client_reference,
+        "previous_status": previous_status,
+        "status": "REVERSED",
+        "gateway_response": gateway_response.get("data", gateway_response),
     }
 
 

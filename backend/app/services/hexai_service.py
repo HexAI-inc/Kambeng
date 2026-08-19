@@ -41,6 +41,17 @@ class HexAIPaymentService:
             "Content-Type": "application/json"
         }
 
+    async def _request(self, method: str, path: str, *, params: dict | None = None, json_body: dict | None = None) -> dict:
+        """Shared GET/POST helper for the audit/reporting endpoints — raises
+        HexAIGatewayError with HPG's real code/message on any non-2xx."""
+        async with httpx.AsyncClient() as client:
+            response = await client.request(
+                method, f"{self.base_url}{path}", params=params, json=json_body, headers=self.headers,
+            )
+            if response.status_code not in (200, 201):
+                raise HexAIGatewayError(status_code=response.status_code, **_parse_gateway_error(response))
+            return response.json() if response.content else {}
+
     async def initiate_donation(
         self,
         amount: float,
@@ -168,3 +179,65 @@ class HexAIPaymentService:
                 raise Exception(f"HexAI Error ({response.status_code}): {response.text}")
 
             return response.json(), float(amount_str)
+
+    # -----------------------------------------------------------------
+    # Audit / reporting endpoints (GET /client/*, GET /collections, etc.)
+    # -----------------------------------------------------------------
+
+    async def get_balance(self) -> dict:
+        """GET /client/balance — the live HexAI wallet balance, for
+        cross-checking against our own ledger's available balance."""
+        return await self._request("GET", "/client/balance")
+
+    async def get_stats(self) -> dict:
+        """GET /client/stats — volume/commission/pending totals, broken
+        down by provider, as HPG sees them."""
+        return await self._request("GET", "/client/stats")
+
+    async def get_client_profile(self) -> dict:
+        return await self._request("GET", "/client/profile")
+
+    async def list_collections(self, *, status: str | None = None, limit: int = 50, offset: int = 0) -> dict:
+        """GET /collections — HPG's own transaction ledger, for reconciling
+        against our local `donations` table (catches cases like the webhook
+        event-name mismatch that stranded donations in PENDING)."""
+        params: dict = {"limit": limit, "offset": offset}
+        if status:
+            params["status"] = status
+        return await self._request("GET", "/collections", params=params)
+
+    async def get_collection_by_transaction_id(self, transaction_id: str) -> dict:
+        return await self._request("GET", f"/collections/{transaction_id}")
+
+    async def list_client_transactions(self) -> dict:
+        """GET /client/transactions — a unified view across collections and
+        payouts (unlike /collections, which is collections-only)."""
+        return await self._request("GET", "/client/transactions")
+
+    async def get_client_transaction(self, transaction_id: str) -> dict:
+        return await self._request("GET", f"/client/transactions/{transaction_id}")
+
+    async def verify_payout_recipient(
+        self, *, mobile: str, name: str | None = None, amount: float | None = None, currency: str = "GMD",
+    ) -> dict:
+        """POST /payouts/verify-recipient — checks a Wave number is
+        registered (and optionally that the name matches / the amount is
+        within limits) before actually sending a payout to it."""
+        payload: dict = {"mobile": mobile}
+        if name:
+            payload["name"] = name
+        if amount is not None:
+            payload["amount"] = f"{amount:.2f}"
+            payload["currency"] = currency
+        return await self._request("POST", "/payouts/verify-recipient", json_body=payload)
+
+    async def reverse_payout(self, transaction_id: str) -> dict:
+        """POST /payouts/{id}/reverse — Wave rail only, 3-day window from
+        the payout's creation. Idempotent against an already-reversed payout."""
+        return await self._request("POST", f"/payouts/{transaction_id}/reverse")
+
+    async def test_webhook(self) -> dict:
+        """POST /client/webhooks/test — delivers a signed ping to our
+        configured webhook URL and returns the live delivery result, so an
+        admin can confirm the endpoint + signature check are working."""
+        return await self._request("POST", "/client/webhooks/test")

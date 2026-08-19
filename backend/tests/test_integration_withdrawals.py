@@ -41,7 +41,11 @@ async def test_request_withdrawal_and_list(async_client, db_session, monkeypatch
     async def fake_initiate_payout(requested_amount, recipient_mobile, payout_reference, recipient_name):
         return ({"data": {"tx_id": "FAKE-TX"}}, requested_amount)
 
+    async def fake_verify_recipient(**kwargs):
+        return {"data": {"name_match": True, "receive_limit_reached": False}}
+
     monkeypatch.setattr(payments_router.hexai_service, "initiate_payout", fake_initiate_payout)
+    monkeypatch.setattr(payments_router.hexai_service, "verify_payout_recipient", fake_verify_recipient)
 
     try:
         resp = await async_client.post("/api/payments/withdraw", json={"campaign_id": campaign.id, "amount": 50.0})
@@ -113,7 +117,11 @@ async def test_pending_payout_reserves_balance(async_client, db_session, monkeyp
     async def fake_initiate_payout(requested_amount, recipient_mobile, payout_reference, recipient_name):
         return ({"data": {"tx_id": "FAKE-TX"}}, requested_amount)
 
+    async def fake_verify_recipient(**kwargs):
+        return {"data": {"name_match": True, "receive_limit_reached": False}}
+
     monkeypatch.setattr(payments_router.hexai_service, "initiate_payout", fake_initiate_payout)
+    monkeypatch.setattr(payments_router.hexai_service, "verify_payout_recipient", fake_verify_recipient)
 
     try:
         # available = 200 - 107.6 (pending reserved) = 92.4 → 120 must be refused

@@ -10,6 +10,7 @@ import {
   FileProtectOutlined, WarningOutlined, MailOutlined, AlertOutlined,
   MenuOutlined, CloseOutlined, LogoutOutlined, SwapOutlined,
   MenuFoldOutlined, MenuUnfoldOutlined, NotificationOutlined, GiftOutlined,
+  ApiOutlined,
 } from "@ant-design/icons";
 
 const BLUE = "#1dc5ff";
@@ -38,6 +39,7 @@ const NAV: NavSection[] = [
     items: [
       { key: "donations", label: "Donations", href: "/admin/donations", icon: HeartOutlined },
       { key: "reconciliations", label: "Reconciliations", href: "/admin/reconciliations", icon: ReconciliationOutlined },
+      { key: "gateway", label: "Gateway", href: "/admin/gateway", icon: ApiOutlined },
       { key: "commissions", label: "Commissions", href: "/admin/commissions", icon: PercentageOutlined },
       { key: "payouts", label: "Payouts", href: "/admin/payouts", icon: WalletOutlined },
       { key: "auditlogs", label: "Audit Logs", href: "/admin/audit-logs", icon: AuditOutlined },

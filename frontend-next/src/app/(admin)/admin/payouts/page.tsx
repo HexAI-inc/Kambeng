@@ -35,6 +35,7 @@ function StatusChip({ status }: { status: string }) {
     PENDING:   { color: "#f97316", bg: "rgba(249,115,22,0.1)",  border: "rgba(249,115,22,0.25)" },
     SUCCEEDED: { color: GREEN,     bg: "rgba(27,191,136,0.1)",  border: "rgba(27,191,136,0.25)" },
     FAILED:    { color: "#ef4444", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)" },
+    REVERSED:  { color: "#a855f7", bg: "rgba(168,85,247,0.1)",  border: "rgba(168,85,247,0.25)" },
   };
   const s = map[status] ?? map.PENDING;
   return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>{status}</span>;
@@ -92,6 +93,21 @@ export default function PayoutsPage() {
     try {
       await api.post(`/admin/payouts/${p.payout_id}/mark-succeeded`);
       showToast("Payout marked as succeeded", true);
+      await refresh();
+    } catch (error) {
+      showToast(getServerErrorMessage(error), false);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const reversePayout = async (p: AdminPayoutOverview) => {
+    const ref = p.client_reference ?? `payout #${p.payout_id}`;
+    if (!window.confirm(`Reverse ${ref} (${Number(p.net_amount).toFixed(2)} GMD to ${p.user_name})?\n\nOnly works within Wave's 3-day window from the original payout. This action is audited.`)) return;
+    setBusyId(p.payout_id);
+    try {
+      await api.post(`/admin/payouts/${p.payout_id}/reverse`);
+      showToast("Payout reversed", true);
       await refresh();
     } catch (error) {
       showToast(getServerErrorMessage(error), false);
@@ -176,14 +192,26 @@ export default function PayoutsPage() {
                         </button>
                       </>
                     ) : (
-                      <button
-                        onClick={() => void verifyPayout(p)}
-                        disabled={busyId === p.payout_id}
-                        title="Re-check the gateway status"
-                        style={{ ...actionBtnBase, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", opacity: busyId === p.payout_id ? 0.6 : 1 }}
-                      >
-                        {busyId === p.payout_id ? "…" : "Re-verify"}
-                      </button>
+                      <>
+                        <button
+                          onClick={() => void verifyPayout(p)}
+                          disabled={busyId === p.payout_id}
+                          title="Re-check the gateway status"
+                          style={{ ...actionBtnBase, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                        >
+                          {busyId === p.payout_id ? "…" : "Re-verify"}
+                        </button>
+                        {p.status === "SUCCEEDED" && (
+                          <button
+                            onClick={() => void reversePayout(p)}
+                            disabled={busyId === p.payout_id}
+                            title="Reverse via HPG (Wave rail, 3-day window)"
+                            style={{ ...actionBtnBase, border: "1px solid rgba(168,85,247,0.25)", background: "rgba(168,85,247,0.08)", color: "#a855f7", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                          >
+                            Reverse
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

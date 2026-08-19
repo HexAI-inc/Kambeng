@@ -20,7 +20,11 @@ class User(Base):
     # default dashboard experience; users can do everything either way.
     account_purpose = Column(String, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
-    
+
+    # Referral program — see app/services/promotions.py
+    referral_code = Column(String, unique=True, nullable=True, index=True)
+    referred_by_code = Column(String, nullable=True)
+
     # KYC fields for withdrawal eligibility
     kyc_status = Column(String, default="NOT_SUBMITTED", index=True)  # NOT_SUBMITTED, SUBMITTED, REVIEWING, APPROVED, REJECTED
     kyc_verified_at = Column(DateTime(timezone=True), nullable=True)

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useSessionProfile, useMyCampaigns, useKYCStatus } from "@/hooks/use-frontend-data";
+import ReferralWidget from "@/components/marketing/referral-widget";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -418,6 +419,8 @@ export default function DashboardPage() {
                 </Link>
               ))}
             </div>
+
+            <ReferralWidget />
 
             {/* Email warning */}
             {!meLoading && !emailVerified && (

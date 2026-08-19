@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime
 from typing import Literal
 
@@ -10,7 +11,9 @@ from app.models.donation import Donation
 from app.models.ledger import TransactionLedger, TransactionStatus
 from app.core.config import settings
 
-ResolutionSource = Literal["WEBHOOK", "MANUAL_ADMIN", "STRIPE"]
+logger = logging.getLogger(__name__)
+
+ResolutionSource = Literal["WEBHOOK", "MANUAL_ADMIN", "APS_CONFIRM"]
 TerminalDonationStatus = Literal["SUCCEEDED", "FAILED"]
 
 
@@ -50,6 +53,10 @@ async def reconcile_donation_status(
     previous_status = donation.status
     idempotent = previous_status == target_status
 
+    # Campaign events detected during this reconciliation, notified after commit
+    campaign_just_completed: Campaign | None = None
+    goal_just_completed: tuple[Campaign, str] | None = None
+
     if previous_status in {"SUCCEEDED", "FAILED"} and previous_status != target_status:
         raise DonationTransitionConflictError(
             f"Donation {client_reference!r} is already finalized as {previous_status}"
@@ -84,27 +91,62 @@ async def reconcile_donation_status(
             net_received = round(donation.amount - collection_fee, 2)
 
             # Update ledger to reflect the actual net amount and fee breakdown
+            # — this always reflects the real settlement with HexAI, regardless
+            # of any promo top-up credited to the campaign below.
             if ledger is not None:
                 ledger.hexai_fee = collection_fee
                 ledger.net_amount = net_received
 
             campaign_result = await db.execute(select(Campaign).where(Campaign.id == donation.campaign_id).with_for_update())
             campaign = campaign_result.scalars().first()
+
+            # Promotions engine: fee-free-day/first-donation absorption (Kambeng
+            # eats the collection fee) and matched-donation top-ups (Kambeng or
+            # sponsor pool) both credit the campaign beyond net_received.
+            promo_credit = 0.0
             if campaign is not None:
-                campaign.amount_raised += net_received
+                from app.services.promotions import apply_donation_promos
+
+                promo_outcome = await apply_donation_promos(db, campaign, donation, collection_fee=collection_fee)
+                promo_credit = promo_outcome.fee_waived_amount + promo_outcome.match_amount
+
+            if campaign is not None:
+                campaign.amount_raised += net_received + promo_credit
                 if campaign.mode == CampaignMode.TARGET and campaign.target_amount:
-                    if campaign.amount_raised >= campaign.target_amount:
+                    if campaign.amount_raised >= campaign.target_amount and campaign.status != CampaignStatus.CLOSED:
                         campaign.status = CampaignStatus.CLOSED
+                        campaign_just_completed = campaign
+
+                        from app.services.promotions import process_completion_rebate
+
+                        await process_completion_rebate(db, campaign)
 
             if donation.goal_id is not None:
                 goal_result = await db.execute(select(CampaignGoal).where(CampaignGoal.id == donation.goal_id).with_for_update())
                 goal = goal_result.scalars().first()
                 if goal is not None:
-                    goal.amount_raised += net_received
-                    if goal.amount_raised >= goal.target_amount:
+                    goal.amount_raised += net_received + promo_credit
+                    if goal.amount_raised >= goal.target_amount and goal.status != GoalStatus.COMPLETED:
                         goal.status = GoalStatus.COMPLETED
+                        if campaign is not None:
+                            goal_just_completed = (campaign, goal.title)
 
     await db.commit()
+
+    # Notify campaign followers — email failures must never break reconciliation
+    if campaign_just_completed is not None or goal_just_completed is not None:
+        from app.services.marketing_service import notify_campaign_completed, notify_campaign_milestone
+
+        try:
+            if campaign_just_completed is not None:
+                await notify_campaign_completed(db, campaign_just_completed)
+            elif goal_just_completed is not None:
+                milestone_campaign, milestone_name = goal_just_completed
+                await notify_campaign_milestone(db, milestone_campaign, milestone_name)
+        except Exception:
+            logger.exception(
+                "Failed to send campaign event emails", extra={"client_reference": client_reference}
+            )
 
     return {
         "donation": donation,

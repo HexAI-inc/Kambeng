@@ -27,7 +27,11 @@ class Campaign(Base):
     amount_raised = Column(Float, default=0.0)
     
     status = Column(Enum(CampaignStatus), default=CampaignStatus.ACTIVE)
-    
+
+    # Promotions engine — see app/services/promotions.py
+    active_promo_id = Column(Integer, ForeignKey("promotions.id"), nullable=True)
+    organiser_type = Column(String, default="individual", nullable=False)  # individual | ngo | diaspora
+
     qr_code_page_url = Column(String, nullable=True)
     qr_code_direct_url = Column(String, nullable=True)
     cover_image_url = Column(String, nullable=True)

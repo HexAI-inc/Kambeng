@@ -13,6 +13,7 @@ import { StyledSelect } from "@/components/ui/styled-select";
 import { UpdateFeedPost } from "@/components/UpdateFeedPost";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { ProofList } from "@/components/ProofList";
+import EmailCaptureForm from "@/components/marketing/email-capture-form";
 import {
   useCampaignGoals,
   useCampaignProofs,
@@ -863,6 +864,19 @@ export default function CampaignDetailPage() {
     },
   });
 
+  const { data: activePromo } = useQuery({
+    queryKey: ["campaign-active-promo", slug],
+    enabled: Boolean(slug),
+    queryFn: async () => {
+      const response = await api.get<{
+        active: boolean; promo_type: string | null; name: string | null;
+        fee_waiver_pct: number | null; match_pool_total: number | null;
+        match_pool_remaining: number | null; match_ratio: number | null;
+      }>(`/campaigns/${slug}/active-promo`);
+      return response.data;
+    },
+  });
+
   const { data: reviews = [], isLoading: reviewsLoading } = usePublicCampaignReviews(slug, Boolean(slug));
   const { data: goals = [] } = useCampaignGoals(slug, Boolean(slug));
   const { data: proofs = [], isLoading: proofsLoading } = useCampaignProofs(slug, Boolean(slug));
@@ -1073,6 +1087,28 @@ export default function CampaignDetailPage() {
               <p style={{ color: "#8899aa", fontSize: 14, lineHeight: 1.75, marginBottom: 24 }}>
                 {campaign.description}
               </p>
+
+              {activePromo?.active && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
+                  padding: "10px 14px", borderRadius: 10, marginBottom: 14,
+                  background: "rgba(29,197,255,0.06)", border: "1px solid rgba(29,197,255,0.22)",
+                }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+                    padding: "3px 9px", borderRadius: 20, color: BLUE, background: "rgba(29,197,255,0.14)",
+                  }}>
+                    {activePromo.promo_type === "matched_donation" ? "Matched" : "Promo"}
+                  </span>
+                  <span style={{ fontSize: 13, color: "#c5d0df" }}>
+                    {activePromo.promo_type === "matched_donation" && activePromo.match_pool_remaining != null
+                      ? <>{activePromo.match_pool_remaining.toLocaleString()} GMD of {activePromo.match_pool_total?.toLocaleString()} GMD match pool remaining — donations are matched {activePromo.match_ratio === 1 ? "1:1" : `${activePromo.match_ratio}x`}</>
+                      : activePromo.fee_waiver_pct
+                        ? <>{activePromo.name} — {activePromo.fee_waiver_pct}% platform fee waived for this campaign</>
+                        : activePromo.name}
+                  </span>
+                </div>
+              )}
 
               {/* Progress block */}
               <div style={{
@@ -1360,6 +1396,29 @@ export default function CampaignDetailPage() {
               )}
             </div>
           </motion.div>
+
+          {/* Follow prompt for visitors who aren't ready to donate */}
+          {!isLoggedIn && slug && (
+            <motion.div {...fadeUp(0.3)}>
+              <div style={{
+                background: "#0d1120", border: "1px solid rgba(29,197,255,0.18)",
+                borderRadius: 16, padding: "22px 22px 24px",
+              }}>
+                <div style={{ fontWeight: 700, fontSize: 15, color: "#f0f6ff", marginBottom: 6 }}>
+                  Not ready to donate?
+                </div>
+                <p style={{ color: "#8899aa", fontSize: 13, lineHeight: 1.7, marginBottom: 14 }}>
+                  Follow this campaign and we&apos;ll email you when it hits milestones — including proof of how the money is used.
+                </p>
+                <EmailCaptureForm
+                  source="campaign_follow"
+                  campaignSlug={slug}
+                  buttonLabel="Follow campaign"
+                  successMessage="Check your inbox to confirm — we'll keep you posted on this campaign."
+                />
+              </div>
+            </motion.div>
+          )}
         </div>
 
         {/* Right sidebar */}

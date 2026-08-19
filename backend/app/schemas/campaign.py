@@ -10,7 +10,11 @@ class CampaignBase(BaseModel):
     target_amount: Optional[float] = None
 
 class CampaignCreate(CampaignBase):
-    pass
+    # Self-declared organiser type — drives eligibility for NGO onboarding
+    # promos (see app/services/promotions.py). Diaspora detection is
+    # deliberately manual for now (admin can set it), per the promotions
+    # engine rollout plan.
+    organiser_type: Optional[str] = "individual"
 
 class CampaignRead(CampaignBase):
     id: int

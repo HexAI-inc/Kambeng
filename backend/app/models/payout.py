@@ -20,7 +20,17 @@ class Payout(Base):
     
     # Legacy compatibility field (will be deprecated)
     amount = Column(Float, nullable=True)  # The net amount sent to the user (after your 2% fee)
-    
+
+    # Promotions engine — set if a campaign/withdrawal-level fee waiver
+    # (Founding Campaigns, referral reward, NGO onboarding, rebate) applied.
+    # use_alter breaks the payouts<->promo_applications FK cycle, same as
+    # donations.promo_application_id (see that model for the full note).
+    promo_application_id = Column(
+        Integer,
+        ForeignKey("promo_applications.id", use_alter=True, name="fk_payouts_promo_application_id"),
+        nullable=True,
+    )
+
     status = Column(String, default="PENDING") # PENDING, SUCCEEDED, FAILED
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())

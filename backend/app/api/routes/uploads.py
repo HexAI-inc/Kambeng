@@ -155,6 +155,15 @@ async def upload_campaign_proof(
     db.add(new_proof)
     await db.commit()
     await db.refresh(new_proof)
+
+    try:
+        from app.services.promotions import process_transparency_rebate
+
+        await process_transparency_rebate(db, campaign, new_proof.created_at)
+        await db.commit()
+    except Exception:
+        logger.exception("Failed to process transparency rebate", extra={"campaign_id": campaign.id})
+
     logger.info(
         "Campaign proof uploaded",
         extra={

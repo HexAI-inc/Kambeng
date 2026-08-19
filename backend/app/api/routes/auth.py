@@ -143,13 +143,18 @@ async def get_admin_user(current_user: User = Depends(get_current_user)):
     return current_user
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-async def register(user_in: UserCreate, response: Response, db: AsyncSession = Depends(get_db)):
-    """Register a new Campaigner"""
+async def register(
+    user_in: UserCreate,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+    ref: str | None = None,
+):
+    """Register a new Campaigner. `?ref=<code>` attributes an organiser referral."""
     # Check if a user with this Wave number or email already exists
     result = await db.execute(select(User).where((User.wave_number == user_in.wave_number) | (User.email == user_in.email)))
     if result.scalars().first():
         raise HTTPException(status_code=400, detail="A user with this Wave number or Email already exists.")
-    
+
     hashed_pwd = get_password_hash(user_in.password)
     verification_code = f"{secrets.randbelow(1_000_000):06d}"
     new_user = User(
@@ -161,11 +166,17 @@ async def register(user_in: UserCreate, response: Response, db: AsyncSession = D
         email_verification_code_hash=get_password_hash(verification_code),
         email_verification_expires_at=_utc_now() + timedelta(minutes=10),
     )
-    
+
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
     response.headers["X-Verification-Code"] = verification_code
+
+    from app.services.promotions import capture_referral_signup, ensure_referral_code
+
+    await ensure_referral_code(db, new_user)
+    await capture_referral_signup(db, new_user, ref)
+    await db.commit()
 
     send_email(
         new_user.email,

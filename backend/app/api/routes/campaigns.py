@@ -41,6 +41,9 @@ async def create_campaign(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user) # 👈 Requires user to be logged in!
 ):
+    allowed_organiser_types = {"individual", "ngo", "diaspora"}
+    organiser_type = campaign_in.organiser_type if campaign_in.organiser_type in allowed_organiser_types else "individual"
+
     base_slug = generate_slug(campaign_in.title)
     
     # Check if slug already exists. If yes, add a random string.
@@ -68,6 +71,7 @@ async def create_campaign(
         description=campaign_in.description,
         mode=campaign_in.mode,
         target_amount=campaign_in.target_amount,
+        organiser_type=organiser_type,
         qr_code_page_url=qr_page_url,
         qr_code_direct_url=qr_direct_url
     )
@@ -75,6 +79,14 @@ async def create_campaign(
     db.add(new_campaign)
     await db.commit()
     await db.refresh(new_campaign)
+
+    try:
+        from app.services.promotions import notify_referrer_of_new_campaign
+
+        await notify_referrer_of_new_campaign(db, new_campaign)
+    except Exception:
+        logger.exception("Failed to process referral notification", extra={"campaign_id": new_campaign.id})
+
     logger.info(
         "Campaign created",
         extra={

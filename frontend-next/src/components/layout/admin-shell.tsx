@@ -9,7 +9,7 @@ import {
   WalletOutlined, AuditOutlined, BarChartOutlined,
   FileProtectOutlined, WarningOutlined, MailOutlined, AlertOutlined,
   MenuOutlined, CloseOutlined, LogoutOutlined, SwapOutlined,
-  MenuFoldOutlined, MenuUnfoldOutlined,
+  MenuFoldOutlined, MenuUnfoldOutlined, NotificationOutlined, GiftOutlined,
 } from "@ant-design/icons";
 
 const BLUE = "#1dc5ff";
@@ -42,6 +42,13 @@ const NAV: NavSection[] = [
       { key: "payouts", label: "Payouts", href: "/admin/payouts", icon: WalletOutlined },
       { key: "auditlogs", label: "Audit Logs", href: "/admin/audit-logs", icon: AuditOutlined },
       { key: "reports", label: "Reports", href: "/admin/reports", icon: BarChartOutlined },
+    ],
+  },
+  {
+    label: "Growth",
+    items: [
+      { key: "marketing", label: "Marketing", href: "/admin/marketing", icon: NotificationOutlined },
+      { key: "promotions", label: "Promotions", href: "/admin/promotions", icon: GiftOutlined },
     ],
   },
   {

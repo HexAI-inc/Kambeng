@@ -12,7 +12,7 @@ import uuid
 
 from app.core.config import settings
 from app.core.logging_config import LOG_FILE_PATH, clear_request_context, get_logger, set_request_context
-from app.api.routes import admin, aliases, auth, campaign_updates, campaigns, fraud_report_notification_emails, goals, kyc, moderation, payments, profiles, reviews, search, subscriptions, uploads, utils, webhooks, websockets, kyc_notification_emails
+from app.api.routes import admin, aliases, auth, campaign_updates, campaigns, fraud_report_notification_emails, goals, kyc, marketing, moderation, payments, profiles, promotions, reviews, search, subscriptions, uploads, utils, webhooks, websockets, kyc_notification_emails
 import psutil
 
 
@@ -135,6 +135,8 @@ app.include_router(moderation.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(utils.router, prefix="/api")
 app.include_router(campaign_updates.router, prefix="/api")
+app.include_router(marketing.router, prefix="/api")
+app.include_router(promotions.router, prefix="/api")
 
 # Logs, Health, and Monitoring API
 logs_router = APIRouter()

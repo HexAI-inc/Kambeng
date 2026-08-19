@@ -164,7 +164,8 @@ export default function AdminMarketingPage() {
   ] : [];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
       <motion.div {...fadeUp(0)}>
         <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Marketing</h1>
         <p style={{ margin: 0, fontSize: 13, color: "#8899aa" }}>
@@ -342,6 +343,7 @@ export default function AdminMarketingPage() {
           .mkt-broadcast-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+    </div>
     </div>
   );
 }

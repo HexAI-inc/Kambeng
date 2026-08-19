@@ -52,9 +52,12 @@ type Stats = {
   by_provider?: { provider: string; volume: string; count: number }[];
 };
 
+// Shape of HPG's own GET /collections response — snake_case, confirmed
+// against a live call. Distinct from GET /client/transactions (camelCase),
+// which this admin view does not use.
 type GatewayTransaction = {
-  id?: string; clientReference?: string; provider?: string; status?: string;
-  amount?: string; customerName?: string; createdAt?: string;
+  transaction_id?: string; client_reference?: string; provider?: string; status?: string;
+  amount?: string; currency?: string; created_at?: string;
 };
 
 type Discrepancy = {
@@ -105,9 +108,9 @@ export default function AdminGatewayPage() {
     try {
       const params: Record<string, string> = { limit: "25" };
       if (txStatus) params.status = txStatus;
-      const response = await api.get<{ transactions?: GatewayTransaction[] } | GatewayTransaction[]>("/admin/gateway/transactions", { params });
+      const response = await api.get<{ data?: GatewayTransaction[] } | GatewayTransaction[]>("/admin/gateway/transactions", { params });
       const data = response.data;
-      setTransactions(Array.isArray(data) ? data : data.transactions ?? []);
+      setTransactions(Array.isArray(data) ? data : data.data ?? []);
     } catch (err) {
       setError(getServerErrorMessage(err));
     } finally {
@@ -173,7 +176,8 @@ export default function AdminGatewayPage() {
   ] : [];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
       <motion.div {...fadeUp(0)}>
         <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Gateway</h1>
         <p style={{ margin: 0, fontSize: 13, color: "#8899aa" }}>
@@ -226,12 +230,12 @@ export default function AdminGatewayPage() {
 
       {/* Reconciliation */}
       <motion.div {...fadeUp(0.15)} style={cardStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 4 }}>
           <div style={{ fontSize: 14, fontWeight: 800, color: "#f0f6ff" }}>Reconciliation</div>
           <button
             onClick={runReconciliation}
             disabled={reconLoading}
-            style={{ padding: "8px 16px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: reconLoading ? 0.6 : 1 }}
+            style={{ padding: "8px 16px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: reconLoading ? 0.6 : 1, whiteSpace: "nowrap" }}
           >
             {reconLoading ? "Checking…" : "Check stale PENDING donations"}
           </button>
@@ -276,7 +280,7 @@ export default function AdminGatewayPage() {
         <div style={cardStyle}>
           <div style={{ fontSize: 14, fontWeight: 800, color: "#f0f6ff", marginBottom: 8 }}>Verify a Wave recipient</div>
           <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-            <input value={recipientMobile} onChange={(e) => setRecipientMobile(e.target.value)} placeholder="+2207123456" style={{ ...inputStyle, flex: "1 1 140px" }} />
+            <input type="tel" inputMode="tel" autoComplete="tel" value={recipientMobile} onChange={(e) => setRecipientMobile(e.target.value)} placeholder="+2207123456" style={{ ...inputStyle, flex: "1 1 140px" }} />
             <input value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Name (optional)" style={{ ...inputStyle, flex: "1 1 140px" }} />
           </div>
           <button
@@ -308,12 +312,12 @@ export default function AdminGatewayPage() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {transactions.map((tx, i) => (
-              <div key={tx.id ?? i} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <span style={{ flex: "1 1 160px", fontSize: 12, color: "#f0f6ff", fontFamily: "monospace" }}>{tx.clientReference ?? tx.id}</span>
-                <span style={{ fontSize: 11, color: "#8899aa" }}>{tx.provider}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: GREEN }}>{tx.amount} GMD</span>
+              <div key={tx.transaction_id ?? i} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <span style={{ flex: "1 1 160px", fontSize: 12, color: "#f0f6ff", fontFamily: "monospace" }}>{tx.client_reference ?? tx.transaction_id}</span>
+                {tx.provider && <span style={{ fontSize: 11, color: "#8899aa" }}>{tx.provider}</span>}
+                <span style={{ fontSize: 12, fontWeight: 700, color: GREEN }}>{tx.amount} {tx.currency ?? "GMD"}</span>
                 {tx.status && <StatusChip status={tx.status} />}
-                {tx.createdAt && <span style={{ fontSize: 11, color: "#4a5568" }}>{new Date(tx.createdAt).toLocaleString()}</span>}
+                {tx.created_at && <span style={{ fontSize: 11, color: "#4a5568" }}>{new Date(tx.created_at).toLocaleString()}</span>}
               </div>
             ))}
           </div>
@@ -326,6 +330,7 @@ export default function AdminGatewayPage() {
           .gw-tools-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+    </div>
     </div>
   );
 }

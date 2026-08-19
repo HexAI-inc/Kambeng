@@ -563,8 +563,8 @@ export default function PublicHomePage() {
                 icon: <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="5" y="2" width="14" height="20" rx="3" stroke="#f59e0b" strokeWidth="1.8"/><path d="M9 18h6" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round"/><path d="M8 8h8M8 11h5" stroke="#f59e0b" strokeWidth="1.6" strokeLinecap="round"/></svg>,
               },
               {
-                label: "Visa & Mastercard", tagline: "Secure card checkout via Stripe",
-                desc: "Pay with any major credit or debit card. Processed by Stripe — PCI DSS compliant, 3D Secure, encrypted end-to-end.",
+                label: "Visa & Mastercard", tagline: "Secure card checkout",
+                desc: "Pay with any major credit or debit card. PCI DSS compliant, 3D Secure, encrypted end-to-end.",
                 color: "#a5b4fc", glow: "rgba(99,102,241,0.12)", border: "rgba(99,102,241,0.3)",
                 icon: <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="3" stroke="#a5b4fc" strokeWidth="1.8"/><path d="M2 10h20" stroke="#a5b4fc" strokeWidth="1.8"/><path d="M6 15h4M14 15h4" stroke="#a5b4fc" strokeWidth="1.6" strokeLinecap="round"/></svg>,
               },

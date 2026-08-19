@@ -267,7 +267,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div style={{ maxWidth: 280 }}>
                 <Logo />
                 <p style={{ color: "#6b7a8d", fontSize: 14, marginTop: 14, lineHeight: 1.75 }}>
-                  Gambia&apos;s most transparent way to give — powered by Wave, APS Mobile Money, and secure card payments via Stripe.
+                  Gambia&apos;s most transparent way to give — powered by Wave, APS Mobile Money, and secure card payments.
                 </p>
                 {/* Payment method logos */}
                 <div style={{ display: "flex", gap: 8, marginTop: 16, alignItems: "center" }}>

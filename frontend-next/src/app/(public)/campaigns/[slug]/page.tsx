@@ -1396,29 +1396,6 @@ export default function CampaignDetailPage() {
               )}
             </div>
           </motion.div>
-
-          {/* Follow prompt for visitors who aren't ready to donate */}
-          {!isLoggedIn && slug && (
-            <motion.div {...fadeUp(0.3)}>
-              <div style={{
-                background: "#0d1120", border: "1px solid rgba(29,197,255,0.18)",
-                borderRadius: 16, padding: "22px 22px 24px",
-              }}>
-                <div style={{ fontWeight: 700, fontSize: 15, color: "#f0f6ff", marginBottom: 6 }}>
-                  Not ready to donate?
-                </div>
-                <p style={{ color: "#8899aa", fontSize: 13, lineHeight: 1.7, marginBottom: 14 }}>
-                  Follow this campaign and we&apos;ll email you when it hits milestones — including proof of how the money is used.
-                </p>
-                <EmailCaptureForm
-                  source="campaign_follow"
-                  campaignSlug={slug}
-                  buttonLabel="Follow campaign"
-                  successMessage="Check your inbox to confirm — we'll keep you posted on this campaign."
-                />
-              </div>
-            </motion.div>
-          )}
         </div>
 
         {/* Right sidebar */}
@@ -1483,6 +1460,27 @@ export default function CampaignDetailPage() {
               <IconFlag /> Report Campaign
             </button>
           </div>
+
+          {/* Follow prompt for visitors who aren't ready to donate */}
+          {!isLoggedIn && slug && (
+            <div style={{
+              background: "#0d1120", border: "1px solid rgba(29,197,255,0.18)",
+              borderRadius: 16, padding: "20px 20px 22px",
+            }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "#f0f6ff", marginBottom: 6 }}>
+                Not ready to donate?
+              </div>
+              <p style={{ color: "#8899aa", fontSize: 12, lineHeight: 1.65, marginBottom: 14 }}>
+                Follow this campaign and we&apos;ll email you when it hits milestones — including proof of how the money is used.
+              </p>
+              <EmailCaptureForm
+                source="campaign_follow"
+                campaignSlug={slug}
+                buttonLabel="Follow campaign"
+                successMessage="Check your inbox to confirm — we'll keep you posted on this campaign."
+              />
+            </div>
+          )}
 
           {/* Trust */}
           <div style={{

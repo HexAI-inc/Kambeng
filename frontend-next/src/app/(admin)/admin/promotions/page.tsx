@@ -197,7 +197,8 @@ export default function AdminPromotionsPage() {
   const canCreate = form.slug.trim().length >= 3 && form.name.trim().length >= 3 && (SELF_LIMITING.has(form.promo_type) || form.ends_at);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
       <motion.div {...fadeUp(0)} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
           <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Promotions</h1>
@@ -380,6 +381,7 @@ export default function AdminPromotionsPage() {
           .promo-form-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+    </div>
     </div>
   );
 }

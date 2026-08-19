@@ -120,7 +120,7 @@ export default function StartPage() {
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#8899aa", marginBottom: 6 }}>Phone <span style={{ fontWeight: 400, color: "#4a5568" }}>(optional)</span></label>
-                  <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+220 …" style={inputStyle} />
+                  <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+220 …" style={inputStyle} />
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#8899aa", marginBottom: 6 }}>What do you want to raise funds for?</label>

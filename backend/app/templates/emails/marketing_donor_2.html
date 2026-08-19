@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block preheader %}What fundraising with proof looks like.{% endblock %}
+{% block eyebrow %}Proof in action{% endblock %}
+{% block heading %}{% if campaign_title %}How {{ campaign_title }} raised funds with full transparency{% else %}What fundraising with proof looks like{% endif %}{% endblock %}
+{% block intro %}Hi, I want to show you what fundraising with proof looks like.{% endblock %}
+{% block content %}
+  {% if campaign_title %}
+  <div class="card">
+    <p><strong style="color: {{ brand_text }};">{{ campaign_title }}</strong> set a clear target, broke it into milestones, and posted proof as money was spent. Donors could see every dalasi at work.</p>
+    <div style="height: 10px;"></div>
+    <p><strong style="color: {{ brand_color }};">Result: {{ percent_funded }}% funded.</strong></p>
+  </div>
+  <div style="height: 16px;"></div>
+  <p>That's the difference proof makes. When donors can verify, they give — and they give again.</p>
+  <div class="button-wrap">
+    <a class="button" href="{{ campaign_link }}">See the campaign</a>
+  </div>
+  {% else %}
+  <div class="card">
+    <p>Campaigns on Kambeng set a clear target, break it into milestones, and post photos and receipts as money is spent. Donors can see every dalasi at work — and verified, proof-backed campaigns consistently outraise informal collections.</p>
+  </div>
+  <div style="height: 16px;"></div>
+  <div class="button-wrap">
+    <a class="button" href="{{ frontend_url }}/campaigns">Browse campaigns</a>
+  </div>
+  {% endif %}
+  <div style="height: 16px;"></div>
+  <p>— Ebrima, Kambeng</p>
+{% endblock %}
+{% block footer %}You subscribed to Kambeng updates. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

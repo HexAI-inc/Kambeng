@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block preheader %}Ten minutes of setup. Verified within 24 hours. Fundraising by tomorrow.{% endblock %}
+{% block eyebrow %}A personal offer{% endblock %}
+{% block heading %}Your campaign could be live tomorrow{% endblock %}
+{% block intro %}Hi{% if name %} {{ name }}{% endif %}, you joined the Kambeng waitlist because there's something your community needs. Twelve days later, that need is still there.{% endblock %}
+{% block content %}
+  <div class="card">
+    <p><strong style="color: {{ brand_text }};">Here's my offer:</strong> start your campaign today, and if you get stuck anywhere — the description, the milestones, the photos — reply to this email and I'll personally help you finish it. That's not a bot talking. It's me.</p>
+  </div>
+  <div style="height: 16px;"></div>
+  <p>Ten minutes of setup. Verified within 24 hours. Fundraising by tomorrow.</p>
+  <div class="button-wrap" style="padding-bottom: 8px;">
+    <a class="button" href="{{ frontend_url }}/start">Start now</a>
+  </div>
+  <div style="height: 12px;"></div>
+  <p>— Ebrima, Kambeng</p>
+{% endblock %}
+{% block footer %}You joined the Kambeng organiser waitlist. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

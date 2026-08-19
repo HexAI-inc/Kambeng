@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import EmailCaptureForm from "@/components/marketing/email-capture-form";
 
 const GREEN = "#1bbf88";
 const BLUE = "#1dc5ff";
@@ -114,6 +115,18 @@ function PaymentSuccessContent() {
             </Link>
           )}
         </div>
+
+        {isConfirmed && (
+          <div style={{ marginTop: 28, padding: "20px 18px", borderRadius: 14, background: "#0d1120", border: "1px solid rgba(255,255,255,0.08)", textAlign: "left" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>
+              Want to know when new campaigns go live in your community?
+            </div>
+            <div style={{ fontSize: 12, color: "#6b7a8d", marginBottom: 14, lineHeight: 1.6 }}>
+              One short email a week. No spam, unsubscribe anytime.
+            </div>
+            <EmailCaptureForm source="post_donation" campaignSlug={campaignSlug ?? undefined} buttonLabel="Notify me" />
+          </div>
+        )}
 
         {ref && (
           <div style={{ marginTop: 28, fontSize: 11, color: "#374151", letterSpacing: "0.04em" }}>

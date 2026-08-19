@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block preheader %}When you give to a community cause, you deserve to see exactly where your money goes.{% endblock %}
+{% block eyebrow %}Welcome{% endblock %}
+{% block heading %}Welcome to Kambeng — here's how it works{% endblock %}
+{% block intro %}Hi there, thanks for joining Kambeng. We built this platform on a simple idea: when you give to a community cause, you deserve to see exactly where your money goes.{% endblock %}
+{% block content %}
+  <div class="card">
+    <p>Every campaign on Kambeng shows real proof — photos, receipts, and progress updates. Organisers are ID-verified before their campaigns go live. And every donation is tracked from the moment you give to the moment it's spent.</p>
+  </div>
+  <div style="height: 16px;"></div>
+  <p>Take a look at what communities are raising for right now:</p>
+  <div class="button-wrap" style="padding-bottom: 16px;">
+    <a class="button" href="{{ frontend_url }}/campaigns">Browse live campaigns</a>
+  </div>
+  <p class="muted" style="font-size: 13px;">One email a week, no spam, unsubscribe anytime.</p>
+  <div style="height: 12px;"></div>
+  <p>— Ebrima, Kambeng</p>
+{% endblock %}
+{% block footer %}You subscribed to Kambeng updates. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

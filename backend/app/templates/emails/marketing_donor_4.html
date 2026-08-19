@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block preheader %}Know a school, mosque, church, or community group that's fundraising the old way?{% endblock %}
+{% block eyebrow %}A quick question{% endblock %}
+{% block heading %}Do you know someone raising money for their community?{% endblock %}
+{% block intro %}Hi, quick question: do you know a school committee, mosque, church, or community group that's fundraising the old way — cash collections, exercise books, no records?{% endblock %}
+{% block content %}
+  <div class="card">
+    <p>Kambeng gives them a verified page, digital payments through Wave, and automatic proof-of-spending records. Setup takes 10 minutes and costs nothing upfront.</p>
+  </div>
+  <div style="height: 16px;"></div>
+  <p>If someone comes to mind, just forward them this email or send them here:</p>
+  <div class="button-wrap" style="padding-bottom: 8px;">
+    <a class="button" href="{{ frontend_url }}/start">Start a campaign on Kambeng</a>
+  </div>
+  <div style="height: 8px;"></div>
+  <p>It would mean a lot — and it might mean even more to their community.</p>
+  <div style="height: 12px;"></div>
+  <p>— Ebrima, Kambeng</p>
+{% endblock %}
+{% block footer %}You subscribed to Kambeng updates. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

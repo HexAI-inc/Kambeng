@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block preheader %}Wave, fees, and timing — the practical questions, answered.{% endblock %}
+{% block eyebrow %}The practical stuff{% endblock %}
+{% block heading %}How money actually reaches you{% endblock %}
+{% block intro %}Hi{% if name %} {{ name }}{% endif %}, the practical questions, answered:{% endblock %}
+{% block content %}
+  <div class="detail" style="margin-bottom: 10px;">
+    <div class="detail-label">How do people pay?</div>
+    <div class="detail-value">Through Wave — donors pay from their phone in seconds.</div>
+  </div>
+  <div class="detail" style="margin-bottom: 10px;">
+    <div class="detail-label">What does it cost?</div>
+    <div class="detail-value">Nothing upfront. Kambeng takes a small commission on successful donations only. Raise nothing, pay nothing.</div>
+  </div>
+  <div class="detail" style="margin-bottom: 10px;">
+    <div class="detail-label">When do you get the money?</div>
+    <div class="detail-value">You request a payout from your dashboard and funds are transferred to your linked Wave number.</div>
+  </div>
+  <div class="detail">
+    <div class="detail-label">How long does setup take?</div>
+    <div class="detail-value">About 10 minutes, plus up to 24 hours for ID verification.</div>
+  </div>
+  <div class="button-wrap" style="padding: 16px 0 8px;">
+    <a class="button" href="{{ frontend_url }}/auth/register">Ready? Start here</a>
+  </div>
+  <div style="height: 12px;"></div>
+  <p>— Ebrima, Kambeng</p>
+{% endblock %}
+{% block footer %}You joined the Kambeng organiser waitlist. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

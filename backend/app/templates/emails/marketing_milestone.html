@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block preheader %}{{ campaign_title }} just completed its "{{ milestone_name }}" goal.{% endblock %}
+{% block eyebrow %}Milestone reached{% endblock %}
+{% block heading %}{{ campaign_title }} just hit a milestone 🎉{% endblock %}
+{% block intro %}Good news — {{ campaign_title }} just completed its "{{ milestone_name }}" goal.{% endblock %}
+{% block content %}
+  <div class="card">
+    <p><strong style="color: {{ brand_text }};">{{ amount_raised }} GMD raised · {{ percent_funded }}% of the total target</strong></p>
+  </div>
+  <div style="height: 16px;"></div>
+  <p>Follow along as the organiser posts proof of how funds are being used:</p>
+  <div class="button-wrap" style="padding-bottom: 12px;">
+    <a class="button" href="{{ campaign_link }}">See the progress</a>
+  </div>
+  <p>Want to help them reach the next milestone? <a href="{{ campaign_link }}">Donate here</a>.</p>
+{% endblock %}
+{% block footer %}You're following this campaign on Kambeng. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block preheader %}An honest answer to the question we hear most.{% endblock %}
+{% block eyebrow %}The trust question{% endblock %}
+{% block heading %}"Will people really trust online fundraising?"{% endblock %}
+{% block intro %}Hi{% if name %} {{ name }}{% endif %}, this is the question I hear most, so let me answer it honestly.{% endblock %}
+{% block content %}
+  <p>People don't distrust online fundraising. They distrust fundraising they can't verify — online or offline. Cash collections with no records have the same problem.</p>
+  <div style="height: 16px;"></div>
+  <div class="card">
+    <p><strong style="color: {{ brand_text }};">Kambeng is built to solve exactly this:</strong></p>
+    <div style="height: 10px;"></div>
+    <p>• You're ID-verified before your campaign goes live</p>
+    <div style="height: 6px;"></div>
+    <p>• Every donation is recorded automatically — donors get receipts</p>
+    <div style="height: 6px;"></div>
+    <p>• You upload photos and receipts as you spend, visible to everyone</p>
+  </div>
+  <div style="height: 16px;"></div>
+  <p>Your donors don't have to trust your word. They can see the proof. That's why verified, proof-backed campaigns consistently outraise informal collections.</p>
+  <div style="height: 12px;"></div>
+  <p>— Ebrima, Kambeng</p>
+{% endblock %}
+{% block footer %}You joined the Kambeng organiser waitlist. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block preheader %}{{ heading }}{% endblock %}
+{% block eyebrow %}This week on Kambeng{% endblock %}
+{% block heading %}{{ heading }}{% endblock %}
+{% block intro %}{% endblock %}
+{% block content %}
+  {% for paragraph in paragraphs %}
+  <p>{{ paragraph }}</p>
+  <div style="height: 12px;"></div>
+  {% endfor %}
+  {% if cta_url and cta_label %}
+  <div class="button-wrap" style="padding-bottom: 12px;">
+    <a class="button" href="{{ cta_url }}">{{ cta_label }}</a>
+  </div>
+  {% endif %}
+  <p>— Ebrima, Kambeng</p>
+{% endblock %}
+{% block footer %}You subscribed to Kambeng updates. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

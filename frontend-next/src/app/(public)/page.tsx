@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { LockOutlined } from "@ant-design/icons";
 import { useHomeFeed, useSessionProfile } from "@/hooks/use-frontend-data";
+import EmailCaptureForm from "@/components/marketing/email-capture-form";
 
 const BLUE = "#1dc5ff";
 const GREEN = "#1bbf88";
@@ -656,6 +657,32 @@ export default function PublicHomePage() {
           ) : (
             <div style={{ textAlign: "center", padding: "48px 0", color: "#4a5568", fontSize: 15 }}>No campaigns yet — <Link href="/auth/signup" style={{ color: BLUE }}>start the first one</Link>.</div>
           )}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════
+          §7.5  EMAIL OPT-IN
+      ══════════════════════════════════════════════ */}
+      <section style={{ padding: "0 clamp(16px, 5vw, 72px) 72px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <motion.div {...fadeUp(0)} style={{
+            display: "flex", flexWrap: "wrap" as const, alignItems: "center", gap: 24,
+            borderRadius: 20, padding: "32px clamp(20px, 4vw, 40px)",
+            background: "#0d1120", border: "1px solid rgba(255,255,255,0.08)",
+          }}>
+            <div style={{ flex: "1 1 320px" }}>
+              <div style={{ fontSize: 12, color: BLUE, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: 10 }}>Stay in the loop</div>
+              <h3 style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>
+                Be the first to know about campaigns in your community
+              </h3>
+              <p style={{ margin: 0, color: "#8899aa", fontSize: 14, lineHeight: 1.7 }}>
+                One short email each week from Kambeng. No spam, unsubscribe anytime.
+              </p>
+            </div>
+            <div style={{ flex: "1 1 320px" }}>
+              <EmailCaptureForm source="homepage" buttonLabel="Keep me posted" />
+            </div>
+          </motion.div>
         </div>
       </section>
 

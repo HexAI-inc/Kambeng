@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block preheader %}One click to confirm your Kambeng subscription.{% endblock %}
+{% block eyebrow %}Confirm subscription{% endblock %}
+{% block heading %}Please confirm your email{% endblock %}
+{% block intro %}Hi{% if name %} {{ name }}{% endif %}, thanks for joining Kambeng. Tap the button below to confirm your email and we'll keep you posted — one short email a week, no spam, unsubscribe anytime.{% endblock %}
+{% block content %}
+  <div class="button-wrap" style="padding-bottom: 16px;">
+    <a class="button" href="{{ confirm_url }}">Confirm my email</a>
+  </div>
+  <p class="muted" style="font-size: 13px;">If the button doesn't work, copy this link into your browser:<br />{{ confirm_url }}</p>
+{% endblock %}
+{% block footer %}You're receiving this because this address was entered at {{ frontend_url }}. If it wasn't you, ignore this email and you won't hear from us again. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

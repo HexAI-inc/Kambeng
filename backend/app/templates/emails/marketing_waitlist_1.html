@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block preheader %}Here's exactly what happens next.{% endblock %}
+{% block eyebrow %}You're on the list{% endblock %}
+{% block heading %}You're on the list — here's what happens next{% endblock %}
+{% block intro %}Hi{% if name %} {{ name }}{% endif %}, thanks for your interest in fundraising on Kambeng. Here's exactly what to expect:{% endblock %}
+{% block content %}
+  <div class="card">
+    <p>1. Create your free account at <a href="{{ frontend_url }}">{{ frontend_url | replace('https://', '') | replace('http://', '') }}</a></p>
+    <div style="height: 8px;"></div>
+    <p>2. Upload your ID for verification (we review within 24 hours — this is what makes donors trust your campaign)</p>
+    <div style="height: 8px;"></div>
+    <p>3. Set up your campaign: title, story, target, and milestones</p>
+    <div style="height: 8px;"></div>
+    <p>4. Go live and share your campaign link</p>
+  </div>
+  <div style="height: 16px;"></div>
+  <p>Have your ID document ready (national ID, passport, or driver's licence — a clear photo is fine).</p>
+  <div class="button-wrap" style="padding-bottom: 8px;">
+    <a class="button" href="{{ frontend_url }}/auth/register">Create your account</a>
+  </div>
+  <div style="height: 8px;"></div>
+  <p class="muted" style="font-size: 13px;">Questions? Just reply to this email — I read every one.</p>
+  <div style="height: 12px;"></div>
+  <p>— Ebrima, Kambeng</p>
+{% endblock %}
+{% block footer %}You joined the Kambeng organiser waitlist. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

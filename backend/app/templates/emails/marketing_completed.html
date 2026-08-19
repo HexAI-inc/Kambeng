@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block preheader %}{{ campaign_title }} is fully funded.{% endblock %}
+{% block eyebrow %}Fully funded{% endblock %}
+{% block heading %}{{ campaign_title }} reached its goal — thank you{% endblock %}
+{% block intro %}It happened. {{ campaign_title }} is fully funded: {{ amount_raised }} GMD raised by {{ donor_count }} donor{{ 's' if donor_count != 1 else '' }}.{% endblock %}
+{% block content %}
+  <div class="card">
+    <p>The organiser will post final proof of expenditure as the project completes — you'll be able to see the results of what this community achieved together.</p>
+  </div>
+  <div class="button-wrap" style="padding: 16px 0 12px;">
+    <a class="button" href="{{ campaign_link }}">See the final campaign page</a>
+  </div>
+  <p>There are more communities raising right now: <a href="{{ frontend_url }}/campaigns">browse active campaigns</a>.</p>
+{% endblock %}
+{% block footer %}You're following this campaign on Kambeng. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

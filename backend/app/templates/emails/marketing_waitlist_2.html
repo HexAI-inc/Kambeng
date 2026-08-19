@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block preheader %}Successful campaigns break their target into milestones.{% endblock %}
+{% block eyebrow %}Organiser tip{% endblock %}
+{% block heading %}The #1 thing successful campaigns do differently{% endblock %}
+{% block intro %}Hi{% if name %} {{ name }}{% endif %}, after watching campaigns succeed and struggle on Kambeng, one pattern stands out:{% endblock %}
+{% block content %}
+  <div class="card">
+    <p><strong style="color: {{ brand_text }};">Successful campaigns break their target into milestones.</strong></p>
+    <div style="height: 10px;"></div>
+    <p>Instead of asking for 50,000 GMD for "school renovation", they ask for 15,000 for cement, then 20,000 for roofing, then 15,000 for paint. Donors can see exactly what their money achieves at each stage — and they come back to fund the next milestone.</p>
+  </div>
+  <div style="height: 16px;"></div>
+  <p>When you set up your campaign, take five extra minutes to add 2–4 milestones. It's the highest-impact thing you can do.</p>
+  <div class="button-wrap" style="padding-bottom: 8px;">
+    <a class="button" href="{{ frontend_url }}/auth/register">Start your campaign</a>
+  </div>
+  <div style="height: 12px;"></div>
+  <p>— Ebrima, Kambeng</p>
+{% endblock %}
+{% block footer %}You joined the Kambeng organiser waitlist. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

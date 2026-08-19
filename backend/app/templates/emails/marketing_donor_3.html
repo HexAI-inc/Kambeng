@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block preheader %}Live campaigns from Gambian communities that need support.{% endblock %}
+{% block eyebrow %}This week{% endblock %}
+{% block heading %}{{ campaigns|length }} campaign{{ 's' if campaigns|length != 1 else '' }} that need support this week{% endblock %}
+{% block intro %}Hi, here are live campaigns from Gambian communities right now:{% endblock %}
+{% block content %}
+  {% for c in campaigns %}
+  <div class="card" style="margin-bottom: 12px;">
+    <p><strong style="color: {{ brand_text }};">{{ loop.index }}. {{ c.title }}</strong></p>
+    <div style="height: 6px;"></div>
+    <p class="muted" style="font-size: 13px;">{{ c.description }}</p>
+    <div style="height: 6px;"></div>
+    <p><strong style="color: {{ brand_color }};">{{ c.percent_funded }}% funded</strong></p>
+  </div>
+  {% endfor %}
+  <div style="height: 8px;"></div>
+  <p>Even a small donation moves a campaign forward — and you'll be able to track exactly how it's used.</p>
+  <div class="button-wrap" style="padding-bottom: 8px;">
+    <a class="button" href="{{ frontend_url }}/campaigns">Browse all campaigns</a>
+  </div>
+  <div style="height: 12px;"></div>
+  <p>— Ebrima, Kambeng</p>
+{% endblock %}
+{% block footer %}You subscribed to Kambeng updates. <a href="{{ unsubscribe_url }}">Unsubscribe</a>{% endblock %}

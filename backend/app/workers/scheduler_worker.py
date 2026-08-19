@@ -55,6 +55,7 @@ class Job:
 def build_job_registry() -> list[Job]:
     # Imported here, after _load_all_models(), so mapper configuration succeeds.
     from app.services.kyc_reminder_service import send_pending_kyc_reminders
+    from app.services.marketing_service import process_marketing_sequences
     from app.services.recurring_charge_service import process_recurring_charges
 
     return [
@@ -63,6 +64,12 @@ def build_job_registry() -> list[Job]:
             name="Process Recurring Donations",
             func=process_recurring_charges,
             trigger=CronTrigger(hour=2, minute=0, timezone="UTC"),
+        ),
+        Job(
+            id="process_marketing_sequences",
+            name="Send Marketing Nurture Sequence Emails",
+            func=process_marketing_sequences,
+            trigger=CronTrigger(hour=10, minute=0, timezone="UTC"),
         ),
         Job(
             id="send_pending_kyc_reminders",

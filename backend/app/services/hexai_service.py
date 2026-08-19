@@ -1,6 +1,19 @@
 import httpx
 from app.core.config import settings
 
+
+class HexAIGatewayError(Exception):
+    """Carries HPG's structured error (status/code/message) instead of a
+    flattened string, so callers — e.g. the APS OTP confirm step — can show
+    the donor an accurate, retryable message rather than a generic failure."""
+
+    def __init__(self, status_code: int, code: str, message: str):
+        self.status_code = status_code
+        self.code = code
+        self.message = message
+        super().__init__(f"HexAI Error {status_code} ({code}): {message}")
+
+
 class HexAIPaymentService:
     def __init__(self):
         self.base_url = settings.HEXAI_BASE_URL.rstrip("/")
@@ -17,15 +30,27 @@ class HexAIPaymentService:
         customer_name: str,
         success_url: str,
         error_url: str,
+        provider: str | None = None,
+        customer_mobile: str | None = None,
     ):
+        # provider omitted entirely (not sent as None/empty) so the gateway's
+        # own default (WAVE) applies exactly as before for existing callers.
         payload = {
             "amount": f"{amount:.2f}",
             "currency": "GMD",
             "client_reference": client_reference,
             "customer_name": customer_name,
-            "success_url": success_url,
-            "error_url": error_url,
         }
+        # APS is collections-only, no redirect: the docs are explicit that
+        # success_url/error_url don't apply to it — the whole flow happens
+        # through the app + OTP, not a hosted-page bounce.
+        if provider != "APS":
+            payload["success_url"] = success_url
+            payload["error_url"] = error_url
+        if provider:
+            payload["provider"] = provider
+        if customer_mobile:
+            payload["customer_mobile"] = customer_mobile
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -38,6 +63,33 @@ class HexAIPaymentService:
                 raise Exception(f"HexAI Error ({response.status_code}): {response.text}")
 
             return response.json()
+
+    async def confirm_collection(self, transaction_id: str, otp: str, request_token: str) -> dict:
+        """Step 3 of the APS wallet+OTP flow: charge the wallet. Synchronous —
+        the response is the authoritative outcome (SUCCEEDED/FAILED), no
+        polling needed. Raises HexAIGatewayError (preserving HPG's code/
+        message, e.g. a wrong OTP) rather than a generic exception, so the
+        donor can be shown an accurate, retryable message."""
+        payload = {"otp": otp, "request_token": request_token}
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/collections/{transaction_id}/confirm",
+                json=payload,
+                headers=self.headers,
+            )
+
+            body = response.json() if response.content else {}
+
+            if response.status_code not in (200, 201):
+                error = body.get("error") or {}
+                raise HexAIGatewayError(
+                    status_code=response.status_code,
+                    code=error.get("code", "unknown_error"),
+                    message=error.get("message", response.text),
+                )
+
+            return body
 
     async def get_collection_status(self, client_reference: str) -> dict:
         """Check the current status of a collection using the client reference."""

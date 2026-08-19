@@ -31,6 +31,9 @@ class _FakeScalars:
     def first(self):
         return self._value
 
+    def all(self):
+        return self._value if isinstance(self._value, list) else []
+
 
 class _FakeResult:
     def __init__(self, value):
@@ -42,7 +45,12 @@ class _FakeResult:
 
 class FakeDB:
     def __init__(self, donation, campaign):
-        self._queue = [donation, None, campaign]
+        # donation lookup, ledger lookup (none), campaign lookup, then the
+        # promotions engine's donor_fee_free_day and matched_donation
+        # lookups (empty — no promotions configured), and (since this test's
+        # donation pushes the campaign past its target) the completion
+        # rebate's milestone_completion_rebate lookup (also empty).
+        self._queue = [donation, None, campaign, [], [], []]
         self.commits = 0
 
     async def execute(self, _query):

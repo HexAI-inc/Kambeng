@@ -199,7 +199,10 @@ async def hexai_webhook(
             )
         return {"status": "success", "message": "Webhook processed successfully"}
 
-    if event == "transaction.completed":
+    # HexAI's docs now name donation events "payment.succeeded"/"payment.failed"
+    # (older payloads used "transaction.completed"). Accept both so a gateway
+    # naming change never silently strands donations in PENDING.
+    if event in ("transaction.completed", "payment.succeeded", "payment.failed"):
         # -----------------------------------------
         # SCENARIO A: DONATION
         # -----------------------------------------

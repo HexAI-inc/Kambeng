@@ -18,12 +18,12 @@ from app.models.campaign_goal import CampaignGoal, GoalStatus
 from app.models.donation import Donation
 from app.models.recurring_donation import RecurringDonation
 from app.schemas.donation import (
+    ApsConfirmRequest,
+    ApsConfirmResponse,
     DonationCreate,
     DonationManualApproveRequest,
     DonationManualRejectRequest,
     DonationReconciliationResponse,
-    StripePaymentIntentRequest,
-    StripeConfirmRequest,
 )
 from app.schemas.recurring_donation import (
     RecurringDonationCreate,
@@ -31,7 +31,7 @@ from app.schemas.recurring_donation import (
     RecurringDonationUpdate,
     RecurringDonationListResponse,
 )
-from app.services.hexai_service import HexAIPaymentService
+from app.services.hexai_service import HexAIGatewayError, HexAIPaymentService
 from app.services.email_service import (
     send_email,
     render_recurring_donation_confirmation_email,
@@ -196,9 +196,9 @@ async def initiate_donation(
     db: AsyncSession = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),
 ):
-    """Initiates a Wave payment for a specific campaign.
-    Works anonymously; a logged-in donor gets the donation linked to their
-    account for giving history."""
+    """Initiates a donation via the HexAI Payment Gateway (Wave by default,
+    or Waychit Card via `provider`). Works anonymously; a logged-in donor
+    gets the donation linked to their account for giving history."""
     
     # 1. Verify the campaign exists and is active
     result = await db.execute(select(Campaign).where(Campaign.id == donation_in.campaign_id))
@@ -226,6 +226,10 @@ async def initiate_donation(
     success_url = f"{frontend_base}/payment/success?ref={client_reference}&slug={campaign.slug}"
     error_url = f"{frontend_base}/payment/failed?ref={client_reference}&slug={campaign.slug}"
 
+    # HPG expects rail identifiers uppercase (WAVE|APS|WAYCHIT_CARD); omit
+    # entirely for "wave" so the gateway's own default applies unchanged.
+    gateway_provider = donation_in.provider.upper() if donation_in.provider and donation_in.provider != "wave" else None
+
     try:
         hexai_response = await hexai_service.initiate_donation(
             amount=donation_in.amount,
@@ -233,9 +237,14 @@ async def initiate_donation(
             customer_name=donation_in.donor_name or "Anonymous Donor",
             success_url=success_url,
             error_url=error_url,
+            provider=gateway_provider,
+            customer_mobile=donation_in.customer_mobile if donation_in.provider == "aps" else None,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+    gateway_data = hexai_response.get("data", {})
+    next_action = gateway_data.get("next_action") or {}
 
     # 4. If HexAI succeeds, NOW we save the PENDING donation to the DB
     new_donation = Donation(
@@ -246,7 +255,10 @@ async def initiate_donation(
         amount=donation_in.amount,
         donor_name=donation_in.donor_name,
         message=donation_in.message,
-        status="PENDING"
+        status="PENDING",
+        provider=donation_in.provider or "wave",
+        gateway_transaction_id=gateway_data.get("transaction_id"),
+        gateway_request_token=next_action.get("request_token"),
     )
     db.add(new_donation)
 
@@ -282,9 +294,73 @@ async def initiate_donation(
 
     return {
         "client_reference": client_reference,
-        "redirect_url": hexai_response["data"]["redirect_url"],
+        "redirect_url": gateway_data.get("redirect_url"),
+        # APS has no redirect — the frontend switches to an OTP-entry step
+        # when it sees this instead of a redirect_url.
+        "otp_required": next_action.get("type") == "confirm_otp",
         "campaign_slug": campaign.slug,
     }
+
+
+@router.post("/aps/confirm", response_model=ApsConfirmResponse)
+async def confirm_aps_donation(
+    payload: ApsConfirmRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Step 3 of the APS wallet+OTP flow: charge the wallet with the code the
+    donor was texted. Synchronous — HPG's response is authoritative, so we
+    reconcile immediately rather than waiting on the backup webhook."""
+    result = await db.execute(select(Donation).where(Donation.client_reference == payload.client_reference))
+    donation = result.scalars().first()
+    if not donation:
+        raise HTTPException(status_code=404, detail="Donation not found")
+    if donation.provider != "aps":
+        raise HTTPException(status_code=400, detail="This donation was not initiated via APS")
+    if not donation.gateway_transaction_id or not donation.gateway_request_token:
+        raise HTTPException(status_code=400, detail="No pending OTP confirmation for this donation")
+    if donation.status != "PENDING":
+        # Already resolved (e.g. by the backup webhook) — report the current
+        # state instead of erroring, so a slow/duplicate confirm is harmless.
+        return ApsConfirmResponse(status=donation.status, client_reference=donation.client_reference)
+
+    try:
+        confirm_response = await hexai_service.confirm_collection(
+            transaction_id=donation.gateway_transaction_id,
+            otp=payload.otp,
+            request_token=donation.gateway_request_token,
+        )
+    except HexAIGatewayError as exc:
+        # Wrong/expired OTP etc — surface HPG's message so the donor can retry.
+        raise HTTPException(status_code=400, detail=exc.message)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    gateway_status = str(confirm_response.get("data", {}).get("status") or "").upper()
+    if gateway_status not in ("SUCCEEDED", "FAILED"):
+        raise HTTPException(status_code=502, detail=f"Unexpected status from gateway: {gateway_status or 'none'}")
+
+    try:
+        reconciled = await reconcile_donation_status(
+            db,
+            client_reference=payload.client_reference,
+            target_status=gateway_status,
+            source="APS_CONFIRM",
+            reason="aps_otp_confirmed",
+        )
+    except DonationNotFoundError:
+        raise HTTPException(status_code=404, detail="Donation not found")
+    except DonationTransitionConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+    logger.info(
+        "APS donation confirmed",
+        extra={
+            "action": "aps_confirm",
+            "client_reference": payload.client_reference,
+            "status": gateway_status,
+        },
+    )
+    return ApsConfirmResponse(status=reconciled["new_status"], client_reference=payload.client_reference)
     
     
     
@@ -323,10 +399,18 @@ async def withdraw_funds(
             detail=f"Insufficient funds. You only have {available_balance:.2f} GMD available."
         )
 
-    # 4. Calculate fee breakdown
+    # 4. Calculate fee breakdown — check for an active fee waiver first
+    # (Founding Campaigns / NGO onboarding / referral reward). See
+    # app/services/promotions.py for the priority order (no stacking).
+    from app.services.promotions import resolve_withdrawal_fee_waiver
+
     gross_amount = payout_req.amount
     hexai_fee = gross_amount * settings.HEXAI_WITHDRAWAL_FEE_PERCENT
-    platform_commission = settings.PLATFORM_FIXED_COMMISSION_GMD
+    standard_commission = settings.PLATFORM_FIXED_COMMISSION_GMD
+
+    waiver = await resolve_withdrawal_fee_waiver(db, campaign, current_user)
+    platform_commission = round(standard_commission * (1 - (waiver.waiver_pct / 100 if waiver.applies else 0.0)), 2)
+    fee_waived_amount = round(standard_commission - platform_commission, 2)
     net_amount = gross_amount - hexai_fee - platform_commission
 
     # Ensure net amount is positive
@@ -384,6 +468,19 @@ async def withdraw_funds(
         confirmed_at=None,
     )
     db.add(ledger_entry)
+    await db.flush()
+
+    if waiver.applies:
+        from app.services.promotions import record_withdrawal_waiver_application
+
+        await record_withdrawal_waiver_application(
+            db,
+            result=waiver,
+            campaign=campaign,
+            owner=current_user,
+            payout=new_payout,
+            fee_waived_amount=fee_waived_amount,
+        )
 
     await db.commit()
     logger.info(
@@ -397,6 +494,7 @@ async def withdraw_funds(
             "net_amount": net_amount,
             "payout_id": new_payout.id,
             "client_reference": client_reference,
+            "promo_fee_waived": fee_waived_amount,
         },
     )
 
@@ -426,158 +524,11 @@ async def withdraw_funds(
         "gross_amount": gross_amount,
         "hexai_fee": hexai_fee,
         "platform_commission": platform_commission,
+        "promo_fee_waived": fee_waived_amount,
         "net_received": net_amount,
         "wave_number": current_user.wave_number,
         "status": "PENDING",
     }
-
-
-@router.post("/stripe/create-payment-intent")
-async def create_stripe_payment_intent(
-    payload: StripePaymentIntentRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: User | None = Depends(get_current_user_optional),
-):
-    """Create a Stripe PaymentIntent and a pending donation record."""
-    import asyncio
-    import stripe as stripe_lib
-
-    if not settings.STRIPE_SECRET_KEY:
-        raise HTTPException(status_code=503, detail="Stripe is not configured on this server.")
-
-    stripe_lib.api_key = settings.STRIPE_SECRET_KEY
-
-    result = await db.execute(select(Campaign).where(Campaign.id == payload.campaign_id))
-    campaign = result.scalars().first()
-    if not campaign:
-        raise HTTPException(status_code=404, detail="Campaign not found")
-    if campaign.status != CampaignStatus.ACTIVE:
-        raise HTTPException(status_code=400, detail="This campaign is no longer accepting donations.")
-
-    goal = None
-    if payload.goal_id is not None:
-        goal_result = await db.execute(select(CampaignGoal).where(CampaignGoal.id == payload.goal_id))
-        goal = goal_result.scalars().first()
-        if not goal or goal.campaign_id != campaign.id:
-            raise HTTPException(status_code=400, detail="Selected goal does not belong to this campaign")
-        if goal.status != GoalStatus.ACTIVE:
-            raise HTTPException(status_code=400, detail="Selected goal is not accepting funding")
-
-    # Stripe requires integer cents; treat GMD amount as USD cents (1 GMD ≈ 1 cent).
-    # Minimum Stripe charge is 50 cents ($0.50).
-    amount_cents = max(50, int(payload.amount))
-    client_reference = f"STR-{uuid.uuid4().hex[:10].upper()}"
-
-    try:
-        intent = await asyncio.to_thread(
-            stripe_lib.PaymentIntent.create,
-            amount=amount_cents,
-            currency="usd",
-            metadata={
-                "campaign_id": str(campaign.id),
-                "campaign_slug": campaign.slug,
-                "client_reference": client_reference,
-                "donor_name": payload.donor_name or "Anonymous",
-            },
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Stripe error: {exc}")
-
-    new_donation = Donation(
-        campaign_id=campaign.id,
-        goal_id=goal.id if goal else None,
-        user_id=current_user.id if current_user else None,
-        client_reference=client_reference,
-        amount=payload.amount,
-        donor_name=payload.donor_name,
-        message=payload.message,
-        status="PENDING",
-    )
-    db.add(new_donation)
-    db.add(TransactionLedger(
-        campaign_id=campaign.id,
-        transaction_type=TransactionType.DONATION,
-        status=TransactionStatus.PENDING,
-        gross_amount=payload.amount,
-        hexai_fee=0.0,
-        platform_commission=0.0,
-        net_amount=payload.amount,
-        external_reference=client_reference,
-        description=f"Stripe donation by {payload.donor_name or 'Anonymous'}",
-        created_by_user_id=None,
-        confirmed_at=None,
-    ))
-    await db.commit()
-
-    logger.info(
-        "Stripe PaymentIntent created",
-        extra={
-            "action": "stripe_create_payment_intent",
-            "campaign_id": campaign.id,
-            "amount": payload.amount,
-            "client_reference": client_reference,
-            "payment_intent_id": intent.id,
-        },
-    )
-
-    return {
-        "client_secret": intent.client_secret,
-        "publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
-        "client_reference": client_reference,
-        "campaign_slug": campaign.slug,
-    }
-
-
-@router.post("/stripe/confirm")
-async def confirm_stripe_payment(
-    payload: StripeConfirmRequest,
-    db: AsyncSession = Depends(get_db),
-):
-    """Verify a Stripe PaymentIntent server-side and mark the donation as SUCCEEDED."""
-    import asyncio
-    import stripe as stripe_lib
-    from app.services.payment_reconciliation import (
-        reconcile_donation_status,
-        DonationNotFoundError,
-        DonationTransitionConflictError,
-    )
-
-    if not settings.STRIPE_SECRET_KEY:
-        raise HTTPException(status_code=503, detail="Stripe is not configured on this server.")
-
-    stripe_lib.api_key = settings.STRIPE_SECRET_KEY
-
-    try:
-        intent = await asyncio.to_thread(stripe_lib.PaymentIntent.retrieve, payload.payment_intent_id)
-    except Exception as exc:
-        raise HTTPException(status_code=400, detail=f"Could not verify payment with Stripe: {exc}")
-
-    if intent.status != "succeeded":
-        raise HTTPException(status_code=400, detail=f"Payment not completed. Stripe status: {intent.status}")
-
-    try:
-        await reconcile_donation_status(
-            db,
-            client_reference=payload.client_reference,
-            target_status="SUCCEEDED",
-            source="STRIPE",
-            reason="stripe_client_confirmed",
-        )
-    except DonationNotFoundError:
-        raise HTTPException(status_code=404, detail="Donation not found")
-    except DonationTransitionConflictError as exc:
-        raise HTTPException(status_code=409, detail=str(exc))
-
-    logger.info(
-        "Stripe payment confirmed",
-        extra={
-            "action": "stripe_confirm",
-            "client_reference": payload.client_reference,
-            "payment_intent_id": payload.payment_intent_id,
-        },
-    )
-
-    return {"status": "SUCCEEDED", "client_reference": payload.client_reference}
 
 
 @router.get("/donations/{client_reference}/status")

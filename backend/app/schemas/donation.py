@@ -1,6 +1,9 @@
-from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from typing import Literal, Optional
 from datetime import datetime
+
+# Gateway-supported rails for /collections/initiate (see HPG API reference).
+DonationProvider = Literal["wave", "waychit_card", "aps"]
 
 class DonationBase(BaseModel):
     amount: float = Field(..., gt=0, description="Donation amount must be greater than 0")
@@ -10,6 +13,30 @@ class DonationBase(BaseModel):
 class DonationCreate(DonationBase):
     campaign_id: int
     goal_id: Optional[int] = None
+    provider: Optional[DonationProvider] = None
+    # Required only for provider="aps" — APS texts the OTP to this number.
+    customer_mobile: Optional[str] = Field(default=None, max_length=20)
+
+    @field_validator("provider")
+    @classmethod
+    def normalize_provider(cls, value: str | None) -> str | None:
+        return value.lower() if value else None
+
+    @model_validator(mode="after")
+    def require_mobile_for_aps(self) -> "DonationCreate":
+        if self.provider == "aps" and not (self.customer_mobile or "").strip():
+            raise ValueError("customer_mobile is required for APS donations")
+        return self
+
+
+class ApsConfirmRequest(BaseModel):
+    client_reference: str
+    otp: str = Field(..., min_length=4, max_length=10)
+
+
+class ApsConfirmResponse(BaseModel):
+    status: str  # SUCCEEDED | FAILED
+    client_reference: str
 
 class DonationRead(DonationBase):
     id: int
@@ -21,17 +48,6 @@ class DonationRead(DonationBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class StripePaymentIntentRequest(BaseModel):
-    campaign_id: int
-    goal_id: Optional[int] = None
-    amount: float = Field(..., gt=0)
-    donor_name: Optional[str] = "Anonymous"
-    message: Optional[str] = None
-
-class StripeConfirmRequest(BaseModel):
-    client_reference: str
-    payment_intent_id: str
 
 class DonationManualApproveRequest(BaseModel):
     reason: Optional[str] = None

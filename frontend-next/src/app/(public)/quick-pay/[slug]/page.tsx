@@ -4,23 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
-import { ThunderboltOutlined, MobileOutlined, CreditCardOutlined, LockOutlined } from "@ant-design/icons";
+import { ThunderboltOutlined, CreditCardOutlined, LockOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
 import { api } from "@/lib/api";
 import { useCampaignGoals } from "@/hooks/use-frontend-data";
 import type { CampaignDiscoveryItem, CampaignGoal } from "@/types/frontend";
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000];
-type PaymentMethod = "wave" | "aps" | "stripe";
-
-// Initialised once at module level — never re-created on re-render
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null;
+type PaymentMethod = "wave" | "aps" | "card";
 
 // ─────────────────────────────────────────────────────────────
 // Tiny utility components
@@ -56,171 +49,18 @@ function MastercardIcon() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Stripe card form — must be rendered inside <Elements>
-// ─────────────────────────────────────────────────────────────
-const CARD_STYLE = {
-  style: {
-    base: {
-      fontSize: "15px",
-      color: "#f0f6ff",
-      fontSmoothing: "antialiased",
-      "::placeholder": { color: "#4a5568" },
-      iconColor: "#6366f1",
-    },
-    invalid: { color: "#ff6b6b", iconColor: "#ff6b6b" },
-  },
-};
-
-function StripeCardForm({
-  amount,
-  donorName,
-  message,
-  campaignId,
-  goalId,
-  slug,
-  onError,
-}: {
-  amount: string;
-  donorName: string;
-  message: string;
-  campaignId: number;
-  goalId: number | null;
-  slug: string;
-  onError: (msg: string | null) => void;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-
-  const handlePay = async () => {
-    if (!stripe || !elements) return;
-    const parsed = Number(amount);
-    if (!parsed || parsed <= 0) { onError("Enter a valid donation amount."); return; }
-
-    setProcessing(true);
-    onError(null);
-
-    try {
-      // 1. Create PaymentIntent on our backend
-      const res = await fetch("/api/backend/payments/stripe/create-payment-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          campaign_id: campaignId,
-          goal_id: goalId ?? undefined,
-          amount: parsed,
-          donor_name: donorName.trim() || "Anonymous",
-          message: message.trim() || undefined,
-        }),
-      });
-      const data = await res.json().catch(() => ({})) as {
-        client_secret?: string;
-        client_reference?: string;
-        detail?: string;
-      };
-      if (!res.ok) throw new Error(data.detail ?? "Could not create payment session.");
-
-      const { client_secret, client_reference } = data;
-      if (!client_secret || !client_reference) throw new Error("Invalid response from server.");
-
-      // 2. Confirm card payment via Stripe JS
-      const cardEl = elements.getElement(CardElement);
-      if (!cardEl) throw new Error("Card form not ready.");
-
-      const { error: stripeErr, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
-        payment_method: {
-          card: cardEl,
-          billing_details: { name: donorName.trim() || "Anonymous" },
-        },
-      });
-
-      if (stripeErr) throw new Error(stripeErr.message ?? "Card declined.");
-      if (paymentIntent?.status !== "succeeded") throw new Error("Payment not completed.");
-
-      // 3. Tell our backend to mark the donation as SUCCEEDED
-      await fetch("/api/backend/payments/stripe/confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ client_reference, payment_intent_id: paymentIntent.id }),
-      });
-
-      // 4. Redirect to success page
-      window.location.assign(`/payment/success?ref=${client_reference}&slug=${slug}`);
-    } catch (err) {
-      onError(err instanceof Error ? err.message : "Payment failed. Please try again.");
-      setProcessing(false);
-    }
-  };
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {/* Stripe header */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 10,
-        background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.18)",
-        borderRadius: 10, padding: "10px 14px",
-      }}>
-        <LockOutlined style={{ color: "#6366f1", fontSize: 13 }} />
-        <span style={{ fontSize: 12, color: "#8899aa", flex: 1 }}>
-          Secured by <strong style={{ color: "#f0f6ff" }}>Stripe</strong>
-        </span>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <VisaIcon />
-          <MastercardIcon />
-        </div>
-      </div>
-
-      {/* CardElement container */}
-      <div style={{
-        padding: "14px 16px", borderRadius: 10,
-        border: "1px solid rgba(255,255,255,0.1)",
-        background: "rgba(255,255,255,0.04)",
-        transition: "border-color 0.2s",
-      }}>
-        <CardElement options={CARD_STYLE} />
-      </div>
-
-      <button
-        onClick={() => void handlePay()}
-        disabled={!stripe || processing}
-        style={{
-          width: "100%", padding: "14px", borderRadius: 12, border: "none",
-          background: !stripe || processing ? "rgba(99,102,241,0.4)" : "linear-gradient(135deg, #6366f1, #4f46e5)",
-          color: "#fff", fontSize: 16, fontWeight: 700,
-          cursor: !stripe || processing ? "not-allowed" : "pointer",
-          boxShadow: processing ? "none" : "0 8px 24px rgba(99,102,241,0.3)",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          transition: "all 0.2s",
-        }}
-      >
-        <CreditCardOutlined />
-        {processing
-          ? "Processing…"
-          : amount && Number(amount) > 0
-            ? `Pay ${Number(amount).toLocaleString()} GMD`
-            : "Pay with Card"}
-      </button>
-
-      <p style={{ fontSize: 11, color: "#4a5568", textAlign: "center", margin: 0 }}>
-        256-bit encrypted · Visa, Mastercard &amp; Amex accepted
-      </p>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────
 // Payment method tab selector
 // ─────────────────────────────────────────────────────────────
 const METHODS: { id: PaymentMethod; label: string; shortLabel: string }[] = [
   { id: "wave", label: "Wave Money", shortLabel: "Wave" },
   { id: "aps", label: "APS Money", shortLabel: "APS" },
-  { id: "stripe", label: "Card", shortLabel: "Card" },
+  { id: "card", label: "Card", shortLabel: "Card" },
 ];
 
 const METHOD_ACCENT: Record<PaymentMethod, string> = {
   wave: "#1dc5ff",
   aps: "#f59e0b",
-  stripe: "#6366f1",
+  card: "#6366f1",
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -236,6 +76,9 @@ export default function QuickPayPage() {
   const [message, setMessage] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("wave");
   const [apsPhone, setApsPhone] = useState("");
+  const [apsStep, setApsStep] = useState<"phone" | "otp">("phone");
+  const [apsOtp, setApsOtp] = useState("");
+  const [apsClientReference, setApsClientReference] = useState<string | null>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<number | null>(
     searchParams?.get("goalId") ? Number(searchParams.get("goalId")) : null,
   );
@@ -295,8 +138,9 @@ export default function QuickPayPage() {
     }
   };
 
-  // APS uses the same HexAI gateway — identical redirect flow to Wave
-  const handleApsDonate = async () => {
+  // Card donations route through the gateway's Waychit Card rail — same
+  // hosted-page redirect pattern as Wave, just a different `provider`.
+  const handleCardDonate = async () => {
     const parsed = validateCommon();
     if (parsed === null || !campaign) return;
     setIsSubmitting(true);
@@ -310,6 +154,7 @@ export default function QuickPayPage() {
           amount: parsed,
           donor_name: donorName.trim() || "Anonymous",
           message: message.trim() || undefined,
+          provider: "waychit_card",
         }),
       });
       const payload = await res.json().catch(() => ({})) as { redirect_url?: string; detail?: string };
@@ -318,6 +163,65 @@ export default function QuickPayPage() {
       window.location.assign(payload.redirect_url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to initiate donation.");
+      setIsSubmitting(false);
+    }
+  };
+
+  // APS is a two-step wallet + OTP charge, no redirect. Step 1 sends the
+  // phone number and gets back a request_token; step 2 submits the code
+  // APS texted the donor to actually charge the wallet.
+  const handleApsSendCode = async () => {
+    const parsed = validateCommon();
+    if (parsed === null || !campaign) return;
+    if (apsPhone.trim().length < 6) { setError("Enter a valid mobile number."); return; }
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/backend/payments/donate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          campaign_id: campaign.id,
+          goal_id: selectedGoalId ?? undefined,
+          amount: parsed,
+          donor_name: donorName.trim() || "Anonymous",
+          message: message.trim() || undefined,
+          provider: "aps",
+          customer_mobile: `+220${apsPhone}`,
+        }),
+      });
+      const payload = await res.json().catch(() => ({})) as { client_reference?: string; otp_required?: boolean; detail?: string };
+      if (!res.ok) throw new Error(payload.detail ?? "Unable to send verification code.");
+      if (!payload.otp_required || !payload.client_reference) throw new Error("Unexpected response from server.");
+      setApsClientReference(payload.client_reference);
+      setApsStep("otp");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to send verification code.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleApsConfirmCode = async () => {
+    if (!apsClientReference) return;
+    if (apsOtp.trim().length < 4) { setError("Enter the code you were texted."); return; }
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/backend/payments/aps/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ client_reference: apsClientReference, otp: apsOtp.trim() }),
+      });
+      const payload = await res.json().catch(() => ({})) as { status?: string; detail?: string };
+      if (!res.ok) throw new Error(payload.detail ?? "Could not confirm the code. Please try again.");
+      if (payload.status === "SUCCEEDED") {
+        window.location.assign(`/payment/success?ref=${apsClientReference}&slug=${slug}`);
+      } else {
+        window.location.assign(`/payment/failed?ref=${apsClientReference}&slug=${slug}`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not confirm the code. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -516,8 +420,8 @@ export default function QuickPayPage() {
                   </motion.div>
                 )}
 
-                {paymentMethod === "aps" && (
-                  <motion.div key="aps" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+                {paymentMethod === "aps" && apsStep === "phone" && (
+                  <motion.div key="aps-phone" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
                     <div style={{ marginBottom: 14 }}>
                       <label style={labelStyle}>MOBILE NUMBER</label>
                       <div style={{ position: "relative" }}>
@@ -534,11 +438,11 @@ export default function QuickPayPage() {
                         />
                       </div>
                       <p style={{ fontSize: 11, color: "#4a5568", marginTop: 6 }}>
-                        A push notification will be sent to this number to confirm the payment.
+                        APS will text a one-time code to this number to confirm the payment.
                       </p>
                     </div>
                     <button
-                      onClick={() => void handleApsDonate()}
+                      onClick={() => void handleApsSendCode()}
                       disabled={isSubmitting}
                       style={{
                         width: "100%", padding: "14px", borderRadius: 12, border: "none",
@@ -550,8 +454,7 @@ export default function QuickPayPage() {
                         transition: "all 0.2s",
                       }}
                     >
-                      <MobileOutlined />
-                      {isSubmitting ? "Redirecting to APS…" : "Donate with APS"}
+                      {isSubmitting ? "Sending code…" : "Send verification code"}
                     </button>
                     <p style={{ fontSize: 11, color: "#4a5568", textAlign: "center", marginTop: 12 }}>
                       Secured by APS Mobile Money
@@ -559,27 +462,82 @@ export default function QuickPayPage() {
                   </motion.div>
                 )}
 
-                {paymentMethod === "stripe" && (
-                  <motion.div key="stripe" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-                    {stripePromise && campaign ? (
-                      <Elements stripe={stripePromise}>
-                        <StripeCardForm
-                          amount={amount}
-                          donorName={donorName}
-                          message={message}
-                          campaignId={campaign.id}
-                          goalId={selectedGoalId}
-                          slug={slug}
-                          onError={setError}
-                        />
-                      </Elements>
-                    ) : (
-                      <div style={{ padding: "16px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", textAlign: "center", color: "#4a5568", fontSize: 13 }}>
-                        {!stripePromise
-                          ? "Stripe is not configured. Add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to enable card payments."
-                          : "Loading campaign…"}
+                {paymentMethod === "aps" && apsStep === "otp" && (
+                  <motion.div key="aps-otp" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={labelStyle}>VERIFICATION CODE</label>
+                      <input
+                        type="text" inputMode="numeric" placeholder="6-digit code" maxLength={10}
+                        value={apsOtp}
+                        onChange={(e) => setApsOtp(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                        style={{ ...inputStyle, textAlign: "center", letterSpacing: "0.3em", fontSize: 20, fontWeight: 700 }}
+                        onFocus={(e) => { e.target.style.borderColor = "rgba(245,158,11,0.5)"; }}
+                        onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                      />
+                      <p style={{ fontSize: 11, color: "#4a5568", marginTop: 6 }}>
+                        Enter the code sent to +220{apsPhone}.{" "}
+                        <button
+                          type="button"
+                          onClick={() => { setApsStep("phone"); setApsOtp(""); setError(null); }}
+                          style={{ background: "none", border: "none", padding: 0, color: "#f59e0b", fontSize: 11, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
+                        >
+                          Change number
+                        </button>
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => void handleApsConfirmCode()}
+                      disabled={isSubmitting}
+                      style={{
+                        width: "100%", padding: "14px", borderRadius: 12, border: "none",
+                        background: isSubmitting ? "rgba(245,158,11,0.4)" : "linear-gradient(135deg, #f59e0b, #d97706)",
+                        color: "#fff", fontSize: 16, fontWeight: 700,
+                        cursor: isSubmitting ? "not-allowed" : "pointer",
+                        boxShadow: isSubmitting ? "none" : "0 8px 24px rgba(245,158,11,0.3)",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      {isSubmitting ? "Confirming…" : "Confirm payment"}
+                    </button>
+                  </motion.div>
+                )}
+
+                {paymentMethod === "card" && (
+                  <motion.div key="card" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.18)",
+                      borderRadius: 10, padding: "10px 14px", marginBottom: 14,
+                    }}>
+                      <LockOutlined style={{ color: "#6366f1", fontSize: 13 }} />
+                      <span style={{ fontSize: 12, color: "#8899aa", flex: 1 }}>
+                        Secured by <strong style={{ color: "#f0f6ff" }}>Waychit</strong>
+                      </span>
+                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        <VisaIcon />
+                        <MastercardIcon />
                       </div>
-                    )}
+                    </div>
+                    <button
+                      onClick={() => void handleCardDonate()}
+                      disabled={isSubmitting}
+                      style={{
+                        width: "100%", padding: "14px", borderRadius: 12, border: "none",
+                        background: isSubmitting ? "rgba(99,102,241,0.4)" : "linear-gradient(135deg, #6366f1, #4f46e5)",
+                        color: "#fff", fontSize: 16, fontWeight: 700,
+                        cursor: isSubmitting ? "not-allowed" : "pointer",
+                        boxShadow: isSubmitting ? "none" : "0 8px 24px rgba(99,102,241,0.3)",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      <CreditCardOutlined />
+                      {isSubmitting ? "Redirecting to Card checkout…" : "Donate with Card"}
+                    </button>
+                    <p style={{ fontSize: 11, color: "#4a5568", textAlign: "center", marginTop: 12 }}>
+                      You&apos;ll be redirected to a secure page to enter your card details.
+                    </p>
                   </motion.div>
                 )}
 

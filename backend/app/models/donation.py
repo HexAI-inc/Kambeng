@@ -22,6 +22,25 @@ class Donation(Base):
     donor_name = Column(String, nullable=True, default="Anonymous")
     message = Column(String, nullable=True)
 
+    # Gateway rail used (wave | waychit_card | aps), and — for APS's two-step
+    # OTP flow only — the gateway's transaction_id + request_token captured
+    # from the /collections/initiate response so /collections/{id}/confirm
+    # can be called once the donor submits the OTP they were texted.
+    provider = Column(String, nullable=True)
+    gateway_transaction_id = Column(String, nullable=True)
+    gateway_request_token = Column(String, nullable=True)
+
+    # Promotions engine — set if a donor-side promo (fee-free day, first
+    # donation bonus, matched donation, diaspora) applied to this donation.
+    # use_alter breaks the donations<->promo_applications FK cycle (each
+    # table's PK is referenced by a column on the other) so create/drop
+    # ordering resolves cleanly.
+    promo_application_id = Column(
+        Integer,
+        ForeignKey("promo_applications.id", use_alter=True, name="fk_donations_promo_application_id"),
+        nullable=True,
+    )
+
     # Reconciliation metadata (manual/webhook fallback tracking)
     reconciliation_source = Column(String, nullable=True, index=True)
     reconciliation_reason = Column(Text, nullable=True)

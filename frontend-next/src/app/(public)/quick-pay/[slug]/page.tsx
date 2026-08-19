@@ -73,6 +73,7 @@ export default function QuickPayPage() {
 
   const [amount, setAmount] = useState("");
   const [donorName, setDonorName] = useState("");
+  const [donorEmail, setDonorEmail] = useState("");
   const [message, setMessage] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("wave");
   const [apsPhone, setApsPhone] = useState("");
@@ -112,6 +113,10 @@ export default function QuickPayPage() {
     return parsed;
   };
 
+  // Card and APS both require an email on the gateway's side (an identity
+  // step) — Wave doesn't, so this is only checked for those two methods.
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
   const handleWaveDonate = async () => {
     const parsed = validateCommon();
     if (parsed === null || !campaign) return;
@@ -143,6 +148,7 @@ export default function QuickPayPage() {
   const handleCardDonate = async () => {
     const parsed = validateCommon();
     if (parsed === null || !campaign) return;
+    if (!isValidEmail(donorEmail)) { setError("Enter a valid email address."); return; }
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/backend/payments/donate", {
@@ -155,6 +161,7 @@ export default function QuickPayPage() {
           donor_name: donorName.trim() || "Anonymous",
           message: message.trim() || undefined,
           provider: "waychit_card",
+          customer_email: donorEmail.trim(),
         }),
       });
       const payload = await res.json().catch(() => ({})) as { redirect_url?: string; detail?: string };
@@ -174,6 +181,7 @@ export default function QuickPayPage() {
     const parsed = validateCommon();
     if (parsed === null || !campaign) return;
     if (apsPhone.trim().length < 6) { setError("Enter a valid mobile number."); return; }
+    if (!isValidEmail(donorEmail)) { setError("Enter a valid email address."); return; }
     setIsSubmitting(true);
     setError(null);
     try {
@@ -188,6 +196,7 @@ export default function QuickPayPage() {
           message: message.trim() || undefined,
           provider: "aps",
           customer_mobile: `+220${apsPhone}`,
+          customer_email: donorEmail.trim(),
         }),
       });
       const payload = await res.json().catch(() => ({})) as { client_reference?: string; otp_required?: boolean; detail?: string };
@@ -441,6 +450,16 @@ export default function QuickPayPage() {
                         APS will text a one-time code to this number to confirm the payment.
                       </p>
                     </div>
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={labelStyle}>EMAIL</label>
+                      <input
+                        type="email" placeholder="you@example.com"
+                        value={donorEmail} onChange={(e) => setDonorEmail(e.target.value)}
+                        style={inputStyle}
+                        onFocus={(e) => { e.target.style.borderColor = "rgba(245,158,11,0.5)"; }}
+                        onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                      />
+                    </div>
                     <button
                       onClick={() => void handleApsSendCode()}
                       disabled={isSubmitting}
@@ -518,6 +537,19 @@ export default function QuickPayPage() {
                         <VisaIcon />
                         <MastercardIcon />
                       </div>
+                    </div>
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={labelStyle}>EMAIL</label>
+                      <input
+                        type="email" placeholder="you@example.com"
+                        value={donorEmail} onChange={(e) => setDonorEmail(e.target.value)}
+                        style={inputStyle}
+                        onFocus={(e) => { e.target.style.borderColor = "rgba(99,102,241,0.5)"; }}
+                        onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                      />
+                      <p style={{ fontSize: 11, color: "#4a5568", marginTop: 6 }}>
+                        We&apos;ll send your receipt here.
+                      </p>
                     </div>
                     <button
                       onClick={() => void handleCardDonate()}

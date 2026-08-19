@@ -21,6 +21,9 @@ class Donation(Base):
     # Optional donor details
     donor_name = Column(String, nullable=True, default="Anonymous")
     message = Column(String, nullable=True)
+    # Required by the gateway for Waychit Card and APS (identity/KYC step on
+    # their side) — not required for Wave, which has no such requirement.
+    donor_email = Column(String, nullable=True)
 
     # Gateway rail used (wave | waychit_card | aps), and — for APS's two-step
     # OTP flow only — the gateway's transaction_id + request_token captured

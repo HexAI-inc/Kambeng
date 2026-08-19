@@ -239,7 +239,12 @@ async def initiate_donation(
             error_url=error_url,
             provider=gateway_provider,
             customer_mobile=donation_in.customer_mobile if donation_in.provider == "aps" else None,
+            customer_email=donation_in.customer_email,
         )
+    except HexAIGatewayError as exc:
+        # Gateway-side validation (e.g. a missing required field) — surface
+        # the real message rather than a flattened 500.
+        raise HTTPException(status_code=400, detail=exc.message)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -254,6 +259,7 @@ async def initiate_donation(
         client_reference=client_reference,
         amount=donation_in.amount,
         donor_name=donation_in.donor_name,
+        donor_email=donation_in.customer_email,
         message=donation_in.message,
         status="PENDING",
         provider=donation_in.provider or "wave",

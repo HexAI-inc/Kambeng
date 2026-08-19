@@ -14,6 +14,24 @@ class HexAIGatewayError(Exception):
         super().__init__(f"HexAI Error {status_code} ({code}): {message}")
 
 
+def _parse_gateway_error(response: httpx.Response) -> dict:
+    """HPG error bodies have been observed in two shapes: {status, error:
+    {code, message}} (per the published docs) and {status, code, message}
+    (what aps_api_error/waychit_api_error actually return) — handle both."""
+    body = response.json() if response.content else {}
+    if not isinstance(body, dict):
+        return {"code": "unknown_error", "message": response.text}
+
+    error = body.get("error")
+    if isinstance(error, dict) and error.get("message"):
+        return {"code": error.get("code", "unknown_error"), "message": error["message"]}
+
+    if body.get("message"):
+        return {"code": body.get("code", "unknown_error"), "message": body["message"]}
+
+    return {"code": "unknown_error", "message": response.text}
+
+
 class HexAIPaymentService:
     def __init__(self):
         self.base_url = settings.HEXAI_BASE_URL.rstrip("/")
@@ -32,6 +50,7 @@ class HexAIPaymentService:
         error_url: str,
         provider: str | None = None,
         customer_mobile: str | None = None,
+        customer_email: str | None = None,
     ):
         # provider omitted entirely (not sent as None/empty) so the gateway's
         # own default (WAVE) applies exactly as before for existing callers.
@@ -51,6 +70,8 @@ class HexAIPaymentService:
             payload["provider"] = provider
         if customer_mobile:
             payload["customer_mobile"] = customer_mobile
+        if customer_email:
+            payload["customer_email"] = customer_email
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -60,7 +81,7 @@ class HexAIPaymentService:
             )
 
             if response.status_code not in (200, 201):
-                raise Exception(f"HexAI Error ({response.status_code}): {response.text}")
+                raise HexAIGatewayError(status_code=response.status_code, **_parse_gateway_error(response))
 
             return response.json()
 
@@ -79,17 +100,10 @@ class HexAIPaymentService:
                 headers=self.headers,
             )
 
-            body = response.json() if response.content else {}
-
             if response.status_code not in (200, 201):
-                error = body.get("error") or {}
-                raise HexAIGatewayError(
-                    status_code=response.status_code,
-                    code=error.get("code", "unknown_error"),
-                    message=error.get("message", response.text),
-                )
+                raise HexAIGatewayError(status_code=response.status_code, **_parse_gateway_error(response))
 
-            return body
+            return response.json() if response.content else {}
 
     async def get_collection_status(self, client_reference: str) -> dict:
         """Check the current status of a collection using the client reference."""

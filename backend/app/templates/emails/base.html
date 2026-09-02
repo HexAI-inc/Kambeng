@@ -19,7 +19,7 @@
       .shell { background: {{ brand_surface }}; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; overflow: hidden; }
       .header { padding: 28px 32px 16px; }
       .brand-row { display: flex; align-items: center; gap: 12px; }
-      .brand-mark { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, {{ brand_color }}, {{ brand_dark }}); color: #fff; font-weight: 900; font-size: 18px; line-height: 40px; text-align: center; }
+      .brand-mark { width: 40px; height: 40px; border-radius: 12px; display: block; }
       .brand-name { font-family: Arial, sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.03em; color: {{ brand_text }}; }
       .hero { padding: 8px 32px 0; }
       .eyebrow { font-family: Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: {{ brand_color }}; margin-bottom: 10px; }
@@ -53,7 +53,7 @@
               <td class="shell">
                 <div class="header">
                   <div class="brand-row">
-                    <div class="brand-mark">K</div>
+                    <img src="{{ frontend_url }}/icon-192.png" width="40" height="40" alt="{{ app_name }}" class="brand-mark" />
                     <div class="brand-name">{{ app_name }}</div>
                   </div>
                 </div>

@@ -13,6 +13,9 @@ import { useCampaignGoals } from "@/hooks/use-frontend-data";
 import type { CampaignDiscoveryItem, CampaignGoal } from "@/types/frontend";
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000];
+// Below this the rail's cut and the per-transaction overhead swallow the gift.
+// Mirrors MINIMUM_DONATION_GMD on the server.
+const MIN_DONATION_GMD = 10;
 type PaymentMethod = "wave" | "aps" | "card";
 
 // ─────────────────────────────────────────────────────────────
@@ -109,6 +112,10 @@ export default function QuickPayPage() {
     if (selectedGoalId && !selectedGoal) { setError("That goal is no longer accepting funding."); return null; }
     const parsed = Number(amount);
     if (!Number.isFinite(parsed) || parsed <= 0) { setError("Enter a valid donation amount greater than 0."); return null; }
+    // Kambeng deals in whole dalasi — the API rejects bututs, so say so here
+    // rather than letting the donor find out from a 422.
+    if (!Number.isInteger(parsed)) { setError("Donations are in whole dalasi — enter a round number, like 100."); return null; }
+    if (parsed < MIN_DONATION_GMD) { setError(`The smallest donation is ${MIN_DONATION_GMD} GMD.`); return null; }
     setError(null);
     return parsed;
   };
@@ -375,7 +382,7 @@ export default function QuickPayPage() {
                 </div>
                 <label style={labelStyle}>AMOUNT (GMD)</label>
                 <input
-                  type="number" placeholder="Enter custom amount" inputMode="decimal"
+                  type="number" placeholder={`Enter custom amount (min ${MIN_DONATION_GMD})`} inputMode="numeric" min={MIN_DONATION_GMD} step="1"
                   value={amount} onChange={(e) => setAmount(e.target.value)}
                   style={{ ...inputStyle, fontSize: 16, fontWeight: 600 }}
                   onFocus={(e) => { e.target.style.borderColor = `${accent}66`; }}

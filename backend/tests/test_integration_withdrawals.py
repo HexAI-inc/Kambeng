@@ -147,3 +147,93 @@ async def test_pending_payout_reserves_balance(async_client, db_session, monkeyp
         assert summary2.json()["available_balance"] > summary.json()["available_balance"]
     finally:
         fastapi_app.dependency_overrides.pop(get_current_user, None)
+
+@pytest.mark.asyncio
+async def test_payout_amount_is_floored_to_whole_dalasi(async_client, db_session, monkeypatch):
+    """The rail rejects sub-unit amounts, so the net sent must be whole — and
+    the sub-dalasi remainder must stay in the campaign's balance, not vanish."""
+    user, campaign = await _seed_owner_and_campaign(db_session, amount_raised=200.0)
+
+    from app.main import app as fastapi_app
+
+    async def _get_user_override():
+        return user
+
+    fastapi_app.dependency_overrides[get_current_user] = _get_user_override
+
+    sent: dict = {}
+
+    async def fake_initiate_payout(requested_amount, recipient_mobile, payout_reference, recipient_name):
+        sent["amount"] = requested_amount
+        return ({"data": {"tx_id": "FAKE-TX"}}, requested_amount)
+
+    verified: dict = {}
+
+    async def fake_verify_recipient(**kwargs):
+        verified.update(kwargs)
+        return {"data": {"name_match": True, "receive_limit_reached": False}}
+
+    monkeypatch.setattr(payments_router.hexai_service, "initiate_payout", fake_initiate_payout)
+    monkeypatch.setattr(payments_router.hexai_service, "verify_payout_recipient", fake_verify_recipient)
+
+    try:
+        # 53 gross → HPG's 2% is 1.06, but its D2 floor applies → 53 - 2 - 10.
+        resp = await async_client.post("/api/payments/withdraw", json={"campaign_id": campaign.id, "amount": 53.0})
+        assert resp.status_code == 200, resp.text
+        payload = resp.json()
+
+        assert sent["amount"] == 41.0, "a fractional amount must never reach the gateway"
+        assert verified["amount"] == 41.0, "recipient verification must check the amount we actually send"
+        assert payload["hexai_fee"] == 2.0
+        assert payload["platform_commission"] == 10.0, "Kambeng's flat commission, per the TOR"
+        assert payload["net_received"] == 41.0
+        assert payload["gross_amount"] == 53.0
+        # Whole fees on a whole gross leave nothing to carry.
+        assert payload["sub_dalasi_carried_forward"] == 0.0
+        assert payload["gross_amount"] - payload["hexai_fee"] - payload["platform_commission"] == 41.0
+
+        summary = await async_client.get(f"/api/payments/withdraw/summary/{campaign.id}")
+        assert summary.json()["available_balance"] == pytest.approx(159.0)
+    finally:
+        fastapi_app.dependency_overrides.pop(get_current_user, None)
+
+
+@pytest.mark.asyncio
+async def test_fractional_withdrawal_amount_is_rejected(async_client, db_session):
+    """Money leaves the system in whole dalasi too — the request never gets
+    as far as the fee maths."""
+    user, campaign = await _seed_owner_and_campaign(db_session, amount_raised=200.0)
+
+    from app.main import app as fastapi_app
+
+    async def _get_user_override():
+        return user
+
+    fastapi_app.dependency_overrides[get_current_user] = _get_user_override
+    try:
+        resp = await async_client.post(
+            "/api/payments/withdraw", json={"campaign_id": campaign.id, "amount": 50.5}
+        )
+        assert resp.status_code == 422, resp.text
+        assert "whole number of dalasi" in resp.text
+    finally:
+        fastapi_app.dependency_overrides.pop(get_current_user, None)
+
+
+@pytest.mark.asyncio
+async def test_gateway_rejects_fractional_payout_amount():
+    """Backstop: the gateway client itself refuses a sub-unit amount, so a new
+    call site can't reintroduce the failure the rail answers with
+    "Request invalid" ~30s after accepting the request."""
+    from app.services.hexai_service import HexAIGatewayError, HexAIPaymentService
+
+    with pytest.raises(HexAIGatewayError) as exc:
+        await HexAIPaymentService().initiate_payout(
+            requested_amount=134.06,
+            recipient_mobile="+2207000999",
+            payout_reference="PAYOUT-TEST",
+            recipient_name="Test User",
+        )
+
+    assert exc.value.code == "amount_not_whole"
+    assert exc.value.status_code == 400

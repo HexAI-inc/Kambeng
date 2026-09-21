@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.campaign_goal import GoalStatus
+from app.schemas.money import WholeDalasi
 
 
 class CampaignGoalBase(BaseModel):
@@ -16,13 +17,14 @@ class CampaignGoalBase(BaseModel):
 
 
 class CampaignGoalCreate(CampaignGoalBase):
-    pass
+    # Whole dalasi only; CampaignGoalRead keeps the permissive base field.
+    target_amount: WholeDalasi = Field(..., gt=0)
 
 
 class CampaignGoalUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
-    target_amount: Optional[float] = Field(default=None, gt=0)
+    target_amount: Optional[WholeDalasi] = Field(default=None, gt=0)
     due_date: Optional[date] = None
     sort_order: Optional[int] = None
     status: Optional[GoalStatus] = None

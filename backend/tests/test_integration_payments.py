@@ -154,8 +154,9 @@ def test_admin_can_approve_pending_donation(client, auth_headers, monkeypatch, i
         assert donation.reconciliation_source == "MANUAL_ADMIN"
         assert donation.reconciled_by_admin_id is not None
         assert donation.reconciled_at is not None
-        # HexAI deducts 2% collection fee: net = 125 * 0.98 = 122.5
-        assert campaign is not None and campaign.amount_raised >= 122.5
+        # HexAI deducts 2% on mobile money: 2% of 125 is 2.50, and fees round
+        # down to a whole dalasi, so the campaign is credited 125 - 2 = 123.
+        assert campaign is not None and campaign.amount_raised == 123.0
         assert audit is not None
         await session.close()
 

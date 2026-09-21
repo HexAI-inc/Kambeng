@@ -22,7 +22,7 @@ function fadeUp(delay = 0) {
 function fmt(value: number) {
   return value >= 1_000_000 ? `${(value / 1_000_000).toFixed(1)}M`
     : value >= 1_000 ? `${(value / 1_000).toFixed(1)}K`
-    : value.toLocaleString();
+    : Math.round(value).toLocaleString();
 }
 
 function StatusChip({ status }: { status: string }) {
@@ -75,14 +75,19 @@ export default function CampaignWithdrawalsPage() {
   const withdrawalHistory = summary?.withdrawal_history ?? [];
   const canWithdraw = kycApproved && Boolean(summary) && availableBalance > 0;
 
-  // Live payout preview — estimates mirroring the server's fee structure
-  // (2% Wave processing + D10 platform commission); the server recomputes
-  // exact figures on submit.
+  // Live payout preview — estimates mirroring the server's fee structure; the
+  // server recomputes exact figures on submit. HPG bills 2% rounded up with a
+  // D2 floor (so D2 on anything up to D100), and Kambeng adds its flat D10.
   const WAVE_FEE_RATE = 0.02;
+  const WAVE_FEE_MIN_GMD = 2;
   const PLATFORM_FEE_GMD = 10;
   const parsedAmount = Number(grossAmount);
   const previewValid = Number.isFinite(parsedAmount) && parsedAmount > 0;
-  const previewWaveFee = previewValid ? parsedAmount * WAVE_FEE_RATE : 0;
+  // Mirror the server exactly — showing a net the campaigner will not actually
+  // receive is how the sub-dalasi payout failure stayed hidden.
+  const previewWaveFee = previewValid
+    ? Math.max(Math.ceil(parsedAmount * WAVE_FEE_RATE), WAVE_FEE_MIN_GMD)
+    : 0;
   const previewNet = previewValid ? parsedAmount - previewWaveFee - PLATFORM_FEE_GMD : 0;
 
   const handleWithdraw = async () => {
@@ -99,6 +104,12 @@ export default function CampaignWithdrawalsPage() {
     const amount = Number(grossAmount);
     if (!Number.isFinite(amount) || amount <= 0) {
       message.error("Enter a valid amount");
+      return;
+    }
+
+    // Whole dalasi only — the API rejects bututs.
+    if (!Number.isInteger(amount)) {
+      message.error("Withdrawals are in whole dalasi — enter a round number.");
       return;
     }
 
@@ -188,10 +199,11 @@ export default function CampaignWithdrawalsPage() {
                     <input
                       type="number"
                       min="1"
-                      max={availableBalance > 0 ? availableBalance : undefined}
+                      step="1"
+                      max={availableBalance > 0 ? Math.floor(availableBalance) : undefined}
                       value={grossAmount}
                       onChange={(e) => setGrossAmount(e.target.value)}
-                      placeholder={availableBalance > 0 ? `Up to ${availableBalance.toLocaleString()}` : "Nothing available yet"}
+                      placeholder={availableBalance > 0 ? `Up to ${Math.floor(availableBalance).toLocaleString()}` : "Nothing available yet"}
                       disabled={!canWithdraw}
                       style={{
                         width: "100%", padding: "12px 64px 12px 14px", borderRadius: 10,
@@ -201,7 +213,7 @@ export default function CampaignWithdrawalsPage() {
                     />
                     {canWithdraw && (
                       <button
-                        onClick={() => setGrossAmount(String(availableBalance))}
+                        onClick={() => setGrossAmount(String(Math.floor(availableBalance)))}
                         style={{
                           position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
                           padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(29,197,255,0.3)",
@@ -220,14 +232,18 @@ export default function CampaignWithdrawalsPage() {
                       <span>Withdrawal</span><span>{parsedAmount.toLocaleString()} GMD</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "#6b7a8d" }}>
-                      <span>Wave processing fee (2%)</span><span>−{previewWaveFee.toLocaleString(undefined, { maximumFractionDigits: 2 })} GMD</span>
+                      <span>Wave processing fee (2%, min {WAVE_FEE_MIN_GMD} GMD)</span><span>−{previewWaveFee.toLocaleString()} GMD</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "#6b7a8d" }}>
                       <span>Platform fee</span><span>−{PLATFORM_FEE_GMD} GMD</span>
                     </div>
                     <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 8, display: "flex", justifyContent: "space-between", fontWeight: 800, color: previewNet > 0 ? GREEN : "#ef4444" }}>
                       <span>You receive{me?.wave_number ? ` on ${me.wave_number}` : ""}</span>
-                      <span>{previewNet > 0 ? previewNet.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "0"} GMD</span>
+                      <span>{previewNet > 0 ? previewNet.toLocaleString() : "0"} GMD</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: "#8899aa" }}>
+                      Wave sends whole dalasi only. The {WAVE_FEE_MIN_GMD} GMD minimum processing fee applies to
+                      any withdrawal up to {Math.round(WAVE_FEE_MIN_GMD / WAVE_FEE_RATE).toLocaleString()} GMD.
                     </div>
                     {previewNet <= 0 && (
                       <div style={{ fontSize: 12, color: "#ef4444" }}>Amount is too small to cover the fees.</div>

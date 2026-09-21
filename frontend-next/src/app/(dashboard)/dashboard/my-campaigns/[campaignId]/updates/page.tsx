@@ -276,7 +276,7 @@ export default function CampaignUpdatesPage() {
                 onChange={(e) => setAmountSpent(e.target.value)}
                 placeholder="GMD spent (optional)"
                 min="0"
-                step="0.01"
+                step="1"
                 style={{
                   width: "100%", padding: "10px 14px", borderRadius: 9,
                   border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.04)",

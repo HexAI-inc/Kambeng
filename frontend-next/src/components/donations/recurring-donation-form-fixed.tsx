@@ -9,7 +9,8 @@ import { AppButton, AppCard, AppSpace, AppText, AppTitle } from "@/components/ui
 import { useCreateRecurringDonation } from "@/hooks/use-frontend-data";
 
 const recurringDonationSchema = z.object({
-  amount: z.number().min(1, "Amount must be at least 1 GMD"),
+  // Whole dalasi only — Kambeng does not handle bututs.
+  amount: z.number().int("Amount must be a whole number of dalasi").min(10, "The smallest donation is 10 GMD"),
   frequency: z.enum(["WEEKLY", "MONTHLY", "QUARTERLY", "ANNUAL"]),
   anchor_date: z.string().optional(),
 });
@@ -109,7 +110,7 @@ export function RecurringDonationForm({
                     type="number"
                     {...form.register("amount", { valueAsNumber: true })}
                     placeholder="50"
-                    min="1"
+                    min="10"
                     step="1"
                     style={{
                       width: "100%",

@@ -29,7 +29,8 @@ const campaignSchema = z
     title: z.string().trim().min(3, "Campaign title must be at least 3 characters").max(120, "Campaign title is too long"),
     description: z.string().trim().min(10, "Description must be at least 10 characters").max(2000, "Description is too long"),
     mode: z.enum(["TARGET", "ONGOING"]),
-    target_amount: z.number().positive("Target amount must be greater than zero").optional(),
+    // Whole dalasi only — the API rejects bututs.
+    target_amount: z.number().int("Target must be a whole number of dalasi").positive("Target amount must be greater than zero").optional(),
   })
   .superRefine((values, ctx) => {
     if (values.mode === "TARGET" && typeof values.target_amount !== "number") {
@@ -299,7 +300,7 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
                       <AppInput
                         type="number"
                         min={0}
-                        step="0.01"
+                        step="1"
                         value={field.value ?? ""}
                         onChange={(event) => {
                           const nextValue = event.target.value;

@@ -66,7 +66,7 @@ function DarkTooltip({ active, payload, label, prefix = "", suffix = "" }: DarkT
     <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 14px", fontSize: 12 }}>
       {label && <div style={{ color: "#8899aa", marginBottom: 6, fontWeight: 600 }}>{label}</div>}
       {payload.map((p) => (
-        <div key={p.dataKey} style={{ color: p.color, fontWeight: 700 }}>{p.name}: {prefix}{typeof p.value === "number" ? p.value.toFixed(2) : p.value}{suffix}</div>
+        <div key={p.dataKey} style={{ color: p.color, fontWeight: 700 }}>{p.name}: {prefix}{typeof p.value === "number" ? p.value.toLocaleString(undefined, { maximumFractionDigits: 0 }) : p.value}{suffix}</div>
       ))}
     </div>
   );

@@ -10,6 +10,7 @@ from app.models.donation import Donation
 from app.models.user import User
 from app.models.ledger import TransactionLedger, TransactionType, TransactionStatus
 from app.services.hexai_service import HexAIPaymentService
+from app.services.money import floor_dalasi
 from app.services.email_service import (
     send_email,
     render_recurring_donation_reminder,
@@ -146,6 +147,22 @@ async def process_single_recurring_charge(
         await db.commit()
         return
     
+    # Every charge is a whole dalasi. A plan set up before that rule can still
+    # hold bututs, so floor it here rather than billing a fractional amount.
+    charge_amount = floor_dalasi(recurring_donation.amount)
+    if charge_amount < settings.MINIMUM_DONATION_GMD:
+        logger.warning(
+            f"Recurring donation {recurring_donation.id} is below the "
+            f"{settings.MINIMUM_DONATION_GMD:.0f} GMD minimum — skipping charge",
+            extra={
+                "action": "recurring_charge_below_minimum",
+                "recurring_donation_id": recurring_donation.id,
+                "amount": recurring_donation.amount,
+                "minimum": settings.MINIMUM_DONATION_GMD,
+            },
+        )
+        return
+
     # 2. Generate payment reference
     client_reference = f"REC-{uuid.uuid4().hex[:10].upper()}"
     
@@ -156,7 +173,7 @@ async def process_single_recurring_charge(
 
     try:
         hexai_response = await hexai_service.initiate_donation(
-            amount=recurring_donation.amount,
+            amount=charge_amount,
             client_reference=client_reference,
             customer_name=user.full_name or "Recurring Donor",
             success_url=success_url,
@@ -178,7 +195,7 @@ async def process_single_recurring_charge(
             render_recurring_donation_issue_email(
                 user.full_name or "Supporter",
                 campaign.title,
-                recurring_donation.amount,
+                charge_amount,
             ),
         )
         return
@@ -187,7 +204,7 @@ async def process_single_recurring_charge(
     new_donation = Donation(
         campaign_id=campaign.id,
         client_reference=client_reference,
-        amount=recurring_donation.amount,
+        amount=charge_amount,
         donor_name=user.full_name or "Recurring Donor",
         message=f"Recurring donation ({recurring_donation.frequency.lower()})",
         status="PENDING",
@@ -199,10 +216,10 @@ async def process_single_recurring_charge(
         campaign_id=campaign.id,
         transaction_type=TransactionType.DONATION,
         status=TransactionStatus.PENDING,
-        gross_amount=recurring_donation.amount,
+        gross_amount=charge_amount,
         hexai_fee=0.0,
         platform_commission=0.0,
-        net_amount=recurring_donation.amount,
+        net_amount=charge_amount,
         external_reference=client_reference,
         description=f"Recurring donation ({recurring_donation.frequency.lower()})",
         created_by_user_id=None,
@@ -215,7 +232,7 @@ async def process_single_recurring_charge(
     html_content = render_recurring_donation_reminder(
         donor_name=user.full_name or "Supporter",
         campaign_title=campaign.title,
-        amount=recurring_donation.amount,
+        amount=charge_amount,
         frequency=recurring_donation.frequency,
         payment_link=payment_link,
     )
@@ -253,7 +270,7 @@ async def process_single_recurring_charge(
             "recurring_donation_id": recurring_donation.id,
             "user_id": user.id,
             "campaign_id": campaign.id,
-            "amount": recurring_donation.amount,
+            "amount": charge_amount,
             "client_reference": client_reference,
             "next_charge_date": str(recurring_donation.next_charge_date),
         },

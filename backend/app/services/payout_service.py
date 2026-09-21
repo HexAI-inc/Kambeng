@@ -118,7 +118,7 @@ async def _notify_campaign_owner(db: AsyncSession, payout: Payout, new_status: s
         if new_status == "SUCCEEDED":
             send_email(
                 user.email,
-                f"Withdrawal confirmed — {payout.net_amount:,.2f} GMD sent",
+                f"Withdrawal confirmed — {payout.net_amount:,.0f} GMD sent",
                 render_withdrawal_confirmed_email(
                     full_name=user.full_name or user.email,
                     campaign_title=campaign.title,

@@ -262,7 +262,7 @@ export default function AdminPromotionsPage() {
               <>
                 <div>
                   <label style={labelStyle}>Match pool total (GMD)</label>
-                  <input type="number" min={0} value={form.match_pool_total} onChange={(e) => setForm((f) => ({ ...f, match_pool_total: e.target.value }))} placeholder="10000" style={inputStyle} />
+                  <input type="number" min={0} step="1" value={form.match_pool_total} onChange={(e) => setForm((f) => ({ ...f, match_pool_total: e.target.value }))} placeholder="10000" style={inputStyle} />
                 </div>
                 <div>
                   <label style={labelStyle}>Match ratio (1.0 = 100%)</label>

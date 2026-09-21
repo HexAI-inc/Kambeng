@@ -1,4 +1,6 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
+
+from app.schemas.money import DonationAmount
 from typing import Literal, Optional
 from datetime import datetime
 
@@ -18,6 +20,9 @@ class DonationBase(BaseModel):
     message: Optional[str] = None
 
 class DonationCreate(DonationBase):
+    # Whole dalasi only — see app/schemas/money.py. Overridden here rather
+    # than on DonationBase so DonationRead can still serialize legacy rows.
+    amount: DonationAmount = Field(..., gt=0, description="Donation amount in whole dalasi, at least the platform minimum")
     campaign_id: int
     goal_id: Optional[int] = None
     provider: Optional[DonationProvider] = None

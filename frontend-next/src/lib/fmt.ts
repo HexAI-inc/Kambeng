@@ -7,11 +7,15 @@ export function humanize(str: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/** Format a number as "1,234.56 GMD". */
+/** Format a number as "1,234 GMD".
+ *
+ * Kambeng deals in whole dalasi — no bututs anywhere, including on screen.
+ * Showing two decimals implied a precision the payment rail doesn't accept
+ * and the ledger no longer stores.
+ */
 export function fmtGMD(n: number | string): string {
-  return `${Number(n).toLocaleString("en-GB", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+  return `${Math.round(Number(n)).toLocaleString("en-GB", {
+    maximumFractionDigits: 0,
   })} GMD`;
 }
 

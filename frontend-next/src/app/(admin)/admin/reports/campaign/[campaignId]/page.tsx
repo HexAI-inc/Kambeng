@@ -71,9 +71,9 @@ export default function CampaignReportDetailPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
               { label: "Transactions",    value: isLoading ? "—" : String(summary?.transaction_count ?? 0),                color: "#f0f6ff" },
-              { label: "Total Donations", value: isLoading ? "—" : `${(summary?.total_donations ?? 0).toFixed(2)} GMD`,    color: GREEN },
-              { label: "Withdrawals",     value: isLoading ? "—" : `${(summary?.total_withdrawals ?? 0).toFixed(2)} GMD`,  color: BLUE },
-              { label: "Net Total",       value: isLoading ? "—" : `${(summary?.net_total ?? 0).toFixed(2)} GMD`,          color: "#f97316" },
+              { label: "Total Donations", value: isLoading ? "—" : `${(summary?.total_donations ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,    color: GREEN },
+              { label: "Withdrawals",     value: isLoading ? "—" : `${(summary?.total_withdrawals ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,  color: BLUE },
+              { label: "Net Total",       value: isLoading ? "—" : `${(summary?.net_total ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,          color: "#f97316" },
             ].map(({ label, value, color }, i, arr) => (
               <div key={label} style={{ padding: "16px 20px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
                 <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>

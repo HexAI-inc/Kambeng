@@ -42,6 +42,7 @@ from app.models.payout import Payout
 from app.models.promotion import PromoApplication, Promotion, PromoType
 from app.models.referral import Referral, ReferralType
 from app.models.user import User
+from app.services.money import floor_dalasi
 
 logger = logging.getLogger(__name__)
 
@@ -231,7 +232,9 @@ async def apply_match(db: AsyncSession, promo_id: int, donation_amount: float) -
         return 0.0
 
     requested_match = donation_amount * (promo.match_ratio or 0.0)
-    actual_match = min(requested_match, promo.match_pool_remaining)
+    # Credits to a campaign are whole dalasi, rounded down — we never
+    # promise a campaign a fraction of a dalasi we can't pay out.
+    actual_match = floor_dalasi(min(requested_match, promo.match_pool_remaining))
     if actual_match <= 0:
         return 0.0
 
@@ -240,7 +243,7 @@ async def apply_match(db: AsyncSession, promo_id: int, donation_amount: float) -
         promo.is_active = False  # pool spent — auto-disable
 
     await db.flush()
-    return round(actual_match, 2)
+    return actual_match
 
 
 async def resolve_matched_donation(db: AsyncSession, campaign: Campaign, donation: Donation) -> tuple[float, Promotion | None]:
@@ -337,7 +340,7 @@ async def process_completion_rebate(db: AsyncSession, campaign: Campaign) -> Non
     if total_commission <= 0:
         return
 
-    rebate_amount = round(total_commission * (promo.rebate_pct / 100), 2)
+    rebate_amount = floor_dalasi(total_commission * (promo.rebate_pct / 100))
     if rebate_amount <= 0:
         return
 
@@ -364,7 +367,7 @@ async def process_transparency_rebate(db: AsyncSession, campaign: Campaign, uplo
     if days_elapsed > TRANSPARENCY_REBATE_WINDOW_DAYS or days_elapsed < 0:
         return
 
-    rebate_amount = round(payout.platform_commission * (promo.rebate_pct / 100), 2)
+    rebate_amount = floor_dalasi(payout.platform_commission * (promo.rebate_pct / 100))
     if rebate_amount <= 0:
         return
 

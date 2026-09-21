@@ -43,6 +43,8 @@ export default function AdminCommissionsPage() {
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
     if (!amount || amount <= 0) { showToast("Enter a valid amount", false); return; }
+    // Whole dalasi only — the API rejects bututs.
+    if (!Number.isInteger(amount)) { showToast("Withdrawals are in whole dalasi — enter a round number", false); return; }
     try {
       await withdrawMutation.mutateAsync({ amount, reason: withdrawReason || undefined });
       showToast("Withdrawal request created", true);
@@ -75,10 +77,10 @@ export default function AdminCommissionsPage() {
         <motion.div {...fadeUp(0.06)}>
           <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
-              { label: "Total earned", value: `${(summary?.total_commissions ?? 0).toFixed(2)} GMD`, color: "#f0f6ff" },
-              { label: "Available", value: `${available.toFixed(2)} GMD`, color: GREEN },
-              { label: "Withdrawn", value: `${(summary?.withdrawn_commissions ?? 0).toFixed(2)} GMD`, color: BLUE },
-              { label: "Pending", value: `${(summary?.pending_commissions ?? 0).toFixed(2)} GMD`, color: "#f97316" },
+              { label: "Total earned", value: `${(summary?.total_commissions ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: "#f0f6ff" },
+              { label: "Available", value: `${available.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: GREEN },
+              { label: "Withdrawn", value: `${(summary?.withdrawn_commissions ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: BLUE },
+              { label: "Pending", value: `${(summary?.pending_commissions ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: "#f97316" },
             ].map(({ label, value, color }, i, arr) => (
               <div key={label} style={{ padding: "16px 20px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
                 <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
@@ -132,18 +134,20 @@ export default function AdminCommissionsPage() {
           <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ background: "#0d1120", border: "1px solid rgba(29,197,255,0.2)", borderRadius: 14, padding: "22px 24px" }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Withdraw Commissions</div>
             <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 6 }}>
-              Available: <span style={{ color: GREEN, fontWeight: 700 }}>{available.toFixed(2)} GMD</span>
+              Available: <span style={{ color: GREEN, fontWeight: 700 }}>{available.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD</span>
             </div>
             <div style={{ fontSize: 12, color: "#4a5568", marginBottom: 18 }}>
               Funds will be sent to <span style={{ color: "#f0f6ff", fontFamily: "monospace" }}>{payoutAccount?.wave_number}</span> via Wave.
-              HexAI deducts a 2% processing fee on the payout.
+              HexAI deducts a 2% processing fee on the payout, with a 2 GMD minimum (so 2 GMD on anything up
+              to 100 GMD). Wave only sends whole dalasi — any remaining bututs stay in the available balance
+              for the next withdrawal.
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
                 <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", display: "block", marginBottom: 6 }}>Amount (GMD)</label>
                 <input
-                  type="number" value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)}
-                  placeholder={`Max: ${available.toFixed(2)}`}
+                  type="number" min="1" step="1" value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)}
+                  placeholder={`Max: ${Math.floor(available).toLocaleString()}`}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f0f6ff", fontSize: 13, outline: "none", boxSizing: "border-box" }}
                 />
               </div>
@@ -187,8 +191,8 @@ export default function AdminCommissionsPage() {
                 <div data-label="User">
                   <div style={{ fontSize: 13, color: "#8899aa" }}>{s.user_name}</div>
                 </div>
-                <div data-label="Gross" style={{ fontSize: 13, color: "#8899aa" }}>{s.gross_amount.toFixed(2)} GMD</div>
-                <div data-label="Commission" style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>+{s.platform_commission.toFixed(2)} GMD</div>
+                <div data-label="Gross" style={{ fontSize: 13, color: "#8899aa" }}>{s.gross_amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD</div>
+                <div data-label="Commission" style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>+{s.platform_commission.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD</div>
                 <div data-label="Status"><StatusChip status={s.status} /></div>
                 <div data-label="Date" style={{ fontSize: 12, color: "#4a5568" }}>{new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
                 <div data-label="Actions">

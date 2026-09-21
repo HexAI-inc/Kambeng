@@ -90,7 +90,7 @@ def render_recurring_donation_reminder(
         "recurring_donation_reminder.html",
         donor_name=donor_name,
         campaign_title=campaign_title,
-        amount=f"{amount:,.2f}",
+        amount=f"{amount:,.0f}",
         frequency=frequency,
         payment_link=payment_link,
     )
@@ -107,7 +107,7 @@ def render_recurring_donation_confirmation_email(
         "recurring_donation_confirmation.html",
         full_name=full_name,
         campaign_title=campaign_title,
-        amount=f"{amount:,.2f}",
+        amount=f"{amount:,.0f}",
         frequency=frequency,
         next_charge_date=next_charge_date,
     )
@@ -122,7 +122,7 @@ def render_recurring_donation_issue_email(
         "recurring_donation_issue.html",
         full_name=full_name,
         campaign_title=campaign_title,
-        amount=f"{amount:,.2f}",
+        amount=f"{amount:,.0f}",
     )
 
 
@@ -193,10 +193,10 @@ def render_withdrawal_initiated_email(
         "withdrawal_initiated.html",
         full_name=full_name,
         campaign_title=campaign_title,
-        gross_amount=f"{gross_amount:,.2f}",
-        hexai_fee=f"{hexai_fee:,.2f}",
-        platform_fee=f"{platform_fee:,.2f}",
-        net_amount=f"{net_amount:,.2f}",
+        gross_amount=f"{gross_amount:,.0f}",
+        hexai_fee=f"{hexai_fee:,.0f}",
+        platform_fee=f"{platform_fee:,.0f}",
+        net_amount=f"{net_amount:,.0f}",
         wave_number=wave_number,
         reference=reference,
     )
@@ -214,7 +214,7 @@ def render_withdrawal_confirmed_email(
         "withdrawal_confirmed.html",
         full_name=full_name,
         campaign_title=campaign_title,
-        net_amount=f"{net_amount:,.2f}",
+        net_amount=f"{net_amount:,.0f}",
         wave_number=wave_number,
         reference=reference,
         dashboard_link=dashboard_link,
@@ -248,7 +248,7 @@ def render_withdrawal_failed_email(
         "withdrawal_failed.html",
         full_name=full_name,
         campaign_title=campaign_title,
-        gross_amount=f"{gross_amount:,.2f}",
+        gross_amount=f"{gross_amount:,.0f}",
         wave_number=wave_number,
         reference=reference,
         dashboard_link=dashboard_link,

@@ -23,10 +23,37 @@ All fees are configured in [backend/app/core/config.py](../backend/app/core/conf
 
 | Setting | Default | Applied |
 |---|---|---|
-| `HEXAI_COLLECTION_FEE_PERCENT` | 2% | Deducted by HPG from every successful **donation** before it lands in the platform wallet |
-| `HEXAI_WITHDRAWAL_FEE_PERCENT` | 2% | Deducted from every **withdrawal** (organizer and admin-commission alike) |
-| `PLATFORM_FIXED_COMMISSION_GMD` | D10 | Kambeng's flat commission per organizer withdrawal — this is the platform's revenue |
+| `HEXAI_COLLECTION_FEE_PERCENT` | 2% | Deducted by HPG from every successful **mobile-money donation** (Wave, APS) before it lands in the platform wallet |
+| `HEXAI_CARD_COLLECTION_FEE_PERCENT` | 6% | The same, for **card donations** — these run over Waychit, which carries the card schemes' own cut |
+| `HEXAI_WITHDRAWAL_FEE_PERCENT` | 2% | Deducted from every **withdrawal** (organizer and admin-commission alike), rounded **up** to the dalasi |
+| `HEXAI_MINIMUM_WITHDRAWAL_FEE_GMD` | D2 | Floor on that fee — 2% works out at D2 per D100, and anything below D100 is still charged D2 |
+| `PLATFORM_FIXED_COMMISSION_GMD` | D10 | Kambeng's flat commission per organizer withdrawal, per the TOR — this is the platform's revenue |
+| `MINIMUM_DONATION_GMD` | D10 | Smallest donation the API accepts (one-off and recurring) |
 | `ADMIN_COMMISSION_WAVE_NUMBER` | — | Destination Wave account for platform commission withdrawals (falls back to the requesting admin's number) |
+
+The rate is the **rail's**, not a flat platform number: [fees.py](../backend/app/services/fees.py) picks it from `Donation.provider`, so a D1,000 card gift credits D940 where the same gift over Wave credits D980. Charging card donations at 2% credited each campaign 4% that never reached the wallet — see the backfill note in §12.
+
+### Whole dalasi, always
+
+Kambeng deals in whole dalasi. Nothing in the system stores, sends or displays bututs, because the payment rail refuses payouts that carry them (D134.06 is rejected where D134.00 settles — HPG integration notice, 20 Sep 2026) and a balance the rail can't pay out is not a balance.
+
+[money.py](../backend/app/services/money.py) is the single place that decides how:
+
+| Rule | Direction | Why |
+|---|---|---|
+| Amounts entering the API (donations, recurring plans, withdrawals, campaign and goal targets) | rejected if fractional (422) | the person typing it should hear about it, not discover a silent rounding later |
+| Credits, payouts, balances (`floor_dalasi`) | **down** | a balance is never larger than the money behind it |
+| Collection fees (`floor_dalasi`) | **down** | nobody is charged for bututs they can't see |
+| HPG's payout fee (`ceil_dalasi`, D2 floor) | **up** | this is what HPG bills us; recording less would leave the wallet short |
+| Payout remainder (`split_whole_dalasi`) | carried forward | a sub-dalasi remainder stays in the balance for the next withdrawal — never dropped |
+
+Because gross amounts arrive whole and every fee is whole, `gross == net + fees` holds exactly in whole dalasi. All arithmetic runs on integer bututs internally (`0.1 + 0.2` is not `0.3`).
+
+**What flooring collection fees costs.** HPG's real cut on a donation is a percentage, so it can exceed the whole dalasi we record — by at most 99 bututs per donation (2% of D125 is D2.50; we record D2). The campaign is credited that difference, which means `campaign.amount_raised` can run marginally ahead of the HPG wallet. That gap is the platform's to absorb out of its D10 commissions, and `build_campaign_amount_reconciliation` is what measures it. It is bounded per transaction, not per dalasi, so it matters most on many small donations — which is part of why there's a minimum. Payouts carry no such gap: their fee is recorded exactly as billed.
+
+### Minimum donation
+
+`MINIMUM_DONATION_GMD` (default **D10**) is the smallest donation the API accepts, on one-off donations and recurring plans alike ([app/schemas/money.py](../backend/app/schemas/money.py)). Below it the rail's cut and the per-transaction overhead swallow the gift. The recurring worker applies the same floor: a legacy plan below the minimum is skipped with a `recurring_charge_below_minimum` warning rather than charged.
 
 **Worked example — donor gives D1,000; organizer later withdraws it:**
 
@@ -87,7 +114,7 @@ Step by step:
 
 - **Idempotent**: re-delivering the same terminal status is a no-op.
 - **Conflict-safe**: a donation already finalized as `SUCCEEDED` cannot flip to `FAILED` (raises `DonationTransitionConflictError`) — no source can overwrite another.
-- On success it computes the HPG collection fee, stores `hexai_fee`/`net_amount` on the ledger row, and **credits `campaign.amount_raised` with the NET amount** (D980 of a D1,000 gift). Goal progress (`goal.amount_raised`) gets the same net credit, and a `TARGET`-mode campaign auto-`CLOSED`s when it reaches its target.
+- On success it computes the HPG collection fee **at the rate for that donation's rail** (2% mobile money, 6% card), stores `hexai_fee`/`net_amount` on the ledger row, and **credits `campaign.amount_raised` with the NET amount** — D980 of a D1,000 Wave gift, D940 of the same gift by card, both whole dalasi. Goal progress (`goal.amount_raised`) gets the same net credit, and a `TARGET`-mode campaign auto-`CLOSED`s when it reaches its target.
 - Ledger row is flipped to `SUCCEEDED`/`FAILED` with reconciliation metadata (source, reason, admin, timestamp).
 
 > **Key invariant:** `campaign.amount_raised` is always **net of collection fees** — it represents money that actually exists in the platform's HPG wallet, which is what makes the withdrawal balance math in §6 sound.
@@ -121,7 +148,8 @@ Recurring donations are **donor-initiated, not auto-charged** — Wave has no ca
 1. **KYC gate**: `current_user.kyc_status == "APPROVED"` or 403.
 2. **Ownership**: only the campaign owner.
 3. **Balance**: `available = campaign.amount_raised − Σ net of SUCCEEDED payouts − Σ net of PENDING payouts`. Because `amount_raised` is already net of collection fees and we subtract *net* payout amounts, this equals what genuinely remains in the HPG wallet for this campaign. PENDING payouts reserve their amount (they're already in flight at the gateway); a FAILED payout releases its hold.
-4. **Fees**: `net = gross − 2% HPG fee − D10 platform commission`; rejected if net ≤ 0.
+4. **Fees**: `net = gross − HPG fee − D10 Kambeng commission`, where the HPG fee is 2% rounded up with a D2 floor (D2 on anything up to D100, D3 at D101, D20 at D1,000) and the D10 is Kambeng's flat commission per the TOR. Rejected if net < D1, so the practical minimum withdrawal is D13.
+5. **Whole dalasi**: the payment rail refuses any payout carrying butut precision — D134.06 is rejected where D134.00 settles (HPG integration notice, 20 Sep 2026; it is what made the 16 Sep payout fail ~30s after a `200 PROCESSING` with an unhelpful `Request invalid`). The net is therefore floored to a whole dalasi via [`money.split_whole_dalasi`](../backend/app/services/money.py), and the sub-dalasi remainder is subtracted from the recorded `gross_amount` so it stays in the campaign's available balance for the next withdrawal — never rounded up (which would pay out money the balance doesn't back), never dropped (which would lose the organizer's money a few bututs at a time). `initiate_payout` re-checks this and raises `amount_not_whole` (400) rather than letting a fractional amount reach the rail; the endpoint surfaces any gateway 4xx as a 400, since resending it unchanged cannot succeed.
 
 ### Execution order (deliberate)
 
@@ -157,7 +185,7 @@ pending    = Σ platform_commission over PENDING  admin payouts    (campaign_id 
 available  = earned − withdrawn − pending
 ```
 
-**Withdrawal** (`POST /admin/commissions/withdraw`): validates against `available`, sends via HPG (minus the 2% payout fee) to `ADMIN_COMMISSION_WAVE_NUMBER`, records a `Payout` with `campaign_id=NULL` and reference `ADMIN-COMM-…`, audit-logs `COMMISSION_WITHDRAWAL_INITIATED`, and resolves through the exact same four payout paths as Flow 4 (the `ADMIN-COMM-` prefix is in the webhook's payout matcher).
+**Withdrawal** (`POST /admin/commissions/withdraw`): validates against `available`, sends via HPG (minus the 2% payout fee, floored to a whole dalasi like every payout — the remainder stays in `available_commissions`) to `ADMIN_COMMISSION_WAVE_NUMBER`, records a `Payout` with `campaign_id=NULL` and reference `ADMIN-COMM-…`, audit-logs `COMMISSION_WITHDRAWAL_INITIATED`, and resolves through the exact same four payout paths as Flow 4 (the `ADMIN-COMM-` prefix is in the webhook's payout matcher).
 
 ## 9. The three books
 
@@ -179,7 +207,7 @@ Ordered by risk:
 
 1. **Commission double-spend window.** `available_commissions` subtracts pending admin withdrawals, but two concurrent requests can both pass validation before either row commits (no lock around read-then-write).
 2. **Unpaid recurring links accumulate as PENDING donations** with PENDING ledger rows, indistinguishable at a glance from payment failures. Consider expiring them after N days.
-3. **Fee assumptions are config, not contract.** The 2% figures mirror what HPG currently charges. If HPG changes its fee and the env vars don't move in lockstep, `amount_raised` silently drifts from wallet reality. The reconciliation script is the safety net.
+3. **Fee assumptions are config, not contract.** The 2% and 6% figures mirror what HPG currently charges. If HPG changes a rate and the env vars don't move in lockstep, `amount_raised` silently drifts from wallet reality. The reconciliation script is the safety net.
 
 **Fixed 2026-07-12** (kept here for history):
 
@@ -193,6 +221,17 @@ Ordered by risk:
 |---|---|
 | Donation paid but campaign total didn't move | `GET /payments/donations/{ref}/status` (self-heals via HPG poll), then `/admin/donations/pending` → manual approve |
 | Payout stuck PENDING | `/admin/payouts` → **Verify with HPG**, then **Mark paid** if confirmed out-of-band |
-| Campaign total looks wrong | `scripts/reconcile_campaign_totals.py` (dry-run by default) |
+| Campaign total looks wrong | `scripts/reconcile_campaign_totals.py` (dry-run by default), then `scripts/recompute_whole_dalasi_totals.py` to re-record at the right rail fee |
 | Revenue numbers disagree between admin screens | Ledger rows resolved before 2026-07-12 may still be PENDING (the sync fix isn't retroactive) — reconcile old `WITHDRAWAL` ledger rows against the payouts table |
 | Webhook signature failures in logs | `HEXAI_WEBHOOK_SECRET` mismatch; check `sig_preview` in the `hexai_webhook_invalid_signature` log entries |
+
+## 12. Correcting the historical record
+
+Two rules arrived after money had already moved, so the stored data predates them:
+
+- **Card donations were recorded at 2%** instead of Waychit's 6%. Every card donation credited its campaign roughly 4% that never landed in the HPG wallet — a claim on money that isn't there, which surfaces as a payout the wallet can't cover.
+- **Amounts carried bututs**, from percentage fees applied to fractional values.
+
+[`scripts/recompute_whole_dalasi_totals.py`](../backend/scripts/recompute_whole_dalasi_totals.py) re-records every settled donation under its own rail's rate, in whole dalasi: it recomputes `campaign.amount_raised`, each `CampaignGoal.amount_raised`, and the `hexai_fee`/`net_amount` on the matching `DONATION` ledger rows. It is **dry-run by default** and prints every delta plus how much of the total is the card-rate correction; `--apply` commits.
+
+One caveat before applying: promotional credits (matched donations, rebates, absorbed fees) are not part of the donation sum, so a campaign that received them will legitimately show a higher `amount_raised` than the script computes. Read the deltas against `promo_applications` before committing on a database where promos have run.

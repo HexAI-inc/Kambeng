@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 from app.models.campaign import CampaignMode, CampaignStatus
+from app.schemas.money import WholeDalasi
 
 class CampaignBase(BaseModel):
     title: str
@@ -10,6 +11,10 @@ class CampaignBase(BaseModel):
     target_amount: Optional[float] = None
 
 class CampaignCreate(CampaignBase):
+    # Targets are money too — whole dalasi. Overridden here so CampaignRead
+    # can still serialize a target set before the rule.
+    target_amount: Optional[WholeDalasi] = None
+
     # Self-declared organiser type — drives eligibility for NGO onboarding
     # promos (see app/services/promotions.py). Diaspora detection is
     # deliberately manual for now (admin can set it), per the promotions

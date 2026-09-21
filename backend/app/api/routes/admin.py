@@ -24,6 +24,8 @@ from app.schemas.commissions import CommissionSummary, CommissionSourceItem, Adm
 from app.schemas.user import AdminUserUpdate, UserRead
 from app.services.email_service import render_kyc_approved_email, render_kyc_rejected_email, send_email
 from app.services.hexai_service import HexAIGatewayError, HexAIPaymentService
+from app.services.fees import withdrawal_fee
+from app.services.money import floor_dalasi, split_whole_dalasi
 from app.services.payout_service import apply_payout_status, normalize_gateway_status
 from app.core.logging_config import get_logger
 
@@ -1296,7 +1298,7 @@ async def withdraw_commissions(
     if request.amount > commissions.available_commissions:
         raise HTTPException(
             status_code=400,
-            detail=f"Insufficient available commissions. Available: {commissions.available_commissions:.2f} GMD",
+            detail=f"Insufficient available commissions. Available: {floor_dalasi(max(commissions.available_commissions, 0)):.0f} GMD",
         )
 
     # Decide destination Wave number:
@@ -1312,15 +1314,23 @@ async def withdraw_commissions(
     if not recipient_wave.startswith("+220"):
         recipient_wave = f"+220{recipient_wave.lstrip('0')}"
 
-    # HexAI charges 2% on payouts — deduct before sending
-    hexai_fee = round(request.amount * settings.HEXAI_WITHDRAWAL_FEE_PERCENT, 2)
-    net_amount = round(request.amount - hexai_fee, 2)
+    # HexAI charges 2% on payouts — deduct before sending. Whole dalasi, fee
+    # rounded down, like every other amount in the system.
+    hexai_fee = withdrawal_fee(request.amount)
+    net_amount = request.amount - hexai_fee
 
-    if net_amount <= 0:
+    if net_amount < 1:
         raise HTTPException(
             status_code=400,
-            detail=f"Amount too small. After HexAI fee ({hexai_fee:.2f} GMD) you would receive {net_amount:.2f} GMD.",
+            detail=f"Amount too small. After the HexAI fee ({hexai_fee:.0f} GMD) you would receive less than 1 GMD.",
         )
+
+    # The payment rail refuses payouts carrying butut precision, so floor to a
+    # whole dalasi. The sub-dalasi remainder comes off the amount we record as
+    # withdrawn, which leaves it in available_commissions for the next run —
+    # never rounded up, never dropped.
+    net_amount, sub_dalasi_remainder = split_whole_dalasi(net_amount)
+    withdrawn_amount = round(request.amount - sub_dalasi_remainder, 2)
 
     withdrawal_ref = f"ADMIN-COMM-{uuid.uuid4().hex[:12].upper()}"
 
@@ -1332,6 +1342,13 @@ async def withdraw_commissions(
             payout_reference=withdrawal_ref,
             recipient_name=admin_user.full_name or "Kambeng Admin",
         )
+    except HexAIGatewayError as exc:
+        # A 4xx (e.g. amount_not_whole) is a permanent validation failure —
+        # don't present it as a transient gateway outage worth retrying.
+        raise HTTPException(
+            status_code=400 if 400 <= exc.status_code < 500 else 502,
+            detail=f"HexAI payout failed: {exc.message}",
+        ) from exc
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"HexAI payout failed: {exc}") from exc
 
@@ -1339,9 +1356,9 @@ async def withdraw_commissions(
     commission_payout = Payout(
         campaign_id=None,
         client_reference=withdrawal_ref,
-        gross_amount=request.amount,
+        gross_amount=withdrawn_amount,
         hexai_fee=hexai_fee,
-        platform_commission=request.amount,
+        platform_commission=withdrawn_amount,
         net_amount=net_amount,
         status="PENDING",
     )
@@ -1355,8 +1372,10 @@ async def withdraw_commissions(
         target_entity_type="COMMISSION_WITHDRAWAL",
         target_entity_id=commission_payout.id,
         description=(
-            f"Commission withdrawal of {request.amount:.2f} GMD initiated "
-            f"to {recipient_wave} (net {net_amount:.2f} GMD after {hexai_fee:.2f} GMD HexAI fee)"
+            f"Commission withdrawal of {withdrawn_amount:.0f} GMD initiated "
+            f"to {recipient_wave} (net {net_amount:.0f} GMD after {hexai_fee:.0f} GMD HexAI fee"
+            + (f"; {sub_dalasi_remainder:.2f} GMD sub-dalasi remainder carried forward" if sub_dalasi_remainder else "")
+            + ")"
         ),
         details=request.reason or "No reason provided",
         new_value=withdrawal_ref,
@@ -1366,11 +1385,11 @@ async def withdraw_commissions(
 
     return AdminCommissionWithdrawalResponse(
         withdrawal_id=withdrawal_ref,
-        amount=request.amount,
+        amount=withdrawn_amount,
         status="PENDING",
         created_at=datetime.now(UTC),
         message=(
-            f"Payout of {net_amount:.2f} GMD initiated to {recipient_wave}. "
+            f"Payout of {net_amount:.0f} GMD initiated to {recipient_wave}. "
             f"Reference: {withdrawal_ref}"
         ),
     )

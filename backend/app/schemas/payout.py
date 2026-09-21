@@ -3,9 +3,11 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
+from app.schemas.money import WholeDalasi
+
 class PayoutRequest(BaseModel):
     campaign_id: int
-    amount: float = Field(..., gt=0, description="The amount you want to withdraw")
+    amount: WholeDalasi = Field(..., gt=0, description="The amount you want to withdraw, in whole dalasi")
 
 
 class WithdrawalHistoryItem(BaseModel):

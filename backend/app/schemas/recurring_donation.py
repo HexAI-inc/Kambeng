@@ -1,4 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.schemas.money import DonationAmount
 from typing import Optional
 from datetime import datetime, date
 from enum import Enum
@@ -18,11 +20,14 @@ class RecurringDonationBase(BaseModel):
 
 
 class RecurringDonationCreate(RecurringDonationBase):
+    # Whole dalasi only — overridden here so RecurringDonationRead stays
+    # permissive for plans created before the rule.
+    amount: DonationAmount = Field(..., gt=0, description="Donation amount in whole dalasi, at least the platform minimum")
     campaign_id: int
 
 
 class RecurringDonationUpdate(BaseModel):
-    amount: Optional[float] = Field(None, gt=0)
+    amount: Optional[DonationAmount] = Field(None, gt=0)
     frequency: Optional[FrequencyEnum] = None
     is_active: Optional[bool] = None
 

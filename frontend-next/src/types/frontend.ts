@@ -378,9 +378,14 @@ export type AdminCommissionWithdrawalResponse = {
 export type CampaignWithdrawalResponse = {
   message: string;
   client_reference: string;
+  /** What the campaigner asked to withdraw, before the whole-dalasi rounding. */
+  amount_requested: number;
+  /** The requested amount less the sub-dalasi remainder left in the balance. */
   gross_amount: number;
   hexai_fee: number;
   platform_commission: number;
+  /** Bututs kept in the campaign balance because payouts must be whole dalasi. */
+  sub_dalasi_carried_forward: number;
   net_received: number;
   wave_number: string;
 };

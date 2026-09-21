@@ -10,6 +10,8 @@ from app.models.campaign_goal import CampaignGoal, GoalStatus
 from app.models.donation import Donation
 from app.models.ledger import TransactionLedger, TransactionStatus
 from app.core.config import settings
+from app.services.fees import collection_fee as fee_for_collection
+from app.services.money import floor_dalasi
 
 logger = logging.getLogger(__name__)
 
@@ -87,8 +89,13 @@ async def reconcile_donation_status(
             # HexAI deducts their collection fee before crediting our account.
             # Record net_received (what actually lands in our HexAI wallet) so that
             # available_balance = amount_raised - net_payouts is accurate.
-            collection_fee = round(donation.amount * settings.HEXAI_COLLECTION_FEE_PERCENT, 2)
-            net_received = round(donation.amount - collection_fee, 2)
+            #
+            # The rate is the rail's, not a flat platform number: card
+            # donations run over Waychit at 6%, mobile money at 2%. Both land
+            # on a whole dalasi — everything rounds down, so nobody is charged
+            # for bututs they can't see.
+            collection_fee = fee_for_collection(donation.amount, donation.provider)
+            net_received = floor_dalasi(donation.amount - collection_fee)
 
             # Update ledger to reflect the actual net amount and fee breakdown
             # — this always reflects the real settlement with HexAI, regardless
@@ -171,8 +178,6 @@ async def build_campaign_amount_reconciliation(
     Used by scripts/reconcile_campaign_totals.py to audit the financial state.
     Returns a report dict with summary + per-campaign discrepancies.
     """
-    fee_rate = settings.HEXAI_COLLECTION_FEE_PERCENT
-
     campaigns_result = await db.execute(select(Campaign))
     campaigns = campaigns_result.scalars().all()
 
@@ -181,9 +186,11 @@ async def build_campaign_amount_reconciliation(
     )
     succeeded = donations_result.scalars().all()
 
+    # Expected net is rail-dependent (card 6%, mobile money 2%) and whole
+    # dalasi — the same rules reconcile_donation_status applies live.
     donation_net_by_campaign: dict[int, float] = {}
     for d in succeeded:
-        net = round(d.amount * (1 - fee_rate), 2)
+        net = floor_dalasi(d.amount - fee_for_collection(d.amount, d.provider))
         donation_net_by_campaign[d.campaign_id] = round(
             donation_net_by_campaign.get(d.campaign_id, 0.0) + net, 2
         )
@@ -215,7 +222,8 @@ async def build_campaign_amount_reconciliation(
             "total_campaign_amount_raised": round(total_campaign_raised, 2),
             "total_donation_sum": round(total_donation_sum, 2),
             "difference": round(total_campaign_raised - total_donation_sum, 2),
-            "fee_rate_applied": fee_rate,
+            "fee_rate_mobile_money": settings.HEXAI_COLLECTION_FEE_PERCENT,
+            "fee_rate_card": settings.HEXAI_CARD_COLLECTION_FEE_PERCENT,
         },
         "discrepancies": discrepancies,
     }

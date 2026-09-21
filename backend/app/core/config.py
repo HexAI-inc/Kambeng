@@ -53,11 +53,24 @@ class Settings(BaseSettings):
     STORAGE_STRATEGY: str = os.getenv("STORAGE_STRATEGY", "do_spaces")
     
     # Fees & Commission
-    # HexAI charges 2% on all transactions (collections and payouts)
+    # HexAI charges 2% on mobile-money transactions (Wave collections, APS
+    # collections, and all payouts).
     HEXAI_COLLECTION_FEE_PERCENT: float = float(os.getenv("HEXAI_COLLECTION_FEE_PERCENT", "0.02"))
     HEXAI_WITHDRAWAL_FEE_PERCENT: float = float(os.getenv("HEXAI_WITHDRAWAL_FEE_PERCENT", "0.02"))
+    # HPG's payout fee has a floor: 2% works out at D2 per D100, and anything
+    # under D100 is still charged D2. The percentage is rounded up to the
+    # dalasi — this is what HPG actually bills us, so it is what we record.
+    HEXAI_MINIMUM_WITHDRAWAL_FEE_GMD: float = float(os.getenv("HEXAI_MINIMUM_WITHDRAWAL_FEE_GMD", "2.0"))
+    # Card payments run over Waychit, which carries a 6% charge rather than 2%
+    # — the card schemes' own cut. Recording these at 2% over-credits the
+    # campaign by 4% of every card donation, so the rail decides the rate
+    # (see app/services/fees.py).
+    HEXAI_CARD_COLLECTION_FEE_PERCENT: float = float(os.getenv("HEXAI_CARD_COLLECTION_FEE_PERCENT", "0.06"))
     # Kambeng fixed commission per withdrawal in GMD
     PLATFORM_FIXED_COMMISSION_GMD: float = float(os.getenv("PLATFORM_FIXED_COMMISSION_GMD", "10.0"))
+    # Smallest donation Kambeng accepts, in whole dalasi. Below this the rail's
+    # own cut and the per-transaction overhead swallow the gift.
+    MINIMUM_DONATION_GMD: float = float(os.getenv("MINIMUM_DONATION_GMD", "10.0"))
     # Wave number that receives admin commission payouts.
     # If blank, falls back to the requesting admin's own wave_number.
     ADMIN_COMMISSION_WAVE_NUMBER: str = os.getenv("ADMIN_COMMISSION_WAVE_NUMBER", "")

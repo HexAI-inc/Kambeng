@@ -102,9 +102,9 @@ export default function AdminReportsPage() {
           <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden", marginBottom: 2 }}>
             {[
               { label: "Transactions",      value: String(summary?.transaction_count ?? 0),                              color: "#f0f6ff" },
-              { label: "Total Donations",   value: `${(summary?.total_donations ?? 0).toFixed(2)} GMD`,                  color: GREEN },
-              { label: "Total Withdrawals", value: `${(summary?.total_withdrawals ?? 0).toFixed(2)} GMD`,                color: BLUE },
-              { label: "Platform Revenue",  value: `${(systemStats?.total_platform_revenue ?? 0).toFixed(2)} GMD`,       color: "#f97316" },
+              { label: "Total Donations",   value: `${(summary?.total_donations ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,                  color: GREEN },
+              { label: "Total Withdrawals", value: `${(summary?.total_withdrawals ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,                color: BLUE },
+              { label: "Platform Revenue",  value: `${(systemStats?.total_platform_revenue ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,       color: "#f97316" },
             ].map(({ label, value, color }, i, arr) => (
               <div key={label} style={{ padding: "14px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
                 <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
@@ -168,8 +168,8 @@ export default function AdminReportsPage() {
             <Link key="campaign" href={`/admin/reports/campaign/${t.campaign_id}`} style={{ color: "#f0f6ff", fontSize: 13, fontWeight: 600, textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{campaignNameById[String(t.campaign_id)] ?? `Campaign ${t.campaign_id}`}</Link>,
             <TypeChip key="type" type={String(t.transaction_type)} />,
             <StatusChip key="status" status={String(t.status)} />,
-            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(t.gross_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
-            <span key="net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(t.net_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
+            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(t.gross_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
+            <span key="net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(t.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
             <span key="ref" style={{ fontSize: 11, color: "#8899aa", fontFamily: "monospace" }}>{t.external_reference || "—"}</span>,
             <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(t.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
           ]}
@@ -188,8 +188,8 @@ export default function AdminReportsPage() {
           renderRow={(p: AdminPayoutOverview) => [
             <span key="campaign" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600 }}>{p.campaign_title}</span>,
             <span key="user" style={{ fontSize: 12, color: "#8899aa" }}>{p.user_name}</span>,
-            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(p.gross_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
-            <span key="net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
+            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(p.gross_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
+            <span key="net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
             <StatusChip key="status" status={String(p.status)} />,
             <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
           ]}

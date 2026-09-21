@@ -154,6 +154,8 @@ export default function CampaignGoalsPage() {
                 style={inputStyle}
                 placeholder="Target amount (GMD)"
                 type="number"
+                min="1"
+                step="1"
                 value={form.target_amount}
                 onChange={(e) => setForm((s) => ({ ...s, target_amount: e.target.value }))}
               />
@@ -229,7 +231,7 @@ export default function CampaignGoalsPage() {
                         <div style={{ fontSize: 12, fontWeight: 700, color: BLUE, marginBottom: 4 }}>Editing goal</div>
                         <input style={inputStyle} value={editForm.title} onChange={(e) => setEditForm((s) => ({ ...s, title: e.target.value }))} placeholder="Title" />
                         <div style={{ display: "flex", gap: 10 }}>
-                          <input style={{ ...inputStyle, flex: 1 }} type="number" value={editForm.target_amount} onChange={(e) => setEditForm((s) => ({ ...s, target_amount: e.target.value }))} placeholder="Target (GMD)" />
+                          <input style={{ ...inputStyle, flex: 1 }} type="number" min="1" step="1" value={editForm.target_amount} onChange={(e) => setEditForm((s) => ({ ...s, target_amount: e.target.value }))} placeholder="Target (GMD)" />
                           <StyledSelect
                             value={editForm.status}
                             onChange={(v) => setEditForm((s) => ({ ...s, status: v as CampaignGoalStatus }))}

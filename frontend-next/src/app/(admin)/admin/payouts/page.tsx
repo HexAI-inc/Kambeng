@@ -88,7 +88,7 @@ export default function PayoutsPage() {
 
   const markPaid = async (p: AdminPayoutOverview) => {
     const ref = p.client_reference ?? `payout #${p.payout_id}`;
-    if (!window.confirm(`Mark ${ref} (${Number(p.net_amount).toFixed(2)} GMD to ${p.user_name}) as SUCCEEDED?\n\nOnly do this after confirming with HPG or Wave that the money actually left. This action is audited.`)) return;
+    if (!window.confirm(`Mark ${ref} (${Number(p.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD to ${p.user_name}) as SUCCEEDED?\n\nOnly do this after confirming with HPG or Wave that the money actually left. This action is audited.`)) return;
     setBusyId(p.payout_id);
     try {
       await api.post(`/admin/payouts/${p.payout_id}/mark-succeeded`);
@@ -103,7 +103,7 @@ export default function PayoutsPage() {
 
   const reversePayout = async (p: AdminPayoutOverview) => {
     const ref = p.client_reference ?? `payout #${p.payout_id}`;
-    if (!window.confirm(`Reverse ${ref} (${Number(p.net_amount).toFixed(2)} GMD to ${p.user_name})?\n\nOnly works within Wave's 3-day window from the original payout. This action is audited.`)) return;
+    if (!window.confirm(`Reverse ${ref} (${Number(p.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD to ${p.user_name})?\n\nOnly works within Wave's 3-day window from the original payout. This action is audited.`)) return;
     setBusyId(p.payout_id);
     try {
       await api.post(`/admin/payouts/${p.payout_id}/reverse`);
@@ -138,8 +138,8 @@ export default function PayoutsPage() {
         <motion.div {...fadeUp(0.06)}>
           <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
             {[
-              { label: "Total paid out (gross)", value: `${totalGross.toFixed(2)} GMD`, color: "#f0f6ff" },
-              { label: "Net received",           value: `${totalNet.toFixed(2)} GMD`,   color: GREEN },
+              { label: "Total paid out (gross)", value: `${totalGross.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: "#f0f6ff" },
+              { label: "Net received",           value: `${totalNet.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,   color: GREEN },
               { label: "Pending payouts",        value: String(pending),                color: pending > 0 ? "#f97316" : "#4a5568" },
             ].map(({ label, value, color }, i, arr) => (
               <div key={label} style={{ padding: "14px 20px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
@@ -167,8 +167,8 @@ export default function PayoutsPage() {
                   <div data-label="Reference" style={{ fontSize: 11, fontFamily: "monospace", color: "#8899aa", overflowWrap: "anywhere" }}>{p.client_reference ?? `#${p.payout_id}`}</div>
                   <div data-label="Campaign" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600 }}>{p.campaign_title}</div>
                   <div data-label="Recipient" style={{ fontSize: 12, color: "#8899aa" }}>{p.user_name}</div>
-                  <div data-label="Gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(p.gross_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
-                  <div data-label="Net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
+                  <div data-label="Gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(p.gross_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
+                  <div data-label="Net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
                   <div data-label="Status"><StatusChip status={p.status} /></div>
                   <div data-label="Date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</div>
                   <div data-label="Actions" className="payout-actions" style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 6, minWidth: 0 }}>

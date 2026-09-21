@@ -1,5 +1,6 @@
 import httpx
 from app.core.config import settings
+from app.services.money import is_whole_dalasi
 
 
 class HexAIGatewayError(Exception):
@@ -153,6 +154,23 @@ class HexAIPaymentService:
     ):
         # requested_amount is already net of all fees (calculated in payments.py).
         # Send it directly — do NOT deduct another fee here.
+        #
+        # The rail refuses sub-unit amounts: "10.06" is rejected where "10"
+        # settles, and until HPG added its own boundary check the rejection
+        # arrived ~30s late as a FAILED status with "Request invalid". Callers
+        # floor to a whole dalasi (see app/services/money.py); this is the
+        # backstop so a fractional amount can never reach the rail from a new
+        # call site.
+        if not is_whole_dalasi(requested_amount):
+            raise HexAIGatewayError(
+                status_code=400,
+                code="amount_not_whole",
+                message=(
+                    f"Payout amount must be a whole GMD value — got {requested_amount:.2f}. "
+                    "The payment rail rejects sub-unit amounts."
+                ),
+            )
+
         amount_str = f"{requested_amount:.2f}"
 
         payload = {
@@ -171,8 +189,11 @@ class HexAIPaymentService:
                 headers=self.headers
             )
 
+            # Raise HPG's structured error (e.g. amount_not_whole) rather than a
+            # flattened string, so the caller can tell a permanent validation
+            # failure from a transient gateway one.
             if response.status_code not in (200, 201):
-                raise Exception(f"HexAI Error ({response.status_code}): {response.text}")
+                raise HexAIGatewayError(status_code=response.status_code, **_parse_gateway_error(response))
 
             return response.json(), float(amount_str)
 

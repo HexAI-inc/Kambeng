@@ -42,6 +42,8 @@ from app.services.payment_reconciliation import (
     DonationTransitionConflictError,
     reconcile_donation_status,
 )
+from app.services.fees import withdrawal_fee
+from app.services.money import floor_dalasi, split_whole_dalasi
 from app.services.payout_service import apply_payout_status, normalize_gateway_status
 from app.core.logging_config import get_logger
 
@@ -402,7 +404,7 @@ async def withdraw_funds(
     if payout_req.amount > available_balance:
         raise HTTPException(
             status_code=400,
-            detail=f"Insufficient funds. You only have {available_balance:.2f} GMD available."
+            detail=f"Insufficient funds. You only have {floor_dalasi(max(available_balance, 0)):.0f} GMD available."
         )
 
     # 4. Calculate fee breakdown — check for an active fee waiver first
@@ -410,21 +412,36 @@ async def withdraw_funds(
     # app/services/promotions.py for the priority order (no stacking).
     from app.services.promotions import resolve_withdrawal_fee_waiver
 
+    # Fees are whole dalasi, rounded down (app/services/money.py): with a whole
+    # gross in, the net below comes out whole too, and gross == net + fees
+    # holds exactly.
     gross_amount = payout_req.amount
-    hexai_fee = gross_amount * settings.HEXAI_WITHDRAWAL_FEE_PERCENT
-    standard_commission = settings.PLATFORM_FIXED_COMMISSION_GMD
+    hexai_fee = withdrawal_fee(gross_amount)
+    standard_commission = floor_dalasi(settings.PLATFORM_FIXED_COMMISSION_GMD)
 
     waiver = await resolve_withdrawal_fee_waiver(db, campaign, current_user)
-    platform_commission = round(standard_commission * (1 - (waiver.waiver_pct / 100 if waiver.applies else 0.0)), 2)
+    platform_commission = floor_dalasi(standard_commission * (1 - (waiver.waiver_pct / 100 if waiver.applies else 0.0)))
     fee_waived_amount = round(standard_commission - platform_commission, 2)
     net_amount = gross_amount - hexai_fee - platform_commission
 
-    # Ensure net amount is positive
-    if net_amount <= 0:
+    # Ensure the fees leave something to send (checked before rounding, so a
+    # gross smaller than the fees can't reach the whole-dalasi split).
+    if net_amount < 1:
         raise HTTPException(
             status_code=400,
-            detail=f"Withdrawal amount too small. After fees ({hexai_fee:.2f} GMD HexAI + {platform_commission:.2f} GMD platform), you would receive {net_amount:.2f} GMD. Minimum recommended withdrawal: {hexai_fee + platform_commission + 1:.2f} GMD"
+            detail=f"Withdrawal amount too small. After fees ({hexai_fee:.0f} GMD HexAI + {platform_commission:.0f} GMD platform) you would receive less than 1 GMD. Minimum withdrawal: {hexai_fee + platform_commission + 1:.0f} GMD"
         )
+
+    # 4.5 The payment rail refuses payouts carrying butut precision — a net of
+    # 134.06 is rejected where 134.00 settles — so floor the payout to a whole
+    # dalasi. A whole gross and whole fees already give a whole net, so this
+    # normally changes nothing; it stays as the guarantee. Where it does bite
+    # (a legacy fractional balance), the remainder is not lost: the same amount
+    # comes off the gross, so it stays in the campaign's available balance
+    # (which is computed from net_amount) and goes out with the next withdrawal.
+    amount_requested = gross_amount
+    net_amount, sub_dalasi_remainder = split_whole_dalasi(net_amount)
+    gross_amount = round(gross_amount - sub_dalasi_remainder, 2)
 
     # 5. Generate Payout Reference
     client_reference = f"PAYOUT-{int(time.time() * 1000)}"
@@ -469,6 +486,22 @@ async def withdraw_funds(
             payout_reference=client_reference,
             recipient_name=current_user.full_name # <--- Passes the real DB name
         )
+    except HexAIGatewayError as e:
+        # 4xx from the gateway is a permanent validation failure (e.g.
+        # amount_not_whole) — resending the same request cannot succeed, so
+        # pass it straight back to the caller instead of masking it as a 500.
+        http_status = 400 if 400 <= e.status_code < 500 else 502
+        logger.warning(
+            "Payout rejected by gateway",
+            extra={
+                "action": "payout_gateway_rejected",
+                "user_id": current_user.id,
+                "client_reference": client_reference,
+                "gateway_code": e.code,
+                "gateway_status": e.status_code,
+            },
+        )
+        raise HTTPException(status_code=http_status, detail=f"Payout Gateway Error: {e.message}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Payout Gateway Error: {str(e)}")
 
@@ -536,7 +569,7 @@ async def withdraw_funds(
         dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard/my-campaigns/{campaign.id}/withdrawals"
         send_email(
             current_user.email,
-            f"Withdrawal of {gross_amount:,.2f} GMD initiated — {campaign.title}",
+            f"Withdrawal of {gross_amount:,.0f} GMD initiated — {campaign.title}",
             render_withdrawal_initiated_email(
                 full_name=current_user.full_name or current_user.email,
                 campaign_title=campaign.title,
@@ -554,10 +587,13 @@ async def withdraw_funds(
     return {
         "message": "Withdrawal initiated. Funds are on their way to your Wave account.",
         "client_reference": client_reference,
+        "amount_requested": amount_requested,
         "gross_amount": gross_amount,
         "hexai_fee": hexai_fee,
         "platform_commission": platform_commission,
         "promo_fee_waived": fee_waived_amount,
+        # Kept in the campaign balance because payouts must be whole dalasi.
+        "sub_dalasi_carried_forward": sub_dalasi_remainder,
         "net_received": net_amount,
         "wave_number": current_user.wave_number,
         "status": "PENDING",

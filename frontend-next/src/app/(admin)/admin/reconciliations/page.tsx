@@ -151,7 +151,7 @@ export default function ReconciliationsPage() {
                   <div data-label="Reference" style={{ fontSize: 11, fontFamily: "monospace", color: "#8899aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.client_reference}</div>
                   <div data-label="Campaign" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.campaign_title}</div>
                   <div data-label="Donor" style={{ fontSize: 12, color: "#8899aa" }}>{d.donor_name || "Anonymous"}</div>
-                  <div data-label="Amount" style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{d.amount.toFixed(2)} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
+                  <div data-label="Amount" style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{d.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
                   <div data-label="Status"><StatusChip status={d.status} /></div>
                   <div data-label="Source" style={{ fontSize: 12, color: "#4a5568" }}>{d.reconciliation_source || "—"}</div>
                   <div data-label="Actions">

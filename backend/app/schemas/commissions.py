@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
+from app.schemas.money import WholeDalasi
+
 
 class CommissionSourceItem(BaseModel):
     """Individual commission source (campaign payout)."""
@@ -28,7 +30,7 @@ class CommissionSummary(BaseModel):
 
 class AdminCommissionWithdrawalRequest(BaseModel):
     """Request to withdraw platform commissions."""
-    amount: float
+    amount: WholeDalasi
     recipient_mobile: Optional[str] = None  # Optional: if admin wants it to their own account
     reason: Optional[str] = None
 

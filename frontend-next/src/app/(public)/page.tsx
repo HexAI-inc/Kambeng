@@ -7,6 +7,7 @@ import { motion, useInView } from "framer-motion";
 import { LockOutlined } from "@ant-design/icons";
 import { useHomeFeed, useSessionProfile } from "@/hooks/use-frontend-data";
 import EmailCaptureForm from "@/components/marketing/email-capture-form";
+import { fmtCompact, fmtGMDShort } from "@/lib/fmt";
 
 const BLUE = "#14784a";
 const GREEN = "#1f9960";
@@ -29,7 +30,7 @@ function fadeIn(delay = 0) {
   };
 }
 
-function CountUp({ to, suffix = "", prefix = "" }: { to: number; suffix?: string; prefix?: string }) {
+function CountUp({ to, format }: { to: number; format: (n: number) => string }) {
   const [val, setVal] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true });
@@ -38,17 +39,17 @@ function CountUp({ to, suffix = "", prefix = "" }: { to: number; suffix?: string
     if (!inView || to === 0) return;
     const duration = 1600;
     const start = Date.now();
+    let frame = 0;
     const tick = () => {
-      const elapsed = Date.now() - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
-      setVal(Math.round(ease * to));
-      if (progress < 1) requestAnimationFrame(tick);
+      const progress = Math.min((Date.now() - start) / duration, 1);
+      setVal(Math.round((1 - Math.pow(1 - progress, 3)) * to));
+      if (progress < 1) frame = requestAnimationFrame(tick);
     };
-    requestAnimationFrame(tick);
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
   }, [inView, to]);
 
-  return <span ref={ref}>{prefix}{val.toLocaleString()}{suffix}</span>;
+  return <span ref={ref}>{format(val)}</span>;
 }
 
 
@@ -158,28 +159,24 @@ export default function PublicHomePage() {
   const sidebarCampaigns = campaigns.slice(1, 4);
   const gridCampaigns = campaigns.slice(0, 6);
 
-  const fmt = (n: number) =>
-    n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M`
-    : n >= 1_000 ? `${(n / 1_000).toFixed(0)}K`
-    : String(n);
+  const compactGMD = (n: number) => `${fmtCompact(n)} GMD`;
+  const plain = (n: number) => n.toLocaleString("en-GB");
 
   return (
-    <div style={{ background: "#f6f4ef" }}>
+    <div>
 
       {/* ══════════════════════════════════════════════
           §1  HERO
       ══════════════════════════════════════════════ */}
       <section className="hero-section" style={{
         position: "relative", overflow: "hidden",
-        minHeight: "calc(100vh - 68px)",
-        display: "flex", alignItems: "center",
-        padding: "40px clamp(16px, 5vw, 72px)",
+                display: "flex", alignItems: "center",
+        padding: "56px clamp(16px, 5vw, 72px) 64px",
       }}>
         {/* Background */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
           <div style={{ position: "absolute", width: 900, height: 900, background: "radial-gradient(circle, rgba(20,120,74,0.08) 0%, transparent 60%)", left: "-25%", top: "-25%" }} />
           <div style={{ position: "absolute", width: 500, height: 500, background: "radial-gradient(circle, rgba(232,101,15,0.08) 0%, transparent 70%)", right: "5%", bottom: "5%" }} />
-          <div style={{ position: "absolute", inset: 0, opacity: 0.018, backgroundImage: `linear-gradient(rgba(20,120,74,1) 1px, transparent 1px), linear-gradient(90deg, rgba(20,120,74,1) 1px, transparent 1px)`, backgroundSize: "64px 64px" }} />
         </div>
 
         <div style={{ position: "relative", zIndex: 1, maxWidth: 1200, margin: "0 auto", width: "100%" }}>
@@ -242,13 +239,13 @@ export default function PublicHomePage() {
               <motion.div {...fadeUp(0.32)}>
                 <div style={{ display: "flex", gap: 0, background: "#fff", border: "1px solid rgba(21,32,26,0.08)", borderRadius: 14, overflow: "hidden" }}>
                   {[
-                    { label: "Total Raised", raw: stats?.total_raised ?? 0, display: `${fmt(stats?.total_raised ?? 0)} GMD` },
-                    { label: "Live Campaigns", raw: stats?.active_campaigns ?? 0, display: String(stats?.active_campaigns ?? 0) },
-                    { label: "Donations Made", raw: stats?.successful_donations ?? 0, display: String(stats?.successful_donations ?? 0) },
-                  ].map(({ label, raw, display }, i, arr) => (
+                    { label: "Total Raised", raw: stats?.total_raised ?? 0, format: compactGMD },
+                    { label: "Live Campaigns", raw: stats?.active_campaigns ?? 0, format: fmtCompact },
+                    { label: "Donations Made", raw: stats?.successful_donations ?? 0, format: fmtCompact },
+                  ].map(({ label, raw, format }, i, arr) => (
                     <div key={label} style={{ flex: 1, padding: "14px 10px", textAlign: "center", borderRight: i < arr.length - 1 ? "1px solid rgba(21,32,26,0.06)" : "none" }}>
                       <div style={{ fontSize: "clamp(14px, 1.8vw, 20px)", fontWeight: 800, color: "#15201a", lineHeight: 1, letterSpacing: "-0.03em" }}>
-                        {isLoading ? "—" : raw > 0 ? <CountUp to={raw} suffix={display.replace(/[\d,]/g, "").trim()} /> : display}
+                        {isLoading ? "—" : <CountUp to={raw} format={format} />}
                       </div>
                       <div style={{ fontSize: 11, color: "#56625b", marginTop: 4, fontWeight: 500 }}>{label}</div>
                     </div>
@@ -286,14 +283,16 @@ export default function PublicHomePage() {
         </div>
       </section>
 
+      <div className="woven-strip" aria-hidden="true" />
+
       {/* ══════════════════════════════════════════════
           §2  IMPACT / STATS  (stats-counter video)
       ══════════════════════════════════════════════ */}
-      <section style={{ borderTop: "1px solid rgba(21,32,26,0.06)", background: "#fff", overflow: "hidden", position: "relative" }}>
+      <section style={{ background: "#fff", overflow: "hidden", position: "relative" }}>
         <div style={{ position: "relative", maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "stretch", flexWrap: "wrap" as const }}>
 
           {/* Content side */}
-          <div style={{ flex: "1 1 340px", padding: "72px clamp(16px, 5vw, 72px)" }}>
+          <div style={{ flex: "1 1 340px", padding: "48px clamp(16px, 5vw, 72px)" }}>
             <motion.div {...fadeUp(0)} className="impact-row" style={{ display: "flex", flexWrap: "wrap" as const, gap: "32px 64px", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ flex: "1 1 360px" }}>
               <h2 style={{ fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 900, color: "#15201a", margin: "0 0 12px", letterSpacing: "-0.04em", lineHeight: 1.08 }}>
@@ -305,14 +304,14 @@ export default function PublicHomePage() {
               </div>
               <div style={{ flex: "1 1 380px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "rgba(21,32,26,0.08)", border: "1px solid rgba(21,32,26,0.08)", borderRadius: 16, overflow: "hidden" }}>
                 {[
-                  { label: "Dalasi raised", raw: stats?.total_raised ?? 0, suffix: " GMD", color: BLUE },
-                  { label: "Active campaigns", raw: stats?.active_campaigns ?? 0, suffix: "", color: ORANGE_INK },
-                  { label: "Successful donations", raw: stats?.successful_donations ?? 0, suffix: "", color: "#15201a" },
-                  { label: "Verified campaigners", raw: 0, suffix: "", display: "100%", color: BLUE },
-                ].map(({ label, raw, suffix, display, color }) => (
+                  { label: "Dalasi raised", raw: stats?.total_raised ?? 0, format: fmtGMDShort, color: BLUE },
+                  { label: "Active campaigns", raw: stats?.active_campaigns ?? 0, format: plain, color: ORANGE_INK },
+                  { label: "Successful donations", raw: stats?.successful_donations ?? 0, format: plain, color: "#15201a" },
+                  { label: "Verified campaigners", raw: 0, format: plain, display: "100%", color: BLUE },
+                ].map(({ label, raw, format, display, color }) => (
                   <div key={label} style={{ padding: "22px 24px", background: "#fcfbf8" }}>
                     <div style={{ fontSize: "clamp(22px, 2.6vw, 30px)", fontVariantNumeric: "tabular-nums", fontWeight: 800, color, letterSpacing: "-0.03em" }}>
-                      {display ?? (isLoading ? "—" : raw > 0 ? <CountUp to={raw} suffix={suffix} /> : `0${suffix}`)}
+                      {display ?? (isLoading ? "—" : <CountUp to={raw} format={format} />)}
                     </div>
                     <div style={{ fontSize: 11, color: "#626d66", marginTop: 4, fontWeight: 500 }}>{label}</div>
                   </div>
@@ -326,10 +325,10 @@ export default function PublicHomePage() {
       {/* ══════════════════════════════════════════════
           §3  HOW IT WORKS
       ══════════════════════════════════════════════ */}
-      <section style={{ padding: "96px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)", position: "relative", overflow: "hidden" }}>
+      <section style={{ padding: "64px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse 80% 40% at 50% 0%, rgba(20,120,74,0.04) 0%, transparent 60%)" }} />
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1 }}>
-          <motion.div {...fadeUp(0)} style={{ textAlign: "center", marginBottom: 64 }}>
+          <motion.div {...fadeUp(0)} style={{ textAlign: "center", marginBottom: 40 }}>
             <h2 style={{ fontSize: "clamp(26px, 4vw, 42px)", fontWeight: 900, color: "#15201a", margin: "0 0 14px", letterSpacing: "-0.04em", lineHeight: 1.07 }}>
               From Idea to Impact<br />in Four Steps
             </h2>
@@ -384,12 +383,12 @@ export default function PublicHomePage() {
       {/* ══════════════════════════════════════════════
           §4  TRUST — "Real Causes. Real Proof."
       ══════════════════════════════════════════════ */}
-      <section className="trust-section" style={{ padding: "96px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)", position: "relative", overflow: "hidden" }}>
+      <section className="trust-section" style={{ padding: "64px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", width: 700, height: 700, background: "radial-gradient(circle, rgba(31,153,96,0.05) 0%, transparent 70%)", right: "-15%", top: "0%", pointerEvents: "none" }} />
 
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1 }}>
           {/* Header with transparent video overlay */}
-          <div style={{ position: "relative", marginBottom: 56, overflow: "hidden", borderRadius: 20, padding: "56px 48px", background: "#e6f4ec", border: "1px solid rgba(20,120,74,0.14)" }}>
+          <div style={{ position: "relative", marginBottom: 24, overflow: "hidden", borderRadius: 20, padding: "40px clamp(20px, 4vw, 48px)", background: "#e6f4ec", border: "1px solid rgba(20,120,74,0.14)" }}>
             <div className="trust-header" style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 24 }}>
               <div>
                 <h2 style={{ fontSize: "clamp(26px, 4vw, 44px)", fontWeight: 900, color: "#15201a", margin: "0", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
@@ -455,9 +454,9 @@ export default function PublicHomePage() {
       {/* ══════════════════════════════════════════════
           §5  TESTIMONIALS
       ══════════════════════════════════════════════ */}
-      <section style={{ padding: "96px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)" }}>
+      <section style={{ padding: "64px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 52 }}>
+          <div style={{ textAlign: "center", marginBottom: 36 }}>
             <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "clamp(28px, 4vw, 40px)", letterSpacing: "-0.02em", color: "#15201a", margin: 0 }}>
               Real Causes. Real Gambians.
             </h2>
@@ -508,10 +507,10 @@ export default function PublicHomePage() {
       {/* ══════════════════════════════════════════════
           §6  PAYMENT METHODS
       ══════════════════════════════════════════════ */}
-      <section style={{ padding: "96px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)", position: "relative", overflow: "hidden" }}>
+      <section style={{ padding: "64px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse 60% 40% at 50% 100%, rgba(99,102,241,0.06) 0%, transparent 70%)" }} />
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1 }}>
-          <motion.div {...fadeUp(0)} style={{ textAlign: "center", marginBottom: 56 }}>
+          <motion.div {...fadeUp(0)} style={{ textAlign: "center", marginBottom: 40 }}>
             <h2 style={{ fontSize: "clamp(26px, 4vw, 42px)", fontWeight: 900, color: "#15201a", margin: "0 0 14px", letterSpacing: "-0.04em", lineHeight: 1.07 }}>
               However You Want to Give,<br />We&apos;ve Got You
             </h2>
@@ -566,9 +565,9 @@ export default function PublicHomePage() {
       {/* ══════════════════════════════════════════════
           §7  LIVE CAMPAIGNS GRID
       ══════════════════════════════════════════════ */}
-      <section style={{ padding: "96px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)" }}>
+      <section style={{ padding: "64px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 16, marginBottom: 40 }}>
+          <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 16, marginBottom: 28 }}>
             <div>
               <h2 style={{ fontSize: "clamp(24px, 3.5vw, 38px)", fontWeight: 900, color: "#15201a", margin: 0, letterSpacing: "-0.04em", lineHeight: 1.08 }}>
                 Campaigns Raising<br />Money Right Now
@@ -634,7 +633,7 @@ export default function PublicHomePage() {
       {/* ══════════════════════════════════════════════
           §7.5  EMAIL OPT-IN
       ══════════════════════════════════════════════ */}
-      <section style={{ padding: "0 clamp(16px, 5vw, 72px) 72px" }}>
+      <section style={{ padding: "0 clamp(16px, 5vw, 72px) 40px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <motion.div {...fadeUp(0)} style={{
             display: "flex", flexWrap: "wrap" as const, alignItems: "center", gap: 24,
@@ -659,12 +658,13 @@ export default function PublicHomePage() {
       {/* ══════════════════════════════════════════════
           §8  FINAL CTA  (loader loop bg video)
       ══════════════════════════════════════════════ */}
-      <section className="cta-section" style={{ padding: "0 clamp(16px, 5vw, 72px) 96px" }}>
+      <section className="cta-section" style={{ padding: "0 clamp(16px, 5vw, 72px) 64px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <motion.div {...fadeUp(0)} style={{
             position: "relative", overflow: "hidden",
-            borderRadius: 24, padding: "88px clamp(24px, 5vw, 80px)",
+            borderRadius: 24, padding: "64px clamp(24px, 5vw, 80px)",
             background: "#0f5e3a",
+            backgroundImage: "var(--tapestry)",
           }}>
             <div style={{ position: "absolute", width: 600, height: 600, background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)", left: "-15%", top: "-60%", pointerEvents: "none" }} />
             <div style={{ position: "absolute", width: 400, height: 400, background: "radial-gradient(circle, rgba(232,101,15,0.35) 0%, transparent 70%)", right: "-5%", bottom: "-60%", pointerEvents: "none" }} />
@@ -710,7 +710,7 @@ export default function PublicHomePage() {
           .pay-grid { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 640px) {
-          .hero-section { min-height: unset !important; padding: 28px clamp(16px, 5vw, 72px) 40px !important; }
+          .hero-section { padding: 28px clamp(16px, 5vw, 72px) 40px !important; }
           .hero-video-card { display: none !important; }
           .hero-more-campaigns { display: none !important; }
           .featured-card { aspect-ratio: unset !important; height: 240px !important; }

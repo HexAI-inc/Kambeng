@@ -14,7 +14,7 @@ type LegalPageProps = {
 
 export function LegalPage({ title, subtitle, lastUpdated, sections }: LegalPageProps) {
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "48px clamp(20px,5vw,64px) 80px" }}>
+    <div style={{ minHeight: "100vh", padding: "48px clamp(20px,5vw,64px) 80px" }}>
       <div style={{ maxWidth: 780, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 48 }}>

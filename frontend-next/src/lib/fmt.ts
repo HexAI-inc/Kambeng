@@ -19,6 +19,18 @@ export function fmtGMD(n: number | string): string {
   })} GMD`;
 }
 
+const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
+
+/** Short form for tight spaces: 950, 3K, 12.5K, 1.2M, 3.4B. */
+export function fmtCompact(n: number): string {
+  return compact.format(Math.round(n));
+}
+
+/** Full figure until it stops fitting, compact from a million up. */
+export function fmtGMDShort(n: number): string {
+  return Math.abs(n) >= 1_000_000 ? `${fmtCompact(n)} GMD` : fmtGMD(n);
+}
+
 /** Consistent date: "5 Jun 2026". */
 export function fmtDate(d: string | Date): string {
   return new Date(d).toLocaleDateString("en-GB", {

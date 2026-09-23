@@ -256,9 +256,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Footer */}
+      {isPublic && <div className="woven-strip" aria-hidden="true" />}
       {isPublic && (
         <footer className="site-footer" style={{
-          borderTop: "1px solid rgba(21,32,26,0.06)",
           padding: "48px clamp(16px, 4vw, 48px) 32px",
           background: "#eeebe4",
         }}>

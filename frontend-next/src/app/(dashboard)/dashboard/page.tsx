@@ -7,8 +7,8 @@ import { motion } from "framer-motion";
 import { useSessionProfile, useMyCampaigns, useKYCStatus } from "@/hooks/use-frontend-data";
 import ReferralWidget from "@/components/marketing/referral-widget";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
 
 function fadeUp(delay = 0) {
   return {
@@ -21,11 +21,11 @@ function fadeUp(delay = 0) {
 
 function CampaignStatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    ACTIVE:    { color: GREEN,     bg: "rgba(27,191,136,0.12)" },
-    DRAFT:     { color: "#fbbf24", bg: "rgba(251,191,36,0.10)" },
-    PAUSED:    { color: "#8899aa", bg: "rgba(255,255,255,0.06)" },
-    COMPLETED: { color: BLUE,      bg: "rgba(29,197,255,0.10)" },
-    REJECTED:  { color: "#ef4444", bg: "rgba(239,68,68,0.10)" },
+    ACTIVE:    { color: GREEN,     bg: "rgba(31,153,96,0.12)" },
+    DRAFT:     { color: "#d9870b", bg: "rgba(217,135,11,0.10)" },
+    PAUSED:    { color: "#56625b", bg: "rgba(21,32,26,0.06)" },
+    COMPLETED: { color: BLUE,      bg: "rgba(20,120,74,0.10)" },
+    REJECTED:  { color: "#d42f2f", bg: "rgba(239,68,68,0.10)" },
   };
   const s = map[status] ?? map.PAUSED;
   return (
@@ -39,17 +39,17 @@ function CampaignStatusChip({ status }: { status: string }) {
 }
 
 function Shimmer({ w = "100%", h = 16, r = 6 }: { w?: string | number; h?: number; r?: number }) {
-  return <div style={{ width: w, height: h, borderRadius: r, background: "rgba(255,255,255,0.06)", flexShrink: 0 }} />;
+  return <div style={{ width: w, height: h, borderRadius: r, background: "rgba(21,32,26,0.06)", flexShrink: 0 }} />;
 }
 
 function KYCStatusChip({ status }: { status: string }) {
   const normalized = status.toUpperCase();
   const map: Record<string, { label: string; color: string; bg: string }> = {
-    APPROVED: { label: "Approved", color: GREEN, bg: "rgba(27,191,136,0.12)" },
-    SUBMITTED: { label: "Submitted", color: BLUE, bg: "rgba(29,197,255,0.12)" },
-    REVIEWING: { label: "In review", color: BLUE, bg: "rgba(29,197,255,0.12)" },
-    REJECTED: { label: "Rejected", color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
-    NOT_SUBMITTED: { label: "Not submitted", color: "#f97316", bg: "rgba(249,115,22,0.12)" },
+    APPROVED: { label: "Approved", color: GREEN, bg: "rgba(31,153,96,0.12)" },
+    SUBMITTED: { label: "Submitted", color: BLUE, bg: "rgba(20,120,74,0.12)" },
+    REVIEWING: { label: "In review", color: BLUE, bg: "rgba(20,120,74,0.12)" },
+    REJECTED: { label: "Rejected", color: "#d42f2f", bg: "rgba(239,68,68,0.12)" },
+    NOT_SUBMITTED: { label: "Not submitted", color: "#e8650f", bg: "rgba(232,101,15,0.12)" },
   };
   const chip = map[normalized] ?? map.NOT_SUBMITTED;
   return (
@@ -95,24 +95,24 @@ export default function DashboardPage() {
     : n.toLocaleString();
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", overflowX: "hidden" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px clamp(16px, 4vw, 48px)", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* ── Welcome row ── */}
         <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 5 }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", marginBottom: 5 }}>
               {meLoading ? <Shimmer w={160} h={20} /> : `Welcome back, ${fullName.split(" ")[0]}`}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <span style={{
                 fontSize: 10, fontWeight: 700, color: BLUE, letterSpacing: "0.1em",
-                background: "rgba(29,197,255,0.1)", border: "1px solid rgba(29,197,255,0.2)",
+                background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.2)",
                 padding: "2px 8px", borderRadius: 20, textTransform: "uppercase" as const,
               }}>{role}</span>
               {!meLoading && (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: emailVerified ? GREEN : "#f97316" }}>
-                  <span style={{ width: 5, height: 5, borderRadius: "50%", display: "inline-block", background: emailVerified ? GREEN : "#f97316", boxShadow: `0 0 5px ${emailVerified ? GREEN : "#f97316"}` }} />
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: emailVerified ? GREEN : "#e8650f" }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", display: "inline-block", background: emailVerified ? GREEN : "#e8650f", boxShadow: `0 0 5px ${emailVerified ? GREEN : "#e8650f"}` }} />
                   {emailVerified ? "Verified" : "Email not verified"}
                 </span>
               )}
@@ -120,19 +120,19 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <Link href="/campaigns">
-              <button style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+              <button style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                 Browse
               </button>
             </Link>
             {canCreateCampaign ? (
               <Link href="/dashboard/my-campaigns/new">
-                <button style={{ padding: "9px 18px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(29,197,255,0.3)" }}>
+                <button style={{ padding: "9px 18px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(20,120,74,0.3)" }}>
                   + New Campaign
                 </button>
               </Link>
             ) : (
               <Link href="/dashboard/kyc">
-                <button style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(29,197,255,0.18)", background: "rgba(29,197,255,0.06)", color: "#f0f6ff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                <button style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(20,120,74,0.18)", background: "rgba(20,120,74,0.06)", color: "#15201a", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                   Complete KYC to create
                 </button>
               </Link>
@@ -146,47 +146,47 @@ export default function DashboardPage() {
           <div style={{
             gridColumn: "span 1",
             padding: "22px 24px",
-            background: "linear-gradient(135deg, rgba(27,191,136,0.12), rgba(27,191,136,0.04))",
-            border: "1px solid rgba(27,191,136,0.2)",
+            background: "linear-gradient(135deg, rgba(31,153,96,0.12), rgba(31,153,96,0.04))",
+            border: "1px solid rgba(31,153,96,0.2)",
             borderRadius: 16, position: "relative", overflow: "hidden",
           }}>
-            <div style={{ position: "absolute", right: -20, top: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(27,191,136,0.08)" }} />
+            <div style={{ position: "absolute", right: -20, top: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(31,153,96,0.08)" }} />
             <div style={{ fontSize: 11, color: GREEN, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>Total raised</div>
             {campaignsLoading
               ? <Shimmer h={28} w="60%" />
-              : <div style={{ fontSize: 26, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.04em", lineHeight: 1 }}>
+              : <div style={{ fontSize: 26, fontWeight: 900, color: "#15201a", letterSpacing: "-0.04em", lineHeight: 1 }}>
                   {fmt(totalRaised)}
                   <span style={{ fontSize: 13, fontWeight: 600, color: GREEN, marginLeft: 6 }}>GMD</span>
                 </div>
             }
-            <div style={{ fontSize: 12, color: "rgba(27,191,136,0.6)", marginTop: 6 }}>across {campaignCnt} campaign{campaignCnt !== 1 ? "s" : ""}</div>
+            <div style={{ fontSize: 12, color: "rgba(31,153,96,0.6)", marginTop: 6 }}>across {campaignCnt} campaign{campaignCnt !== 1 ? "s" : ""}</div>
           </div>
 
           <div style={{
             padding: "22px 24px",
-            background: "#0d1120",
-            border: "1px solid rgba(255,255,255,0.07)",
+            background: "#ffffff",
+            border: "1px solid rgba(21,32,26,0.07)",
             borderRadius: 16,
           }}>
-            <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>Active campaigns</div>
+            <div style={{ fontSize: 11, color: "#6e7872", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>Active campaigns</div>
             {campaignsLoading
               ? <Shimmer h={28} w="40%" />
-              : <div style={{ fontSize: 26, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.04em", lineHeight: 1 }}>
+              : <div style={{ fontSize: 26, fontWeight: 900, color: "#15201a", letterSpacing: "-0.04em", lineHeight: 1 }}>
                   {activeCnt}
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#4a5568", marginLeft: 6 }}>live</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#6e7872", marginLeft: 6 }}>live</span>
                 </div>
             }
-            <div style={{ fontSize: 12, color: "#4a5568", marginTop: 6 }}>{campaignCnt - activeCnt} others not live</div>
+            <div style={{ fontSize: 12, color: "#6e7872", marginTop: 6 }}>{campaignCnt - activeCnt} others not live</div>
           </div>
 
           <div style={{
             padding: "22px 24px",
-            background: "#0d1120",
-            border: "1px solid rgba(255,255,255,0.07)",
+            background: "#ffffff",
+            border: "1px solid rgba(21,32,26,0.07)",
             borderRadius: 16,
           }}>
-            <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>KYC status</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: kycApproved ? GREEN : kycPending ? BLUE : kycRejected ? "#ef4444" : "#f97316", letterSpacing: "-0.03em", lineHeight: 1, marginBottom: 6 }}>
+            <div style={{ fontSize: 11, color: "#6e7872", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>KYC status</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: kycApproved ? GREEN : kycPending ? BLUE : kycRejected ? "#d42f2f" : "#e8650f", letterSpacing: "-0.03em", lineHeight: 1, marginBottom: 6 }}>
               {kycLoading ? <Shimmer h={22} w="50%" /> : kycApproved ? "Approved" : kycPending ? "Under review" : kycRejected ? "Rejected" : "Start verification"}
             </div>
             {!kycLoading && <KYCStatusChip status={kycState} />}
@@ -199,19 +199,19 @@ export default function DashboardPage() {
 
           <div style={{
             padding: "22px 24px",
-            background: "#0d1120",
-            border: "1px solid rgba(255,255,255,0.07)",
+            background: "#ffffff",
+            border: "1px solid rgba(21,32,26,0.07)",
             borderRadius: 16,
           }}>
-            <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>Wave number</div>
+            <div style={{ fontSize: 11, color: "#6e7872", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>Wave number</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, overflow: "hidden" }}>
               <Image src="/wave.png" alt="Wave" width={20} height={20} style={{ objectFit: "contain", borderRadius: 4, flexShrink: 0 }} />
               {meLoading
                 ? <Shimmer h={18} w="70%" />
-                : <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", letterSpacing: "-0.01em", minWidth: 0, flex: 1, wordBreak: "break-all" }}>{wave}</div>
+                : <div style={{ fontSize: 14, fontWeight: 700, color: "#15201a", letterSpacing: "-0.01em", minWidth: 0, flex: 1, wordBreak: "break-all" }}>{wave}</div>
               }
             </div>
-            <div style={{ fontSize: 12, color: "#4a5568" }}>Linked wallet</div>
+            <div style={{ fontSize: 12, color: "#6e7872" }}>Linked wallet</div>
           </div>
         </motion.div>
 
@@ -221,25 +221,25 @@ export default function DashboardPage() {
           {/* Campaigns list */}
           <motion.div {...fadeUp(0.08)} style={{ minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>My campaigns</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a" }}>My campaigns</div>
               <Link href="/dashboard/my-campaigns" style={{ fontSize: 12, color: BLUE, fontWeight: 600 }}>Manage all →</Link>
             </div>
 
             {campaignsLoading ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {[1,2,3].map((i) => <div key={i} style={{ height: 76, borderRadius: 12, background: "rgba(255,255,255,0.04)" }} />)}
+                {[1,2,3].map((i) => <div key={i} style={{ height: 76, borderRadius: 12, background: "rgba(21,32,26,0.04)" }} />)}
               </div>
             ) : !campaigns || campaigns.length === 0 ? (
               /* Empty state — action-oriented, not sad */
               <div style={{
                 padding: "36px 28px",
-                background: "linear-gradient(135deg, rgba(29,197,255,0.04), rgba(7,155,212,0.02))",
-                border: "1px dashed rgba(29,197,255,0.2)",
+                background: "linear-gradient(135deg, rgba(20,120,74,0.04), rgba(15,94,58,0.02))",
+                border: "1px dashed rgba(20,120,74,0.2)",
                 borderRadius: 16, textAlign: "center",
               }}>
                 <div style={{
                   width: 56, height: 56, borderRadius: 14,
-                  background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.15)",
+                  background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   margin: "0 auto 16px",
                 }}>
@@ -247,17 +247,17 @@ export default function DashboardPage() {
                     <path d="M12 5v14M5 12h14" stroke={BLUE} strokeWidth="2" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>Launch your first campaign</div>
-                <div style={{ fontSize: 13, color: "#6b7a8d", lineHeight: 1.7, marginBottom: 20, maxWidth: 320, margin: "0 auto 20px" }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "#15201a", marginBottom: 6 }}>Launch your first campaign</div>
+                <div style={{ fontSize: 13, color: "#626d66", lineHeight: 1.7, marginBottom: 20, maxWidth: 320, margin: "0 auto 20px" }}>
                   Create a campaign, share your Wave QR code, and start collecting donations directly to your wallet.
                 </div>
                 {canCreateCampaign ? (
                   <Link href="/dashboard/my-campaigns/new">
                     <button style={{
                       padding: "11px 24px", borderRadius: 10, border: "none",
-                      background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                      background: `${BLUE}`,
                       color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                      boxShadow: "0 4px 16px rgba(29,197,255,0.3)",
+                      boxShadow: "0 4px 16px rgba(20,120,74,0.3)",
                     }}>
                       Create campaign
                     </button>
@@ -265,9 +265,9 @@ export default function DashboardPage() {
                 ) : (
                   <Link href="/dashboard/kyc">
                     <button style={{
-                      padding: "11px 24px", borderRadius: 10, border: "1px solid rgba(29,197,255,0.18)",
-                      background: "rgba(29,197,255,0.06)",
-                      color: "#f0f6ff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                      padding: "11px 24px", borderRadius: 10, border: "1px solid rgba(20,120,74,0.18)",
+                      background: "rgba(20,120,74,0.06)",
+                      color: "#15201a", fontSize: 13, fontWeight: 700, cursor: "pointer",
                     }}>
                       Complete KYC first
                     </button>
@@ -286,29 +286,29 @@ export default function DashboardPage() {
                         <div style={{
                           display: "flex", alignItems: "center", gap: 14,
                           padding: "14px 16px",
-                          background: "#0d1120",
-                          border: "1px solid rgba(255,255,255,0.07)",
+                          background: "#ffffff",
+                          border: "1px solid rgba(21,32,26,0.07)",
                           borderRadius: 12, cursor: "pointer",
                           transition: "border-color 0.2s, background 0.2s",
                           overflow: "hidden",
                         }}
                           onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(29,197,255,0.22)";
-                            (e.currentTarget as HTMLDivElement).style.background = "rgba(29,197,255,0.04)";
+                            (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(20,120,74,0.22)";
+                            (e.currentTarget as HTMLDivElement).style.background = "rgba(20,120,74,0.04)";
                           }}
                           onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.07)";
-                            (e.currentTarget as HTMLDivElement).style.background = "#0d1120";
+                            (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(21,32,26,0.07)";
+                            (e.currentTarget as HTMLDivElement).style.background = "#ffffff";
                           }}
                         >
                           {/* Thumbnail */}
-                          <div style={{ width: 48, height: 48, borderRadius: 10, overflow: "hidden", flexShrink: 0, position: "relative", background: "#1a2333" }}>
+                          <div style={{ width: 48, height: 48, borderRadius: 10, overflow: "hidden", flexShrink: 0, position: "relative", background: "#f1eee7" }}>
                             {c.cover_image_url ? (
                               <Image src={c.cover_image_url} alt={c.title} fill unoptimized sizes="48px" style={{ objectFit: "cover" }} />
                             ) : (
                               <div style={{
                                 width: "100%", height: "100%",
-                                background: "linear-gradient(135deg, #0d2340, #0a3d5c)",
+                                background: "linear-gradient(135deg, #e6f4ec, #cfe8da)",
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 fontSize: 18, fontWeight: 800, color: BLUE,
                               }}>
@@ -320,15 +320,15 @@ export default function DashboardPage() {
                           {/* Info */}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, minWidth: 0 }}>
-                              <span style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flex: 1 }}>
+                              <span style={{ fontSize: 14, fontWeight: 700, color: "#15201a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flex: 1 }}>
                                 {c.title}
                               </span>
                               <CampaignStatusChip status={c.status} />
                             </div>
-                            <div style={{ height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 99, overflow: "hidden" }}>
+                            <div style={{ height: 3, background: "rgba(21,32,26,0.07)", borderRadius: 99, overflow: "hidden" }}>
                               <div style={{
                                 height: "100%", width: `${pct ?? 0}%`,
-                                background: `linear-gradient(90deg, ${BLUE}, #079bd4)`,
+                                background: `linear-gradient(90deg, ${BLUE}, #0f5e3a)`,
                                 borderRadius: 99, transition: "width 0.8s ease",
                               }} />
                             </div>
@@ -339,13 +339,13 @@ export default function DashboardPage() {
                             <div style={{ fontSize: 15, fontWeight: 800, color: GREEN, letterSpacing: "-0.02em" }}>
                               {fmt(c.amount_raised)} GMD
                             </div>
-                            <div style={{ fontSize: 11, color: "#4a5568", marginTop: 2 }}>
+                            <div style={{ fontSize: 11, color: "#6e7872", marginTop: 2 }}>
                               {pct !== null ? `${pct}% funded` : "No target"}
                             </div>
                           </div>
 
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                            <path d="M9 18l6-6-6-6" stroke="#4a5568" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M9 18l6-6-6-6" stroke="#6e7872" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         </div>
                       </Link>
@@ -361,12 +361,12 @@ export default function DashboardPage() {
 
             {/* Account card */}
             <div style={{
-              background: "#0d1120",
-              border: "1px solid rgba(255,255,255,0.07)",
+              background: "#ffffff",
+              border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 14, overflow: "hidden",
             }}>
-              <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Account</span>
+              <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(21,32,26,0.05)" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Account</span>
               </div>
               {[
                 { label: "Name", value: fullName },
@@ -375,11 +375,11 @@ export default function DashboardPage() {
               ].map(({ label, value }, i, arr) => (
                 <div key={label} style={{
                   padding: "11px 18px",
-                  borderBottom: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                  borderBottom: i < arr.length - 1 ? "1px solid rgba(21,32,26,0.04)" : "none",
                   display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8,
                 }}>
-                  <span style={{ fontSize: 11, color: "#4a5568", flexShrink: 0 }}>{label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#c0ccd8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 140, textAlign: "right" }}>
+                  <span style={{ fontSize: 11, color: "#6e7872", flexShrink: 0 }}>{label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#36443c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 140, textAlign: "right" }}>
                     {meLoading ? "—" : value}
                   </span>
                 </div>
@@ -388,27 +388,27 @@ export default function DashboardPage() {
 
             {/* Quick actions */}
             <div style={{
-              background: "#0d1120",
-              border: "1px solid rgba(255,255,255,0.07)",
+              background: "#ffffff",
+              border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 14, overflow: "hidden",
             }}>
-              <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Actions</span>
+              <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(21,32,26,0.05)" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Actions</span>
               </div>
               {[
                 { label: "Manage campaigns", href: "/dashboard/my-campaigns", color: BLUE },
                 { label: "Upload KYC docs", href: "/dashboard/kyc", color: GREEN },
-                { label: "Edit my profile",  href: "/dashboard/profile",      color: "#a855f7" },
-                { label: "Browse campaigns", href: "/campaigns", color: "#6b7a8d" },
+                { label: "Edit my profile",  href: "/dashboard/profile",      color: "#8b3fd9" },
+                { label: "Browse campaigns", href: "/campaigns", color: "#626d66" },
               ].map(({ label, href, color }, i, arr) => (
                 <Link key={label} href={href} style={{ textDecoration: "none" }}>
                   <div style={{
                     padding: "11px 18px",
-                    borderBottom: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                    borderBottom: i < arr.length - 1 ? "1px solid rgba(21,32,26,0.04)" : "none",
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                     cursor: "pointer", transition: "background 0.15s",
                   }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)"; }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(21,32,26,0.03)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
                   >
                     <span style={{ fontSize: 12, fontWeight: 600, color }}>{label}</span>
@@ -426,18 +426,18 @@ export default function DashboardPage() {
             {!meLoading && !emailVerified && (
               <div style={{
                 padding: "14px 16px",
-                background: "rgba(249,115,22,0.07)",
-                border: "1px solid rgba(249,115,22,0.2)",
+                background: "rgba(232,101,15,0.07)",
+                border: "1px solid rgba(232,101,15,0.2)",
                 borderRadius: 12,
                 display: "flex", gap: 10, alignItems: "flex-start",
               }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
-                  <path d="M12 9v4M12 17h.01" stroke="#f97316" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#f97316" strokeWidth="1.8"/>
+                  <path d="M12 9v4M12 17h.01" stroke="#e8650f" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#e8650f" strokeWidth="1.8"/>
                 </svg>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#fb923c", marginBottom: 3 }}>Email not verified</div>
-                  <div style={{ fontSize: 11, color: "#6b7a8d", lineHeight: 1.6 }}>Some features are locked. Check your inbox to verify.</div>
+                  <div style={{ fontSize: 11, color: "#626d66", lineHeight: 1.6 }}>Some features are locked. Check your inbox to verify.</div>
                 </div>
               </div>
             )}

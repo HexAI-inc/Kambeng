@@ -7,10 +7,10 @@ import { isAxiosError } from "axios";
 import { api } from "@/lib/api";
 import { StyledSelect } from "@/components/ui/styled-select";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
-const RED = "#ef4444";
-const AMBER = "#f59e0b";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
+const RED = "#d42f2f";
+const AMBER = "#c97a06";
 
 const SOURCE_LABELS: Record<string, string> = {
   homepage: "Homepage",
@@ -74,8 +74,8 @@ function Chip({ label, color }: { label: string; color: string }) {
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "11px 14px", borderRadius: 10, boxSizing: "border-box",
-  border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)",
-  color: "#f0f6ff", fontSize: 13, outline: "none",
+  border: "1px solid rgba(21,32,26,0.12)", background: "rgba(21,32,26,0.05)",
+  color: "#15201a", fontSize: 13, outline: "none",
 };
 
 const PAGE_SIZE = 20;
@@ -165,11 +165,11 @@ export default function AdminMarketingPage() {
   ] : [];
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
     <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
       <motion.div {...fadeUp(0)}>
-        <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Marketing</h1>
-        <p style={{ margin: 0, fontSize: 13, color: "#8899aa" }}>
+        <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Marketing</h1>
+        <p style={{ margin: 0, fontSize: 13, color: "#56625b" }}>
           Email list growth by capture point, subscriber management, and the weekly broadcast.
         </p>
       </motion.div>
@@ -181,8 +181,8 @@ export default function AdminMarketingPage() {
       {/* Stat cards */}
       <motion.div {...fadeUp(0.05)} className="mkt-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
         {statCards.map((card) => (
-          <div key={card.label} style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "16px 18px" }}>
-            <div style={{ fontSize: 11, color: "#8899aa", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>{card.label}</div>
+          <div key={card.label} style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, padding: "16px 18px" }}>
+            <div style={{ fontSize: 11, color: "#56625b", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>{card.label}</div>
             <div style={{ fontSize: 26, fontWeight: 900, color: card.color, letterSpacing: "-0.03em" }}>{card.value.toLocaleString()}</div>
           </div>
         ))}
@@ -190,8 +190,8 @@ export default function AdminMarketingPage() {
 
       {/* By-source breakdown */}
       {stats && (
-        <motion.div {...fadeUp(0.1)} style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "18px 20px" }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 14 }}>Subscribers by capture point</div>
+        <motion.div {...fadeUp(0.1)} style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, padding: "18px 20px" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a", marginBottom: 14 }}>Subscribers by capture point</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {Object.entries(SOURCE_LABELS).map(([key, label]) => {
               const count = stats.by_source[key] ?? 0;
@@ -199,11 +199,11 @@ export default function AdminMarketingPage() {
               const pct = stats.total > 0 ? (count / stats.total) * 100 : 0;
               return (
                 <div key={key} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 130, fontSize: 12, color: "#8899aa", flexShrink: 0 }}>{label}</div>
-                  <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${BLUE}, #079bd4)`, borderRadius: 3 }} />
+                  <div style={{ width: 130, fontSize: 12, color: "#56625b", flexShrink: 0 }}>{label}</div>
+                  <div style={{ flex: 1, height: 6, background: "rgba(21,32,26,0.06)", borderRadius: 3, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${BLUE}, #0f5e3a)`, borderRadius: 3 }} />
                   </div>
-                  <div style={{ width: 110, textAlign: "right", fontSize: 12, color: "#f0f6ff", fontWeight: 700, flexShrink: 0 }}>
+                  <div style={{ width: 110, textAlign: "right", fontSize: 12, color: "#15201a", fontWeight: 700, flexShrink: 0 }}>
                     {count.toLocaleString()}
                     {recent > 0 && <span style={{ color: GREEN, fontWeight: 600 }}> (+{recent})</span>}
                   </div>
@@ -215,32 +215,32 @@ export default function AdminMarketingPage() {
       )}
 
       {/* Broadcast composer */}
-      <motion.div {...fadeUp(0.15)} style={{ background: "#0d1120", border: "1px solid rgba(29,197,255,0.18)", borderRadius: 14, padding: "20px" }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: "#f0f6ff", marginBottom: 4 }}>Weekly broadcast</div>
-        <p style={{ margin: "0 0 16px", fontSize: 12, color: "#8899aa", lineHeight: 1.6 }}>
+      <motion.div {...fadeUp(0.15)} style={{ background: "#ffffff", border: "1px solid rgba(20,120,74,0.18)", borderRadius: 14, padding: "20px" }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: "#15201a", marginBottom: 4 }}>Weekly broadcast</div>
+        <p style={{ margin: "0 0 16px", fontSize: 12, color: "#56625b", lineHeight: 1.6 }}>
           Goes to every confirmed subscriber with their personal unsubscribe link. Rotate formats: success story · campaign digest · organiser tip · community spotlight. Keep it under 150 words.
         </p>
         <div className="mkt-broadcast-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <div>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#8899aa", marginBottom: 5 }}>Subject line</label>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#56625b", marginBottom: 5 }}>Subject line</label>
             <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="e.g. A library got its books this week" style={inputStyle} />
           </div>
           <div>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#8899aa", marginBottom: 5 }}>Email heading</label>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#56625b", marginBottom: 5 }}>Email heading</label>
             <input value={heading} onChange={(e) => setHeading(e.target.value)} placeholder="e.g. One community, fully funded" style={inputStyle} />
           </div>
         </div>
         <div style={{ marginBottom: 12 }}>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#8899aa", marginBottom: 5 }}>Body (one paragraph per line)</label>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#56625b", marginBottom: 5 }}>Body (one paragraph per line)</label>
           <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={5} placeholder={"This week the Library Renovation Drive hit 99% of its target…\nEvery dalasi is tracked — see the receipts on the campaign page."} style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }} />
         </div>
         <div className="mkt-broadcast-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
           <div>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#8899aa", marginBottom: 5 }}>Button label (optional)</label>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#56625b", marginBottom: 5 }}>Button label (optional)</label>
             <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="See the campaign" style={inputStyle} />
           </div>
           <div>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#8899aa", marginBottom: 5 }}>Button link (optional)</label>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#56625b", marginBottom: 5 }}>Button link (optional)</label>
             <input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://kambeng.hexai.gm/campaigns/…" style={inputStyle} />
           </div>
         </div>
@@ -249,7 +249,7 @@ export default function AdminMarketingPage() {
           <button
             onClick={() => sendBroadcast(true)}
             disabled={sending || !canSend || !testRecipient.trim()}
-            style={{ padding: "11px 18px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.05)", color: "#f0f6ff", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: sending || !canSend || !testRecipient.trim() ? 0.5 : 1 }}
+            style={{ padding: "11px 18px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.15)", background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: sending || !canSend || !testRecipient.trim() ? 0.5 : 1 }}
           >
             Send test
           </button>
@@ -258,7 +258,7 @@ export default function AdminMarketingPage() {
               if (window.confirm("Send this broadcast to the entire confirmed list?")) sendBroadcast(false);
             }}
             disabled={sending || !canSend}
-            style={{ padding: "11px 22px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: sending || !canSend ? 0.5 : 1, boxShadow: "0 4px 16px rgba(29,197,255,0.25)" }}
+            style={{ padding: "11px 22px", borderRadius: 10, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: sending || !canSend ? 0.5 : 1, boxShadow: "0 4px 16px rgba(20,120,74,0.25)" }}
           >
             {sending ? "Sending…" : "Send to full list"}
           </button>
@@ -269,10 +269,10 @@ export default function AdminMarketingPage() {
       </motion.div>
 
       {/* Subscribers table */}
-      <motion.div {...fadeUp(0.2)} style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "18px 20px" }}>
+      <motion.div {...fadeUp(0.2)} style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, padding: "18px 20px" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginRight: "auto" }}>
-            Subscribers <span style={{ color: "#4a5568", fontWeight: 600 }}>({list.total.toLocaleString()})</span>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a", marginRight: "auto" }}>
+            Subscribers <span style={{ color: "#6e7872", fontWeight: 600 }}>({list.total.toLocaleString()})</span>
           </div>
           <input
             value={search}
@@ -292,20 +292,20 @@ export default function AdminMarketingPage() {
         </div>
 
         {loading ? (
-          <div style={{ padding: "32px 0", textAlign: "center", color: "#4a5568", fontSize: 13 }}>Loading…</div>
+          <div style={{ padding: "32px 0", textAlign: "center", color: "#6e7872", fontSize: 13 }}>Loading…</div>
         ) : list.items.length === 0 ? (
-          <div style={{ padding: "32px 0", textAlign: "center", color: "#4a5568", fontSize: 13 }}>No subscribers yet.</div>
+          <div style={{ padding: "32px 0", textAlign: "center", color: "#6e7872", fontSize: 13 }}>No subscribers yet.</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {list.items.map((row) => (
               <div key={row.id} className="mkt-sub-row" style={{
                 display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10,
                 padding: "12px 14px", borderRadius: 10,
-                background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)",
+                background: "rgba(21,32,26,0.02)", border: "1px solid rgba(21,32,26,0.06)",
               }}>
                 <div style={{ flex: "1 1 220px", minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#f0f6ff", overflow: "hidden", textOverflow: "ellipsis" }}>{row.email}</div>
-                  <div style={{ fontSize: 11, color: "#4a5568", marginTop: 2 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#15201a", overflow: "hidden", textOverflow: "ellipsis" }}>{row.email}</div>
+                  <div style={{ fontSize: 11, color: "#6e7872", marginTop: 2 }}>
                     {row.name ? `${row.name} · ` : ""}
                     {new Date(row.created_at).toLocaleDateString()}
                     {row.campaign_title ? ` · follows: ${row.campaign_title}` : ""}
@@ -318,7 +318,7 @@ export default function AdminMarketingPage() {
                   : row.confirmed
                     ? <Chip label="Confirmed" color={GREEN} />
                     : <Chip label="Pending" color={AMBER} />}
-                <span style={{ fontSize: 11, color: "#4a5568", whiteSpace: "nowrap" }}>seq {row.sequence_stage}</span>
+                <span style={{ fontSize: 11, color: "#6e7872", whiteSpace: "nowrap" }}>seq {row.sequence_stage}</span>
               </div>
             ))}
           </div>
@@ -327,12 +327,12 @@ export default function AdminMarketingPage() {
         {totalPages > 1 && (
           <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
             <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}
-              style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 12, cursor: "pointer", opacity: page <= 1 ? 0.4 : 1 }}>
+              style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 12, cursor: "pointer", opacity: page <= 1 ? 0.4 : 1 }}>
               ← Prev
             </button>
-            <span style={{ fontSize: 12, color: "#8899aa", alignSelf: "center" }}>{page} / {totalPages}</span>
+            <span style={{ fontSize: 12, color: "#56625b", alignSelf: "center" }}>{page} / {totalPages}</span>
             <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
-              style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 12, cursor: "pointer", opacity: page >= totalPages ? 0.4 : 1 }}>
+              style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 12, cursor: "pointer", opacity: page >= totalPages ? 0.4 : 1 }}>
               Next →
             </button>
           </div>

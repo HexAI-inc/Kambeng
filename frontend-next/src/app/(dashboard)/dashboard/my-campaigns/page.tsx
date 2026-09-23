@@ -5,8 +5,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useMyCampaigns } from "@/hooks/use-frontend-data";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
 
 function fadeUp(delay = 0) {
   return {
@@ -18,11 +18,11 @@ function fadeUp(delay = 0) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    ACTIVE:    { color: GREEN,     bg: "rgba(27,191,136,0.12)" },
-    DRAFT:     { color: "#fbbf24", bg: "rgba(251,191,36,0.10)" },
-    PAUSED:    { color: "#8899aa", bg: "rgba(255,255,255,0.06)" },
-    COMPLETED: { color: BLUE,      bg: "rgba(29,197,255,0.10)" },
-    REJECTED:  { color: "#ef4444", bg: "rgba(239,68,68,0.10)" },
+    ACTIVE:    { color: GREEN,     bg: "rgba(31,153,96,0.12)" },
+    DRAFT:     { color: "#d9870b", bg: "rgba(217,135,11,0.10)" },
+    PAUSED:    { color: "#56625b", bg: "rgba(21,32,26,0.06)" },
+    COMPLETED: { color: BLUE,      bg: "rgba(20,120,74,0.10)" },
+    REJECTED:  { color: "#d42f2f", bg: "rgba(239,68,68,0.10)" },
   };
   const s = map[status] ?? map.PAUSED;
   return (
@@ -38,7 +38,7 @@ function ModeChip({ mode }: { mode: string }) {
     <span style={{
       fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const,
       padding: "2px 8px", borderRadius: 20,
-      color: "#8899aa", background: "rgba(255,255,255,0.05)",
+      color: "#56625b", background: "rgba(21,32,26,0.05)",
     }}>{mode}</span>
   );
 }
@@ -57,30 +57,30 @@ export default function MyCampaignsPage() {
 
   return (
     <>
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
         <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 4 }}>My Campaigns</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d" }}>Manage images, proofs, goals, and QR codes for each campaign.</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", marginBottom: 4 }}>My Campaigns</div>
+            <div style={{ fontSize: 13, color: "#626d66" }}>Manage images, proofs, goals, and QR codes for each campaign.</div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <Link href="/campaigns">
               <button style={{
                 padding: "9px 18px", borderRadius: 9,
-                border: "1px solid rgba(255,255,255,0.1)",
-                background: "rgba(255,255,255,0.04)",
-                color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                border: "1px solid rgba(21,32,26,0.1)",
+                background: "rgba(21,32,26,0.04)",
+                color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer",
               }}>Browse campaigns</button>
             </Link>
             <Link href="/dashboard/my-campaigns/new">
               <button style={{
                 padding: "9px 18px", borderRadius: 9, border: "none",
-                background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                background: `${BLUE}`,
                 color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                boxShadow: "0 4px 14px rgba(29,197,255,0.3)",
+                boxShadow: "0 4px 14px rgba(20,120,74,0.3)",
               }}>+ Create campaign</button>
             </Link>
           </div>
@@ -91,7 +91,7 @@ export default function MyCampaignsPage() {
           <div style={{
             padding: "12px 16px", borderRadius: 10,
             background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.2)",
-            fontSize: 13, color: "#fca5a5",
+            fontSize: 13, color: "#b42323",
           }}>
             Unable to load your campaigns. Try refreshing.
           </div>
@@ -101,19 +101,19 @@ export default function MyCampaignsPage() {
         {!isLoading && campaigns && campaigns.length > 0 && (
           <motion.div {...fadeUp(0.06)} className="mc-summary" style={{
             display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2,
-            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
+            background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)",
             borderRadius: 14, overflow: "hidden",
           }}>
             {[
               { label: "Total raised", value: `${fmt(totalRaised)} GMD`, color: GREEN },
-              { label: "Campaigns", value: String(campaigns.length), color: "#f0f6ff" },
+              { label: "Campaigns", value: String(campaigns.length), color: "#15201a" },
               { label: "Active", value: String(activeCnt), color: BLUE },
             ].map(({ label, value, color }, i, arr) => (
               <div key={label} style={{
                 padding: "14px 20px",
-                borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
+                borderRight: i < arr.length - 1 ? "1px solid rgba(21,32,26,0.05)" : "none",
               }}>
-                <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, marginBottom: 6 }}>{label}</div>
+                <div style={{ fontSize: 10, color: "#6e7872", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, marginBottom: 6 }}>{label}</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color, letterSpacing: "-0.03em" }}>{value}</div>
               </div>
             ))}
@@ -124,7 +124,7 @@ export default function MyCampaignsPage() {
         {isLoading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {[1, 2, 3].map((i) => (
-              <div key={i} style={{ height: 130, borderRadius: 14, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }} />
+              <div key={i} style={{ height: 130, borderRadius: 14, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.06)" }} />
             ))}
           </div>
         ) : campaigns && campaigns.length > 0 ? (
@@ -135,23 +135,23 @@ export default function MyCampaignsPage() {
                 : null;
               return (
                 <motion.div key={c.id} {...fadeUp(0.04 * idx)} style={{
-                  background: "#0d1120",
-                  border: "1px solid rgba(255,255,255,0.07)",
+                  background: "#ffffff",
+                  border: "1px solid rgba(21,32,26,0.07)",
                   borderRadius: 14, overflow: "hidden",
                   transition: "border-color 0.2s",
                 }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(29,197,255,0.18)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.07)"; }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(20,120,74,0.18)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(21,32,26,0.07)"; }}
                 >
                   <div style={{ display: "flex", gap: 0 }}>
                     {/* Thumbnail strip */}
-                    <div className="mc-thumb" style={{ width: 100, minHeight: 130, flexShrink: 0, position: "relative", background: "#1a2333" }}>
+                    <div className="mc-thumb" style={{ width: 100, minHeight: 130, flexShrink: 0, position: "relative", background: "#f1eee7" }}>
                       {c.cover_image_url ? (
                         <Image src={c.cover_image_url} alt={c.title} fill unoptimized sizes="100px" style={{ objectFit: "cover" }} />
                       ) : (
                         <div style={{
                           width: "100%", height: "100%", minHeight: 130,
-                          background: "linear-gradient(135deg, #0d2340, #0a3d5c)",
+                          background: "linear-gradient(135deg, #e6f4ec, #cfe8da)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: 28, fontWeight: 800, color: BLUE,
                         }}>
@@ -165,26 +165,26 @@ export default function MyCampaignsPage() {
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                         <StatusChip status={c.status} />
                         <ModeChip mode={c.mode} />
-                        <span style={{ fontSize: 11, color: "#4a5568" }}>/{c.slug}</span>
+                        <span style={{ fontSize: 11, color: "#6e7872" }}>/{c.slug}</span>
                       </div>
 
-                      <div style={{ fontSize: 16, fontWeight: 800, color: "#f0f6ff", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: "#15201a", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
                         {c.title}
                       </div>
 
-                      <div style={{ fontSize: 12, color: "#6b7a8d", lineHeight: 1.6, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>
+                      <div style={{ fontSize: 12, color: "#626d66", lineHeight: 1.6, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>
                         {c.description}
                       </div>
 
                       {/* Progress */}
                       <div>
-                        <div style={{ height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 99, overflow: "hidden", marginBottom: 4 }}>
+                        <div style={{ height: 3, background: "rgba(21,32,26,0.07)", borderRadius: 99, overflow: "hidden", marginBottom: 4 }}>
                           <div style={{
                             height: "100%", width: `${pct ?? 0}%`,
-                            background: `linear-gradient(90deg, ${BLUE}, #079bd4)`, borderRadius: 99,
+                            background: `linear-gradient(90deg, ${BLUE}, #0f5e3a)`, borderRadius: 99,
                           }} />
                         </div>
-                        <div style={{ fontSize: 11, color: "#4a5568" }}>
+                        <div style={{ fontSize: 11, color: "#6e7872" }}>
                           <span style={{ color: GREEN, fontWeight: 700 }}>{fmt(c.amount_raised)} GMD</span>
                           {c.target_amount ? ` raised · ${pct}% of ${fmt(c.target_amount)} GMD goal` : " raised · no target set"}
                         </div>
@@ -202,10 +202,10 @@ export default function MyCampaignsPage() {
                           <Link key={label} href={href}>
                             <button style={{
                               padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                              border: primary ? "none" : "1px solid rgba(255,255,255,0.1)",
-                              background: primary ? `linear-gradient(135deg, ${BLUE}, #079bd4)` : "rgba(255,255,255,0.04)",
-                              color: primary ? "#fff" : "#8899aa",
-                              boxShadow: primary ? "0 2px 10px rgba(29,197,255,0.25)" : "none",
+                              border: primary ? "none" : "1px solid rgba(21,32,26,0.1)",
+                              background: primary ? `${BLUE}` : "rgba(21,32,26,0.04)",
+                              color: primary ? "#fff" : "#56625b",
+                              boxShadow: primary ? "0 2px 10px rgba(20,120,74,0.25)" : "none",
                             }}>
                               {label}
                             </button>
@@ -221,37 +221,37 @@ export default function MyCampaignsPage() {
         ) : (
           <motion.div {...fadeUp(0.08)} style={{
             padding: "52px 28px", textAlign: "center",
-            background: "linear-gradient(135deg, rgba(29,197,255,0.03), rgba(7,155,212,0.01))",
-            border: "1px dashed rgba(29,197,255,0.18)", borderRadius: 16,
+            background: "linear-gradient(135deg, rgba(20,120,74,0.03), rgba(15,94,58,0.01))",
+            border: "1px dashed rgba(20,120,74,0.18)", borderRadius: 16,
           }}>
             <div style={{
               width: 56, height: 56, borderRadius: 14, margin: "0 auto 16px",
-              background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.15)",
+              background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path d="M12 5v14M5 12h14" stroke={BLUE} strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>No campaigns yet</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d", maxWidth: 340, margin: "0 auto 24px" }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#15201a", marginBottom: 6 }}>No campaigns yet</div>
+            <div style={{ fontSize: 13, color: "#626d66", maxWidth: 340, margin: "0 auto 24px" }}>
               Start your first campaign and begin raising funds for your cause.
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               <Link href="/dashboard/my-campaigns/new">
                 <button style={{
                   padding: "11px 24px", borderRadius: 10, border: "none",
-                  background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                  background: `${BLUE}`,
                   color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                  boxShadow: "0 4px 16px rgba(29,197,255,0.3)",
+                  boxShadow: "0 4px 16px rgba(20,120,74,0.3)",
                 }}>+ Create campaign</button>
               </Link>
               <Link href="/campaigns">
                 <button style={{
                   padding: "11px 24px", borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  border: "1px solid rgba(21,32,26,0.1)",
+                  background: "rgba(21,32,26,0.04)",
+                  color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer",
                 }}>Browse campaigns</button>
               </Link>
             </div>

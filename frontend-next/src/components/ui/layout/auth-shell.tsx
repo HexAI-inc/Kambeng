@@ -21,7 +21,7 @@ export function AuthShell({ title, description, eyebrow, children, aside }: Auth
       {/* Left panel */}
       <div style={{ flex: 1, minWidth: 0, display: "grid", gap: 18, alignContent: "start" }}>
         {eyebrow ? (
-          <span style={{ fontSize: 12, color: "#1dc5ff", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          <span style={{ fontSize: 12, color: "#14784a", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
             {eyebrow}
           </span>
         ) : null}
@@ -29,13 +29,13 @@ export function AuthShell({ title, description, eyebrow, children, aside }: Auth
           margin: 0,
           fontSize: "clamp(2rem, 5vw, 3.5rem)",
           fontWeight: 800,
-          color: "#f0f6ff",
+          color: "#15201a",
           lineHeight: 1.05,
           letterSpacing: "-0.03em",
         }}>
           {title}
         </h1>
-        <p style={{ fontSize: 16, lineHeight: 1.7, maxWidth: 460, color: "#8899aa", margin: 0 }}>
+        <p style={{ fontSize: 16, lineHeight: 1.7, maxWidth: 460, color: "#56625b", margin: 0 }}>
           {description}
         </p>
         {aside}
@@ -46,10 +46,10 @@ export function AuthShell({ title, description, eyebrow, children, aside }: Auth
         width: "100%",
         maxWidth: 480,
         marginLeft: "auto",
-        background: "#111827",
+        background: "#ffffff",
         borderRadius: 20,
-        border: "1px solid rgba(255,255,255,0.08)",
-        boxShadow: "0 24px 80px rgba(0,0,0,0.4)",
+        border: "1px solid rgba(21,32,26,0.08)",
+        boxShadow: "0 24px 80px rgba(21,32,26,0.12)",
         padding: "32px",
         display: "flex",
         flexDirection: "column",

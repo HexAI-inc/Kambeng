@@ -9,8 +9,8 @@ import { api } from "@/lib/api";
 import { useAdminPayoutsOverview } from "@/hooks/use-frontend-data";
 import type { AdminPayoutOverview } from "@/types/frontend";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
 
 function fadeUp(delay = 0) {
   return { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay, ease: "easeOut" as const } };
@@ -32,10 +32,10 @@ const actionBtnBase: React.CSSProperties = {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    PENDING:   { color: "#f97316", bg: "rgba(249,115,22,0.1)",  border: "rgba(249,115,22,0.25)" },
-    SUCCEEDED: { color: GREEN,     bg: "rgba(27,191,136,0.1)",  border: "rgba(27,191,136,0.25)" },
-    FAILED:    { color: "#ef4444", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)" },
-    REVERSED:  { color: "#a855f7", bg: "rgba(168,85,247,0.1)",  border: "rgba(168,85,247,0.25)" },
+    PENDING:   { color: "#e8650f", bg: "rgba(232,101,15,0.1)",  border: "rgba(232,101,15,0.25)" },
+    SUCCEEDED: { color: GREEN,     bg: "rgba(31,153,96,0.1)",  border: "rgba(31,153,96,0.25)" },
+    FAILED:    { color: "#d42f2f", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)" },
+    REVERSED:  { color: "#8b3fd9", bg: "rgba(168,85,247,0.1)",  border: "rgba(168,85,247,0.25)" },
   };
   const s = map[status] ?? map.PENDING;
   return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>{status}</span>;
@@ -121,29 +121,29 @@ export default function PayoutsPage() {
   const pending    = rows.filter((p) => p.status === "PENDING").length;
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
-          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, maxWidth: 420, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : "#ef4444", fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
+          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, maxWidth: 420, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(31,153,96,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(31,153,96,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : "#d42f2f", fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(21,32,26,0.12)" }}>
             {toast.msg}
           </div>
         )}
 
         <motion.div {...fadeUp(0)}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Payouts</div>
-          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Campaign withdrawal history — verify pending payouts against HPG or resolve them manually</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Payouts</div>
+          <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>Campaign withdrawal history — verify pending payouts against HPG or resolve them manually</div>
         </motion.div>
 
         <motion.div {...fadeUp(0.06)}>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 12, overflow: "hidden" }}>
             {[
-              { label: "Total paid out (gross)", value: `${totalGross.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: "#f0f6ff" },
+              { label: "Total paid out (gross)", value: `${totalGross.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: "#15201a" },
               { label: "Net received",           value: `${totalNet.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,   color: GREEN },
-              { label: "Pending payouts",        value: String(pending),                color: pending > 0 ? "#f97316" : "#4a5568" },
+              { label: "Pending payouts",        value: String(pending),                color: pending > 0 ? "#e8650f" : "#6e7872" },
             ].map(({ label, value, color }, i, arr) => (
-              <div key={label} style={{ padding: "14px 20px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-                <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+              <div key={label} style={{ padding: "14px 20px", borderRight: i < arr.length - 1 ? "1px solid rgba(21,32,26,0.05)" : "none" }}>
+                <div style={{ fontSize: 10, color: "#6e7872", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color }}>{value}</div>
               </div>
             ))}
@@ -151,26 +151,26 @@ export default function PayoutsPage() {
         </motion.div>
 
         <motion.div {...fadeUp(0.1)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
-            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>All payouts</div>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, overflowX: "auto" }}>
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(21,32,26,0.06)", fontSize: 13, fontWeight: 700, color: "#15201a" }}>All payouts</div>
             <div className="admin-table-wrap" style={{ minWidth: 920 }}>
-              <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: TABLE_GRID, gap: "0 12px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+              <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: TABLE_GRID, gap: "0 12px", padding: "10px 18px", borderBottom: "1px solid rgba(21,32,26,0.06)", fontSize: 10, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                 {["Reference", "Campaign", "Recipient", "Gross", "Net", "Status", "Date", "Actions"].map((h) => <div key={h}>{h}</div>)}
               </div>
               {rows.length === 0 ? (
-                <div style={{ padding: "36px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No payouts yet</div>
+                <div style={{ padding: "36px 24px", textAlign: "center", color: "#6e7872", fontSize: 14 }}>No payouts yet</div>
               ) : rows.map((p: AdminPayoutOverview) => (
-                <div key={p.payout_id} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: TABLE_GRID, gap: "0 12px", padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
+                <div key={p.payout_id} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: TABLE_GRID, gap: "0 12px", padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(21,32,26,0.04)", transition: "background 0.15s" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(21,32,26,0.02)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                 >
-                  <div data-label="Reference" style={{ fontSize: 11, fontFamily: "monospace", color: "#8899aa", overflowWrap: "anywhere" }}>{p.client_reference ?? `#${p.payout_id}`}</div>
-                  <div data-label="Campaign" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600 }}>{p.campaign_title}</div>
-                  <div data-label="Recipient" style={{ fontSize: 12, color: "#8899aa" }}>{p.user_name}</div>
-                  <div data-label="Gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(p.gross_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
-                  <div data-label="Net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
+                  <div data-label="Reference" style={{ fontSize: 11, fontFamily: "monospace", color: "#56625b", overflowWrap: "anywhere" }}>{p.client_reference ?? `#${p.payout_id}`}</div>
+                  <div data-label="Campaign" style={{ fontSize: 13, color: "#15201a", fontWeight: 600 }}>{p.campaign_title}</div>
+                  <div data-label="Recipient" style={{ fontSize: 12, color: "#56625b" }}>{p.user_name}</div>
+                  <div data-label="Gross" style={{ fontSize: 13, color: "#15201a" }}>{Number(p.gross_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#6e7872" }}>GMD</span></div>
+                  <div data-label="Net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#6e7872" }}>GMD</span></div>
                   <div data-label="Status"><StatusChip status={p.status} /></div>
-                  <div data-label="Date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</div>
+                  <div data-label="Date" style={{ fontSize: 11, color: "#6e7872" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</div>
                   <div data-label="Actions" className="payout-actions" style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 6, minWidth: 0 }}>
                     {p.status === "PENDING" ? (
                       <>
@@ -178,7 +178,7 @@ export default function PayoutsPage() {
                           onClick={() => void verifyPayout(p)}
                           disabled={busyId === p.payout_id}
                           title="Check the real status with the payment gateway"
-                          style={{ ...actionBtnBase, border: "1px solid rgba(29,197,255,0.25)", background: "rgba(29,197,255,0.08)", color: BLUE, opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                          style={{ ...actionBtnBase, border: "1px solid rgba(20,120,74,0.25)", background: "rgba(20,120,74,0.08)", color: BLUE, opacity: busyId === p.payout_id ? 0.6 : 1 }}
                         >
                           {busyId === p.payout_id ? "…" : "Verify with HPG"}
                         </button>
@@ -186,7 +186,7 @@ export default function PayoutsPage() {
                           onClick={() => void markPaid(p)}
                           disabled={busyId === p.payout_id}
                           title="Manually mark as succeeded (audited)"
-                          style={{ ...actionBtnBase, border: "1px solid rgba(27,191,136,0.25)", background: "rgba(27,191,136,0.08)", color: GREEN, opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                          style={{ ...actionBtnBase, border: "1px solid rgba(31,153,96,0.25)", background: "rgba(31,153,96,0.08)", color: GREEN, opacity: busyId === p.payout_id ? 0.6 : 1 }}
                         >
                           Mark paid
                         </button>
@@ -197,7 +197,7 @@ export default function PayoutsPage() {
                           onClick={() => void verifyPayout(p)}
                           disabled={busyId === p.payout_id}
                           title="Re-check the gateway status"
-                          style={{ ...actionBtnBase, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                          style={{ ...actionBtnBase, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", opacity: busyId === p.payout_id ? 0.6 : 1 }}
                         >
                           {busyId === p.payout_id ? "…" : "Re-verify"}
                         </button>
@@ -206,7 +206,7 @@ export default function PayoutsPage() {
                             onClick={() => void reversePayout(p)}
                             disabled={busyId === p.payout_id}
                             title="Reverse via HPG (Wave rail, 3-day window)"
-                            style={{ ...actionBtnBase, border: "1px solid rgba(168,85,247,0.25)", background: "rgba(168,85,247,0.08)", color: "#a855f7", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                            style={{ ...actionBtnBase, border: "1px solid rgba(168,85,247,0.25)", background: "rgba(168,85,247,0.08)", color: "#8b3fd9", opacity: busyId === p.payout_id ? 0.6 : 1 }}
                           >
                             Reverse
                           </button>

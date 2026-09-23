@@ -30,13 +30,13 @@ function matchesFilter(
 function ProgressBar({ value, max }: { value: number; max: number }) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
-    <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
+    <div style={{ height: 4, background: "rgba(21,32,26,0.08)", borderRadius: 2, overflow: "hidden" }}>
       <div style={{
         height: "100%",
         width: `${pct}%`,
         background: pct >= 100
-          ? "linear-gradient(90deg, #1bbf88, #0fa870)"
-          : "linear-gradient(90deg, #1dc5ff, #079bd4)",
+          ? "linear-gradient(90deg, #1f9960, #0fa870)"
+          : "linear-gradient(90deg, #14784a, #0f5e3a)",
         borderRadius: 2,
         transition: "width 0.6s ease",
       }} />
@@ -47,18 +47,18 @@ function ProgressBar({ value, max }: { value: number; max: number }) {
 function CampaignSkeleton() {
   return (
     <div style={{
-      background: "#111827",
+      background: "#ffffff",
       borderRadius: 16,
       overflow: "hidden",
-      border: "1px solid rgba(255,255,255,0.06)",
+      border: "1px solid rgba(21,32,26,0.06)",
     }}>
-      <div style={{ height: 200, background: "rgba(255,255,255,0.04)" }} />
+      <div style={{ height: 200, background: "rgba(21,32,26,0.04)" }} />
       <div style={{ padding: 20 }}>
-        <div style={{ height: 12, width: "40%", background: "rgba(255,255,255,0.06)", borderRadius: 6, marginBottom: 12 }} />
-        <div style={{ height: 18, width: "80%", background: "rgba(255,255,255,0.06)", borderRadius: 6, marginBottom: 8 }} />
-        <div style={{ height: 14, width: "60%", background: "rgba(255,255,255,0.04)", borderRadius: 6, marginBottom: 16 }} />
-        <div style={{ height: 4, background: "rgba(255,255,255,0.04)", borderRadius: 2, marginBottom: 12 }} />
-        <div style={{ height: 36, background: "rgba(255,255,255,0.04)", borderRadius: 10 }} />
+        <div style={{ height: 12, width: "40%", background: "rgba(21,32,26,0.06)", borderRadius: 6, marginBottom: 12 }} />
+        <div style={{ height: 18, width: "80%", background: "rgba(21,32,26,0.06)", borderRadius: 6, marginBottom: 8 }} />
+        <div style={{ height: 14, width: "60%", background: "rgba(21,32,26,0.04)", borderRadius: 6, marginBottom: 16 }} />
+        <div style={{ height: 4, background: "rgba(21,32,26,0.04)", borderRadius: 2, marginBottom: 12 }} />
+        <div style={{ height: 36, background: "rgba(21,32,26,0.04)", borderRadius: 10 }} />
       </div>
     </div>
   );
@@ -77,10 +77,10 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
       transition={{ delay: index * 0.05, duration: 0.4 }}
       whileHover={{ y: -4 }}
       style={{
-        background: "#111827",
+        background: "#ffffff",
         borderRadius: 16,
         overflow: "hidden",
-        border: "1px solid rgba(255,255,255,0.06)",
+        border: "1px solid rgba(21,32,26,0.06)",
         transition: "box-shadow 0.3s ease, border-color 0.3s ease",
         cursor: "pointer",
         height: "100%",
@@ -88,16 +88,16 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
         flexDirection: "column",
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(29,197,255,0.3)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 40px rgba(29,197,255,0.12)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(20,120,74,0.3)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 40px rgba(20,120,74,0.12)";
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.06)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(21,32,26,0.06)";
         (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
       }}
     >
       {/* Cover */}
-      <div className="campaign-cover" style={{ position: "relative", height: 200, flexShrink: 0, overflow: "hidden", background: "#1a2333" }}>
+      <div className="campaign-cover" style={{ position: "relative", height: 200, flexShrink: 0, overflow: "hidden", background: "#f1eee7" }}>
         {campaign.cover_image_url ? (
           <Image
             src={campaign.cover_image_url}
@@ -110,15 +110,15 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
         ) : (
           <div style={{
             position: "absolute", inset: 0,
-            background: "linear-gradient(135deg, #0d2340 0%, #0a3d5c 50%, #061e30 100%)",
+            background: "linear-gradient(135deg, #e6f4ec 0%, #cfe8da 50%, #eef6f1 100%)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <div style={{
               width: 56, height: 56, borderRadius: 14,
-              background: "rgba(29,197,255,0.1)",
-              border: "1px solid rgba(29,197,255,0.15)",
+              background: "rgba(20,120,74,0.1)",
+              border: "1px solid rgba(20,120,74,0.15)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 24, fontWeight: 900, color: "#1dc5ff",
+              fontSize: 24, fontWeight: 900, color: "#14784a",
             }}>
               {campaign.title.charAt(0).toUpperCase()}
             </div>
@@ -134,9 +134,9 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
           letterSpacing: "0.05em",
           textTransform: "uppercase",
           background: campaign.status === "ACTIVE"
-            ? "rgba(27,191,136,0.9)"
-            : "rgba(255,255,255,0.12)",
-          color: campaign.status === "ACTIVE" ? "#fff" : "#8899aa",
+            ? "rgba(31,153,96,0.9)"
+            : "rgba(21,32,26,0.12)",
+          color: campaign.status === "ACTIVE" ? "#fff" : "#56625b",
           backdropFilter: "blur(8px)",
         }}>
           {campaign.status}
@@ -148,7 +148,7 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
             borderRadius: 20,
             fontSize: 11,
             fontWeight: 700,
-            background: "rgba(251,191,36,0.9)",
+            background: "rgba(217,135,11,0.9)",
             color: "#000",
             backdropFilter: "blur(8px)",
           }}>
@@ -161,8 +161,8 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
       <div style={{ padding: "18px 20px 20px", display: "flex", flexDirection: "column", flex: 1, gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{
-            fontSize: 11, fontWeight: 600, color: "#1dc5ff",
-            background: "rgba(29,197,255,0.1)",
+            fontSize: 11, fontWeight: 600, color: "#14784a",
+            background: "rgba(20,120,74,0.1)",
             padding: "2px 8px", borderRadius: 4,
             textTransform: "uppercase", letterSpacing: "0.05em",
           }}>
@@ -172,7 +172,7 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
 
         <h3 style={{
           margin: 0, fontSize: 16, fontWeight: 700,
-          color: "#f0f6ff", lineHeight: 1.3,
+          color: "#15201a", lineHeight: 1.3,
           display: "-webkit-box",
           WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",
@@ -182,7 +182,7 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
         </h3>
 
         <p style={{
-          margin: 0, fontSize: 13, color: "#8899aa", lineHeight: 1.6,
+          margin: 0, fontSize: 13, color: "#56625b", lineHeight: 1.6,
           display: "-webkit-box",
           WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",
@@ -196,10 +196,10 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
         <div style={{ marginTop: 4 }}>
           <ProgressBar value={campaign.amount_raised} max={campaign.target_amount ?? 0} />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: funded ? "#1bbf88" : "#1dc5ff" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: funded ? "#1f9960" : "#14784a" }}>
               {campaign.amount_raised.toLocaleString()} GMD
             </span>
-            <span style={{ fontSize: 12, color: "#4a5568" }}>
+            <span style={{ fontSize: 12, color: "#6e7872" }}>
               of {(campaign.target_amount ?? 0).toLocaleString()} GMD
             </span>
           </div>
@@ -212,16 +212,16 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
               width: "100%",
               padding: "9px 0",
               borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.12)",
+              border: "1px solid rgba(21,32,26,0.12)",
               background: "transparent",
-              color: "#f0f6ff",
+              color: "#15201a",
               fontSize: 13,
               fontWeight: 500,
               cursor: "pointer",
               transition: "all 0.2s",
             }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; e.currentTarget.style.color = "#1dc5ff"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "#f0f6ff"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; e.currentTarget.style.color = "#14784a"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.12)"; e.currentTarget.style.color = "#15201a"; }}
             >
               View Story
             </button>
@@ -232,12 +232,12 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
               padding: "9px 0",
               borderRadius: 10,
               border: "none",
-              background: "linear-gradient(135deg, #1dc5ff, #079bd4)",
+              background: "#14784a",
               color: "#fff",
               fontSize: 13,
               fontWeight: 600,
               cursor: "pointer",
-              boxShadow: "0 4px 12px rgba(29,197,255,0.25)",
+              boxShadow: "0 4px 12px rgba(20,120,74,0.25)",
               transition: "opacity 0.2s",
             }}
               onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
@@ -270,7 +270,7 @@ export default function CampaignDiscoveryPage() {
   }, [activeFilter, data, query]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0f1a" }}>
+    <div style={{ minHeight: "100vh", background: "#f6f4ef" }}>
       {/* Hero header */}
       <div className="campaigns-hero" style={{
         padding: "60px clamp(16px, 4vw, 48px) 0",
@@ -286,12 +286,12 @@ export default function CampaignDiscoveryPage() {
             display: "inline-flex", alignItems: "center", gap: 6,
             padding: "6px 14px",
             borderRadius: 20,
-            border: "1px solid rgba(29,197,255,0.2)",
-            background: "rgba(29,197,255,0.06)",
+            border: "1px solid rgba(20,120,74,0.2)",
+            background: "rgba(20,120,74,0.06)",
             marginBottom: 20,
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1dc5ff", display: "inline-block" }} />
-            <span style={{ fontSize: 12, color: "#1dc5ff", fontWeight: 600, letterSpacing: "0.05em" }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#14784a", display: "inline-block" }} />
+            <span style={{ fontSize: 12, color: "#14784a", fontWeight: 600, letterSpacing: "0.05em" }}>
               {data?.length ?? 0} campaigns live
             </span>
           </div>
@@ -299,14 +299,14 @@ export default function CampaignDiscoveryPage() {
           <h1 style={{
             fontSize: "clamp(28px, 4vw, 44px)",
             fontWeight: 800,
-            color: "#f0f6ff",
+            color: "#15201a",
             lineHeight: 1.15,
             margin: "0 0 12px",
           }}>
             Fund what matters<br />
-            <span style={{ color: "#1dc5ff" }}>in The Gambia</span>
+            <span style={{ color: "#14784a" }}>in The Gambia</span>
           </h1>
-          <p style={{ fontSize: 17, color: "#8899aa", margin: "0 0 40px", maxWidth: 520, lineHeight: 1.7 }}>
+          <p style={{ fontSize: 17, color: "#56625b", margin: "0 0 40px", maxWidth: 520, lineHeight: 1.7 }}>
             Every campaign shows real proof — photos, receipts, and updates so you know exactly where your money goes.
           </p>
         </motion.div>
@@ -316,7 +316,7 @@ export default function CampaignDiscoveryPage() {
           <div style={{ position: "relative", maxWidth: 560 }}>
             <SearchOutlined style={{
               position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
-              color: "#4a5568", fontSize: 15, zIndex: 1, lineHeight: 1,
+              color: "#6e7872", fontSize: 15, zIndex: 1, lineHeight: 1,
             }} />
             <input
               type="text"
@@ -327,15 +327,15 @@ export default function CampaignDiscoveryPage() {
                 width: "100%",
                 padding: "13px 16px 13px 46px",
                 borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.1)",
-                background: "rgba(255,255,255,0.05)",
-                color: "#f0f6ff",
+                border: "1px solid rgba(21,32,26,0.1)",
+                background: "rgba(21,32,26,0.05)",
+                color: "#15201a",
                 fontSize: 15,
                 outline: "none",
                 transition: "border-color 0.2s",
               }}
-              onFocus={(e) => { e.target.style.borderColor = "rgba(29,197,255,0.4)"; }}
-              onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+              onFocus={(e) => { e.target.style.borderColor = "rgba(20,120,74,0.4)"; }}
+              onBlur={(e) => { e.target.style.borderColor = "rgba(21,32,26,0.1)"; }}
             />
           </div>
 
@@ -348,9 +348,9 @@ export default function CampaignDiscoveryPage() {
                   display: "flex", alignItems: "center", gap: 6,
                   padding: "8px 16px",
                   borderRadius: 20,
-                  border: activeFilter === f.value ? "1px solid rgba(29,197,255,0.4)" : "1px solid rgba(255,255,255,0.08)",
-                  background: activeFilter === f.value ? "rgba(29,197,255,0.1)" : "rgba(255,255,255,0.04)",
-                  color: activeFilter === f.value ? "#1dc5ff" : "#8899aa",
+                  border: activeFilter === f.value ? "1px solid rgba(20,120,74,0.4)" : "1px solid rgba(21,32,26,0.08)",
+                  background: activeFilter === f.value ? "rgba(20,120,74,0.1)" : "rgba(21,32,26,0.04)",
+                  color: activeFilter === f.value ? "#14784a" : "#56625b",
                   fontSize: 13,
                   fontWeight: activeFilter === f.value ? 600 : 400,
                   cursor: "pointer",
@@ -372,7 +372,7 @@ export default function CampaignDiscoveryPage() {
         margin: "0 auto",
       }}>
         {/* Result count */}
-        <div style={{ marginBottom: 24, color: "#4a5568", fontSize: 13 }}>
+        <div style={{ marginBottom: 24, color: "#6e7872", fontSize: 13 }}>
           {isLoading ? "Loading campaigns..." : `${filtered.length} campaign${filtered.length !== 1 ? "s" : ""} found`}
         </div>
 
@@ -412,11 +412,11 @@ export default function CampaignDiscoveryPage() {
               padding: "80px 20px",
             }}
           >
-            <SearchOutlined style={{ fontSize: 48, marginBottom: 16, opacity: 0.4, color: "#4a5568", display: "block" }} />
-            <h3 style={{ color: "#f0f6ff", fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
+            <SearchOutlined style={{ fontSize: 48, marginBottom: 16, opacity: 0.4, color: "#6e7872", display: "block" }} />
+            <h3 style={{ color: "#15201a", fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
               No campaigns found
             </h3>
-            <p style={{ color: "#8899aa", fontSize: 15 }}>
+            <p style={{ color: "#56625b", fontSize: 15 }}>
               Try a different keyword or browse all campaigns.
             </p>
             <button
@@ -425,9 +425,9 @@ export default function CampaignDiscoveryPage() {
                 marginTop: 20,
                 padding: "10px 24px",
                 borderRadius: 10,
-                border: "1px solid rgba(29,197,255,0.3)",
-                background: "rgba(29,197,255,0.08)",
-                color: "#1dc5ff",
+                border: "1px solid rgba(20,120,74,0.3)",
+                background: "rgba(20,120,74,0.08)",
+                color: "#14784a",
                 fontSize: 14,
                 fontWeight: 600,
                 cursor: "pointer",

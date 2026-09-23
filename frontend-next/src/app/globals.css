@@ -1,22 +1,28 @@
 :root {
-  --wave-blue: #1dc5ff;
-  --wave-blue-deep: #079bd4;
-  --wave-blue-soft: #d8f5ff;
-  --wave-blue-glow: rgba(29, 197, 255, 0.15);
-  --surface: #f5f6f8;
-  --bg: #0a0f1a;
-  --bg-card: #111827;
-  --bg-card-hover: #1a2333;
-  --ink: #f0f6ff;
-  --ink-muted: #8899aa;
-  --ink-dim: #4a5568;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.15);
-  --mint: #0d2e22;
-  --gold: #fbbf24;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-blue: 0 8px 32px rgba(29, 197, 255, 0.2);
+  --wave-blue: #14784a;
+  --wave-blue-deep: #0f5e3a;
+  --wave-blue-soft: #e6f4ec;
+  --wave-blue-glow: rgba(20, 120, 74, 0.12);
+  --primary: #14784a;
+  --primary-deep: #0f5e3a;
+  --primary-soft: #e6f4ec;
+  --accent: #e8650f;
+  --accent-deep: #c4520a;
+  --accent-soft: #fdf0e6;
+  --surface: #f6f4ef;
+  --bg: #f6f4ef;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1eee7;
+  --ink: #15201a;
+  --ink-muted: #56625b;
+  --ink-dim: #6e7872;
+  --line: rgba(21, 32, 26, 0.09);
+  --line-strong: rgba(21, 32, 26, 0.16);
+  --mint: #e6f4ec;
+  --gold: #d9870b;
+  --shadow-sm: 0 1px 2px rgba(21, 32, 26, 0.06);
+  --shadow: 0 10px 30px -12px rgba(21, 32, 26, 0.18);
+  --shadow-blue: 0 10px 24px -10px rgba(20, 120, 74, 0.45);
   --radius: 12px;
   --radius-sm: 8px;
   --radius-lg: 20px;
@@ -38,7 +44,7 @@ body {
   font-family: var(--font-body), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  accent-color: var(--wave-blue);
+  accent-color: var(--primary);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -51,9 +57,16 @@ h1, h2, h3, h4, h5, h6 {
 a { color: inherit; text-decoration: none; }
 
 ::selection {
-  background: rgba(29, 197, 255, 0.3);
-  color: #fff;
+  background: rgba(232, 101, 15, 0.22);
+  color: var(--ink);
 }
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+body { caret-color: var(--primary); }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
@@ -96,7 +109,7 @@ a { color: inherit; text-decoration: none; }
 /* Prevent any dashboard page content from overflowing horizontally */
 .dash-main > * { max-width: 100%; }
 
-/* ── Antd overrides for dark theme ───────────────────────── */
+/* ── Antd overrides for light theme ───────────────────────── */
 .ant-card {
   background: var(--bg-card) !important;
   border-color: var(--line) !important;
@@ -131,25 +144,25 @@ a { color: inherit; text-decoration: none; }
 .ant-statistic-content { color: var(--ink) !important; }
 
 .ant-btn-default {
-  background: rgba(255,255,255,0.06) !important;
+  background: var(--bg-card) !important;
   border-color: var(--line-strong) !important;
   color: var(--ink) !important;
 }
 
 .ant-btn-default:hover {
-  background: rgba(255,255,255,0.12) !important;
-  border-color: var(--wave-blue) !important;
-  color: var(--wave-blue) !important;
+  background: var(--primary-soft) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
 }
 
 .ant-input, .ant-select-selector {
-  background: rgba(255,255,255,0.06) !important;
+  background: var(--bg-card) !important;
   border-color: var(--line-strong) !important;
   color: var(--ink) !important;
 }
 
 .ant-input::placeholder { color: var(--ink-dim) !important; }
-.ant-input:focus, .ant-input:hover { border-color: var(--wave-blue) !important; }
+.ant-input:focus, .ant-input:hover { border-color: var(--primary) !important; }
 
 .ant-drawer-content {
   background: var(--bg-card) !important;

@@ -5,9 +5,9 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import EmailCaptureForm from "@/components/marketing/email-capture-form";
 
-const GREEN = "#1bbf88";
-const BLUE = "#1dc5ff";
-const RED = "#ef4444";
+const GREEN = "#1f9960";
+const BLUE = "#14784a";
+const RED = "#d42f2f";
 
 type DonationStatus = {
   client_reference: string;
@@ -43,12 +43,12 @@ function PaymentSuccessContent() {
   const icon = isConfirmed ? "✓" : isFailed ? "✕" : null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0f1a", display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 16px" }}>
+    <div style={{ minHeight: "100vh", background: "#f6f4ef", display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 16px" }}>
       <div style={{ width: "100%", maxWidth: 460, textAlign: "center" }}>
 
         <div style={{
           width: 72, height: 72, borderRadius: "50%", margin: "0 auto 24px",
-          background: `rgba(${isConfirmed ? "27,191,136" : isFailed ? "239,68,68" : "29,197,255"},0.1)`,
+          background: `rgba(${isConfirmed ? "31,153,96" : isFailed ? "239,68,68" : "20,120,74"},0.1)`,
           border: `2px solid ${statusColor}`,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 28, fontWeight: 900, color: statusColor,
@@ -58,16 +58,16 @@ function PaymentSuccessContent() {
           )}
         </div>
 
-        <div style={{ fontSize: 24, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 10 }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", marginBottom: 10 }}>
           {isConfirmed ? "Donation confirmed!" : isFailed ? "Payment not completed" : "Payment received"}
         </div>
 
-        <div style={{ fontSize: 14, color: "#6b7a8d", lineHeight: 1.7, marginBottom: 28 }}>
+        <div style={{ fontSize: 14, color: "#626d66", lineHeight: 1.7, marginBottom: 28 }}>
           {isConfirmed && donation ? (
             <>
               Thank you — your donation of{" "}
               <strong style={{ color: GREEN }}>{donation.amount.toLocaleString()} GMD</strong>{" "}
-              to <strong style={{ color: "#f0f6ff" }}>{donation.campaign_title ?? "this campaign"}</strong> has been confirmed.
+              to <strong style={{ color: "#15201a" }}>{donation.campaign_title ?? "this campaign"}</strong> has been confirmed.
             </>
           ) : isFailed ? (
             <>The payment could not be completed. No funds have been taken. You can try again below.</>
@@ -84,9 +84,9 @@ function PaymentSuccessContent() {
             display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px",
             borderRadius: 20, marginBottom: 28, fontSize: 11, fontWeight: 700,
             letterSpacing: "0.07em", textTransform: "uppercase",
-            background: `rgba(${isConfirmed ? "27,191,136" : isFailed ? "239,68,68" : "29,197,255"},0.1)`,
+            background: `rgba(${isConfirmed ? "31,153,96" : isFailed ? "239,68,68" : "20,120,74"},0.1)`,
             color: statusColor,
-            border: `1px solid rgba(${isConfirmed ? "27,191,136" : isFailed ? "239,68,68" : "29,197,255"},0.25)`,
+            border: `1px solid rgba(${isConfirmed ? "31,153,96" : isFailed ? "239,68,68" : "20,120,74"},0.25)`,
           }}>
             {isConfirmed ? "Confirmed" : isFailed ? "Failed" : "Processing"}
           </div>
@@ -96,7 +96,7 @@ function PaymentSuccessContent() {
           {campaignSlug && (
             <Link
               href={`/campaigns/${campaignSlug}`}
-              style={{ display: "block", padding: "13px", borderRadius: 10, background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 20px rgba(29,197,255,0.3)" }}
+              style={{ display: "block", padding: "13px", borderRadius: 10, background: `${BLUE}`, color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 20px rgba(20,120,74,0.3)" }}
             >
               {isPending ? "Back to campaign" : isConfirmed ? "See campaign" : "Back to campaign"}
             </Link>
@@ -104,24 +104,24 @@ function PaymentSuccessContent() {
           {(isFailed || isPending) && campaignSlug && (
             <Link
               href={`/quick-pay/${campaignSlug}`}
-              style={{ display: "block", padding: "12px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+              style={{ display: "block", padding: "12px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
             >
               {isFailed ? "Try again" : "Donate again"}
             </Link>
           )}
           {!campaignSlug && (
-            <Link href="/campaigns" style={{ display: "block", padding: "13px", borderRadius: 10, background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>
+            <Link href="/campaigns" style={{ display: "block", padding: "13px", borderRadius: 10, background: `${BLUE}`, color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>
               Browse campaigns
             </Link>
           )}
         </div>
 
         {isConfirmed && (
-          <div style={{ marginTop: 28, padding: "20px 18px", borderRadius: 14, background: "#0d1120", border: "1px solid rgba(255,255,255,0.08)", textAlign: "left" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>
+          <div style={{ marginTop: 28, padding: "20px 18px", borderRadius: 14, background: "#ffffff", border: "1px solid rgba(21,32,26,0.08)", textAlign: "left" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#15201a", marginBottom: 6 }}>
               Want to know when new campaigns go live in your community?
             </div>
-            <div style={{ fontSize: 12, color: "#6b7a8d", marginBottom: 14, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 12, color: "#626d66", marginBottom: 14, lineHeight: 1.6 }}>
               One short email a week. No spam, unsubscribe anytime.
             </div>
             <EmailCaptureForm source="post_donation" campaignSlug={campaignSlug ?? undefined} buttonLabel="Notify me" />
@@ -130,7 +130,7 @@ function PaymentSuccessContent() {
 
         {ref && (
           <div style={{ marginTop: 28, fontSize: 11, color: "#374151", letterSpacing: "0.04em" }}>
-            Payment reference: <span style={{ fontFamily: "monospace", color: "#4a5568" }}>{ref}</span>
+            Payment reference: <span style={{ fontFamily: "monospace", color: "#6e7872" }}>{ref}</span>
           </div>
         )}
       </div>

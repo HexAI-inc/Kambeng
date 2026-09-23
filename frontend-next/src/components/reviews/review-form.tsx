@@ -6,9 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useSubmitCampaignReview } from "@/hooks/use-frontend-data";
 
-const BLUE = "#1dc5ff";
-const RED = "#ef4444";
-const GOLD = "#fbbf24";
+const BLUE = "#14784a";
+const RED = "#d42f2f";
+const GOLD = "#d9870b";
 
 const reviewSchema = z.object({
   rating: z.number().min(1, "Please select a rating").max(5),
@@ -21,9 +21,9 @@ const fieldStyle: React.CSSProperties = {
   width: "100%",
   padding: "11px 14px",
   borderRadius: 10,
-  border: "1px solid rgba(255,255,255,0.1)",
-  background: "rgba(255,255,255,0.05)",
-  color: "#f0f6ff",
+  border: "1px solid rgba(21,32,26,0.1)",
+  background: "rgba(21,32,26,0.05)",
+  color: "#15201a",
   fontSize: 14,
   outline: "none",
   boxSizing: "border-box",
@@ -68,7 +68,7 @@ export function ReviewForm({ slug, onSuccess }: ReviewFormProps) {
 
   if (submitted) {
     return (
-      <div style={{ padding: "16px 18px", borderRadius: 12, background: "rgba(27,191,136,0.08)", border: "1px solid rgba(27,191,136,0.2)", color: "#1bbf88", fontSize: 14, fontWeight: 600, textAlign: "center" }}>
+      <div style={{ padding: "16px 18px", borderRadius: 12, background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.2)", color: "#1f9960", fontSize: 14, fontWeight: 600, textAlign: "center" }}>
         Thanks for your review!
       </div>
     );
@@ -78,7 +78,7 @@ export function ReviewForm({ slug, onSuccess }: ReviewFormProps) {
     <form onSubmit={(e) => void onSubmit(e)} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* Star rating */}
       <div>
-        <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 8 }}>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 8 }}>
           Your rating
         </label>
         <div style={{ display: "flex", gap: 4 }}>
@@ -92,7 +92,7 @@ export function ReviewForm({ slug, onSuccess }: ReviewFormProps) {
               style={{
                 background: "none", border: "none", padding: 2, cursor: "pointer",
                 fontSize: 26, lineHeight: 1,
-                color: (hovered || rating) >= star ? GOLD : "rgba(255,255,255,0.15)",
+                color: (hovered || rating) >= star ? GOLD : "rgba(21,32,26,0.15)",
                 transition: "color 0.15s",
               }}
               aria-label={`Rate ${star} star${star !== 1 ? "s" : ""}`}
@@ -104,7 +104,7 @@ export function ReviewForm({ slug, onSuccess }: ReviewFormProps) {
 
       {/* Comment */}
       <div>
-        <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>
           Your experience
         </label>
         <textarea
@@ -112,24 +112,24 @@ export function ReviewForm({ slug, onSuccess }: ReviewFormProps) {
           placeholder="Tell other donors what you think about this campaign (min 10 characters)"
           rows={4}
           style={{ ...fieldStyle, resize: "vertical", minHeight: 90 }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; }}
         />
         <FieldError msg={form.formState.errors.comment?.message} />
       </div>
 
       {/* Donor name */}
       <div>
-        <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>
-          Your name <span style={{ fontWeight: 400, color: "#4a5568" }}>(optional)</span>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>
+          Your name <span style={{ fontWeight: 400, color: "#6e7872" }}>(optional)</span>
         </label>
         <input
           {...form.register("donor_name")}
           type="text"
           placeholder="Leave blank to post as Anonymous"
           style={fieldStyle}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; }}
         />
       </div>
 
@@ -138,17 +138,17 @@ export function ReviewForm({ slug, onSuccess }: ReviewFormProps) {
         disabled={isPending}
         style={{
           width: "100%", padding: "12px", borderRadius: 10, border: "none",
-          background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+          background: `${BLUE}`,
           color: "#fff", fontSize: 14, fontWeight: 700, cursor: isPending ? "not-allowed" : "pointer",
           opacity: isPending ? 0.7 : 1,
-          boxShadow: "0 4px 16px rgba(29,197,255,0.25)",
+          boxShadow: "0 4px 16px rgba(20,120,74,0.25)",
           transition: "opacity 0.2s",
         }}
       >
         {isPending ? "Posting…" : "Post Review"}
       </button>
 
-      <p style={{ fontSize: 12, color: "#4a5568", margin: 0 }}>
+      <p style={{ fontSize: 12, color: "#6e7872", margin: 0 }}>
         Be respectful and honest — your review helps others make informed decisions.
       </p>
     </form>

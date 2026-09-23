@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { CampaignUpdate } from "@/types/frontend";
 
-const BLUE = "#1dc5ff";
+const BLUE = "#14784a";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -27,7 +27,7 @@ function Cell({ att, onOpen, overlay }: {
   return (
     <div
       onClick={() => onOpen(att.file_url)}
-      style={{ width: "100%", aspectRatio: "1", overflow: "hidden", cursor: "zoom-in", background: "#080c16", position: "relative", flexShrink: 0 }}
+      style={{ width: "100%", aspectRatio: "1", overflow: "hidden", cursor: "zoom-in", background: "#f6f4ef", position: "relative", flexShrink: 0 }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={att.file_url} alt={att.file_name ?? ""} style={coverImg} />
@@ -49,7 +49,7 @@ function PhotoGrid({ attachments, onOpen }: {
 
   if (n === 1) {
     return (
-      <div style={{ width: "100%", aspectRatio: "1", overflow: "hidden", cursor: "zoom-in", background: "#080c16" }}
+      <div style={{ width: "100%", aspectRatio: "1", overflow: "hidden", cursor: "zoom-in", background: "#f6f4ef" }}
         onClick={() => onOpen(attachments[0].file_url)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={attachments[0].file_url} alt={attachments[0].file_name ?? ""} style={coverImg} />
@@ -112,8 +112,8 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: Upda
 
   return (
     <div style={{
-      background: "#0d1120",
-      border: "1px solid rgba(255,255,255,0.08)",
+      background: "#ffffff",
+      border: "1px solid rgba(21,32,26,0.08)",
       borderRadius: 16,
       overflow: "hidden",
     }}>
@@ -121,17 +121,17 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: Upda
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", paddingBottom: hasImages ? 12 : 14 }}>
         <div style={{
           width: 38, height: 38, borderRadius: "50%", flexShrink: 0,
-          background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+          background: `${BLUE}`,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 15, fontWeight: 800, color: "#fff",
         }}>
           {initial}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", lineHeight: 1.2 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#15201a", lineHeight: 1.2 }}>
             {update.author_name ?? "Campaign owner"}
           </div>
-          <div style={{ fontSize: 12, color: "#4a5568", marginTop: 1 }}>
+          <div style={{ fontSize: 12, color: "#6e7872", marginTop: 1 }}>
             {timeAgo(update.created_at)}
             {categoryLabel && <span style={{ marginLeft: 6, color: BLUE, fontWeight: 600 }}>· {categoryLabel}</span>}
           </div>
@@ -144,14 +144,14 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: Upda
             title="Report this update"
             style={{
               width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-              border: "1px solid rgba(255,255,255,0.08)",
+              border: "1px solid rgba(21,32,26,0.08)",
               background: "transparent",
-              color: "#4a5568", cursor: "pointer",
+              color: "#6e7872", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               transition: "color 0.15s",
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#f87171"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#4a5568"; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#c02626"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#6e7872"; }}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
@@ -169,7 +169,7 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: Upda
               width: 30, height: 30, borderRadius: 8, flexShrink: 0,
               border: "1px solid rgba(239,68,68,0.2)",
               background: "rgba(239,68,68,0.05)",
-              color: "#f87171", cursor: "pointer",
+              color: "#c02626", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
@@ -187,7 +187,7 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: Upda
               onClick={() => { onDelete(); setConfirmDelete(false); }}
               style={{
                 padding: "4px 10px", borderRadius: 7, border: "none",
-                background: "#ef4444", color: "#fff",
+                background: "#d42f2f", color: "#fff",
                 fontSize: 11, fontWeight: 700, cursor: "pointer",
               }}
             >Delete</button>
@@ -195,8 +195,8 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: Upda
               onClick={() => setConfirmDelete(false)}
               style={{
                 padding: "4px 8px", borderRadius: 7,
-                border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
-                color: "#6b7a8d", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)",
+                color: "#626d66", fontSize: 11, fontWeight: 600, cursor: "pointer",
               }}
             >Cancel</button>
           </div>
@@ -213,19 +213,19 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: Upda
       {/* Caption */}
       <div style={{ padding: "14px 16px" }}>
         {update.title && (
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 6, lineHeight: 1.3, letterSpacing: "-0.01em" }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a", marginBottom: 6, lineHeight: 1.3, letterSpacing: "-0.01em" }}>
             {update.title}
           </div>
         )}
-        <p style={{ fontSize: 14, color: "#a0aec0", lineHeight: 1.75, margin: 0, whiteSpace: "pre-wrap" }}>
+        <p style={{ fontSize: 14, color: "#4d5a52", lineHeight: 1.75, margin: 0, whiteSpace: "pre-wrap" }}>
           {update.text}
         </p>
         {update.amount_spent != null && update.amount_spent > 0 && (
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 5,
             marginTop: 10, padding: "4px 10px", borderRadius: 20,
-            background: "rgba(27,191,136,0.08)", border: "1px solid rgba(27,191,136,0.2)",
-            fontSize: 12, fontWeight: 700, color: "#1bbf88",
+            background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.2)",
+            fontSize: 12, fontWeight: 700, color: "#1f9960",
           }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { DM_Sans, Syne } from "next/font/google";
+import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import "antd/dist/reset.css";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const display = Syne({
+const display = Bricolage_Grotesque({
   variable: "--font-display",
   subsets: ["latin"],
   preload: false,

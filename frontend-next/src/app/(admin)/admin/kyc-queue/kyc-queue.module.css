@@ -9,7 +9,7 @@
 }
 
 .rejectModal {
-  border-left: 4px solid #ff4d4f;
+  border-left: 4px solid #d42f2f;
   background: #fff1f0;
   padding: 1.5rem;
   border-radius: 8px;
@@ -34,7 +34,7 @@
 
   &:focus {
     outline: none;
-    border-color: #40a9ff;
+    border-color: #1d8f5a;
     box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
   }
 }
@@ -94,7 +94,7 @@
 }
 
 .rejectionReason {
-  color: #ff4d4f;
+  color: #d42f2f;
   font-style: italic;
 }
 

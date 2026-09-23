@@ -17,9 +17,9 @@ export default function MediaViewer({ src, type, onClose }: { src: string | null
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1200, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.6)" }} onClick={onClose}>
-      <div style={{ maxWidth: "92%", maxHeight: "92%", width: "min(1100px, 96%)", background: "#0d1120", borderRadius: 12, padding: 12, boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }} onClick={(e) => e.stopPropagation()}>
+      <div style={{ maxWidth: "92%", maxHeight: "92%", width: "min(1100px, 96%)", background: "#ffffff", borderRadius: 12, padding: 12, boxShadow: "0 20px 60px rgba(21,32,26,0.12)" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{ background: "transparent", border: "none", color: "#f0f6ff", fontSize: 18, cursor: "pointer" }}>✕</button>
+          <button onClick={onClose} style={{ background: "transparent", border: "none", color: "#15201a", fontSize: 18, cursor: "pointer" }}>✕</button>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "calc(100% - 40px)" }}>
           {isImage ? (
@@ -28,7 +28,7 @@ export default function MediaViewer({ src, type, onClose }: { src: string | null
           ) : isPdf ? (
             <iframe src={src ?? ""} style={{ width: "100%", height: "80vh", border: "none", borderRadius: 8 }} />
           ) : (
-            <a href={src ?? ""} target="_blank" rel="noopener noreferrer" style={{ color: "#1dc5ff" }}>Open file</a>
+            <a href={src ?? ""} target="_blank" rel="noopener noreferrer" style={{ color: "#14784a" }}>Open file</a>
           )}
         </div>
       </div>

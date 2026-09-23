@@ -13,9 +13,9 @@ import {
   ApiOutlined,
 } from "@ant-design/icons";
 
-const BLUE = "#1dc5ff";
-const BG = "#0a0f1a";
-const CARD = "#0d1120";
+const BLUE = "#14784a";
+const BG = "#f6f4ef";
+const CARD = "#ffffff";
 
 type IconComp = React.ComponentType<{ style?: React.CSSProperties }>;
 type NavSection = { label: string; items: { key: string; label: string; href: string; icon: IconComp }[] };
@@ -71,8 +71,8 @@ function isActive(pathname: string, href: string) {
 function Logo() {
   return (
     <Link href="/admin/campaigns" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-      <div style={{ width: 34, height: 34, background: "linear-gradient(135deg, #1dc5ff, #079bd4)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15, color: "#fff", boxShadow: "0 4px 12px rgba(29,197,255,0.35)", flexShrink: 0 }}>K</div>
-      <span style={{ fontWeight: 800, fontSize: 17, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Admin</span>
+      <div style={{ width: 34, height: 34, background: "#14784a", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15, color: "#fff", boxShadow: "0 4px 12px rgba(20,120,74,0.35)", flexShrink: 0 }}>K</div>
+      <span style={{ fontWeight: 800, fontSize: 17, color: "#15201a", letterSpacing: "-0.03em" }}>Admin</span>
     </Link>
   );
 }
@@ -89,7 +89,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <button
           onClick={() => setCollapsed((v) => !v)}
           className="admin-collapse-btn"
-          style={{ width: 28, height: 28, borderRadius: 7, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}
+          style={{ width: 28, height: 28, borderRadius: 7, border: "1px solid rgba(21,32,26,0.08)", background: "rgba(21,32,26,0.04)", color: "#56625b", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}
         >
           {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
         </button>
@@ -99,7 +99,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         {NAV.map((section) => (
           <div key={section.label}>
             {!collapsed && (
-              <div style={{ fontSize: 9, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.1em", padding: "10px 8px 4px" }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.1em", padding: "10px 8px 4px" }}>
                 {section.label}
               </div>
             )}
@@ -116,14 +116,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     display: "flex", alignItems: "center", gap: 10,
                     padding: collapsed ? "10px" : "9px 10px",
                     borderRadius: 9,
-                    background: active ? "rgba(29,197,255,0.12)" : "transparent",
-                    border: active ? "1px solid rgba(29,197,255,0.2)" : "1px solid transparent",
-                    color: active ? BLUE : "#8899aa",
+                    background: active ? "rgba(20,120,74,0.12)" : "transparent",
+                    border: active ? "1px solid rgba(20,120,74,0.2)" : "1px solid transparent",
+                    color: active ? BLUE : "#56625b",
                     fontSize: 13, fontWeight: active ? 700 : 500,
                     cursor: "pointer", transition: "all 0.15s",
                     justifyContent: collapsed ? "center" : "flex-start",
                   }}
-                    onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }}
+                    onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLDivElement).style.background = "rgba(21,32,26,0.04)"; }}
                     onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
                   >
                     <item.icon style={{ fontSize: 14, flexShrink: 0 }} />
@@ -136,16 +136,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         ))}
       </div>
 
-      <div style={{ padding: "12px 10px 16px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{ padding: "12px 10px 16px", borderTop: "1px solid rgba(21,32,26,0.06)" }}>
         <Link href="/dashboard" style={{ textDecoration: "none" }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
             padding: collapsed ? "10px" : "9px 10px",
-            borderRadius: 9, color: "#8899aa", fontSize: 13, fontWeight: 500,
+            borderRadius: 9, color: "#56625b", fontSize: 13, fontWeight: 500,
             cursor: "pointer", transition: "all 0.15s",
             justifyContent: collapsed ? "center" : "flex-start",
           }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(21,32,26,0.04)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
           >
             <SwapOutlined style={{ fontSize: 14 }} />
@@ -156,7 +156,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
             padding: collapsed ? "10px" : "9px 10px",
-            borderRadius: 9, color: "#ef4444", fontSize: 13, fontWeight: 500,
+            borderRadius: 9, color: "#d42f2f", fontSize: 13, fontWeight: 500,
             cursor: "pointer", transition: "all 0.15s",
             justifyContent: collapsed ? "center" : "flex-start",
           }}
@@ -182,7 +182,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         style={{
           width: sidebarWidth, flexShrink: 0,
           background: CARD,
-          borderRight: "1px solid rgba(255,255,255,0.06)",
+          borderRight: "1px solid rgba(21,32,26,0.06)",
           position: "sticky", top: 0, height: "100dvh",
           transition: "width 0.2s ease",
           overflow: "hidden",
@@ -198,7 +198,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           onClick={() => setMobileOpen(false)}
         >
           <aside
-            style={{ width: 240, background: CARD, borderRight: "1px solid rgba(255,255,255,0.06)", height: "100%", overflow: "hidden", flexShrink: 0 }}
+            style={{ width: 240, background: CARD, borderRight: "1px solid rgba(21,32,26,0.06)", height: "100%", overflow: "hidden", flexShrink: 0 }}
             onClick={(e) => e.stopPropagation()}
           >
             {sidebar}
@@ -215,13 +215,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           style={{
             display: "none", alignItems: "center", gap: 12,
             padding: "0 16px", height: 56, flexShrink: 0,
-            background: CARD, borderBottom: "1px solid rgba(255,255,255,0.06)",
+            background: CARD, borderBottom: "1px solid rgba(21,32,26,0.06)",
             position: "sticky", top: 0, zIndex: 100,
           }}
         >
           <button
             onClick={() => setMobileOpen(true)}
-            style={{ width: 36, height: 36, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#f0f6ff", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{ width: 36, height: 36, borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#15201a", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
           ><MenuOutlined /></button>
           <Logo />
         </header>
@@ -253,8 +253,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             padding: 14px 16px !important;
             border-radius: 12px;
             margin: 6px 10px;
-            border: 1px solid rgba(255,255,255,0.07) !important;
-            background: rgba(255,255,255,0.015);
+            border: 1px solid rgba(21,32,26,0.07) !important;
+            background: rgba(21,32,26,0.015);
           }
 
           /* All detail cells: small label above value */
@@ -266,7 +266,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             display: block;
             font-size: 9px;
             font-weight: 700;
-            color: #4a5568;
+            color: #6e7872;
             text-transform: uppercase;
             letter-spacing: 0.07em;
             margin-bottom: 2px;
@@ -280,7 +280,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           .admin-table-row > div[data-label="Reason"] {
             order: -2;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(21,32,26,0.05);
           }
           .admin-table-row > div[data-label="Status"] {
             order: -2;
@@ -288,7 +288,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             align-self: start;
             padding-top: 2px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(21,32,26,0.05);
           }
 
           /* No labels for header-row cells */
@@ -306,7 +306,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             order: 99;
             grid-column: 1 / -1;
             padding-top: 10px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 1px solid rgba(21,32,26,0.05);
             margin-top: 2px;
           }
           .admin-table-row > div[data-label="Actions"]::before,

@@ -15,8 +15,8 @@ import {
 import { AdminAuditLog, AdminPayoutOverview, AdminTransaction } from "@/types/frontend";
 import { StyledSelect } from "@/components/ui/styled-select";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
 
 function fadeUp(delay = 0) {
   return { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay, ease: "easeOut" as const } };
@@ -24,16 +24,16 @@ function fadeUp(delay = 0) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    SUCCEEDED: { color: GREEN,     bg: "rgba(27,191,136,0.12)" },
-    FAILED:    { color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
-    PENDING:   { color: "#f97316", bg: "rgba(249,115,22,0.12)" },
+    SUCCEEDED: { color: GREEN,     bg: "rgba(31,153,96,0.12)" },
+    FAILED:    { color: "#d42f2f", bg: "rgba(239,68,68,0.12)" },
+    PENDING:   { color: "#e8650f", bg: "rgba(232,101,15,0.12)" },
   };
   const s = map[status] ?? map.PENDING;
   return <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, textTransform: "uppercase", letterSpacing: "0.07em" }}>{status}</span>;
 }
 
 function TypeChip({ type }: { type: string }) {
-  return <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, color: BLUE, background: "rgba(29,197,255,0.1)", textTransform: "uppercase", letterSpacing: "0.07em" }}>{type}</span>;
+  return <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, color: BLUE, background: "rgba(20,120,74,0.1)", textTransform: "uppercase", letterSpacing: "0.07em" }}>{type}</span>;
 }
 
 const PAGE_SIZE = 8;
@@ -85,42 +85,42 @@ export default function AdminReportsPage() {
   const campaignOptions = useMemo(() => [{ id: "ALL", label: "All campaigns" }, ...((campaigns ?? []).map((c) => ({ id: String(c.id), label: c.title })))], [campaigns]);
   const campaignNameById = useMemo(() => Object.fromEntries((campaigns ?? []).map((c) => [String(c.id), c.title])), [campaigns]);
 
-  const selectStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f0f6ff", fontSize: 12, outline: "none", cursor: "pointer" };
+  const selectStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 12, outline: "none", cursor: "pointer" };
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 22 }}>
 
         {/* Header */}
         <motion.div {...fadeUp(0)}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Reports</div>
-          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Financial summary, transactions, payouts, and audit logs</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Reports</div>
+          <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>Financial summary, transactions, payouts, and audit logs</div>
         </motion.div>
 
         {/* KPI grid */}
         <motion.div {...fadeUp(0.06)}>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden", marginBottom: 2 }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden", marginBottom: 2 }}>
             {[
-              { label: "Transactions",      value: String(summary?.transaction_count ?? 0),                              color: "#f0f6ff" },
+              { label: "Transactions",      value: String(summary?.transaction_count ?? 0),                              color: "#15201a" },
               { label: "Total Donations",   value: `${(summary?.total_donations ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,                  color: GREEN },
               { label: "Total Withdrawals", value: `${(summary?.total_withdrawals ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,                color: BLUE },
-              { label: "Platform Revenue",  value: `${(systemStats?.total_platform_revenue ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,       color: "#f97316" },
+              { label: "Platform Revenue",  value: `${(systemStats?.total_platform_revenue ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,       color: "#e8650f" },
             ].map(({ label, value, color }, i, arr) => (
-              <div key={label} style={{ padding: "14px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-                <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+              <div key={label} style={{ padding: "14px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(21,32,26,0.05)" : "none" }}>
+                <div style={{ fontSize: 10, color: "#6e7872", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color }}>{value}</div>
               </div>
             ))}
           </div>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
-              { label: "Users",          value: String(systemStats?.total_users ?? 0),          color: "#f0f6ff" },
+              { label: "Users",          value: String(systemStats?.total_users ?? 0),          color: "#15201a" },
               { label: "Active Campaigns",value: String(systemStats?.active_campaigns ?? 0),    color: GREEN },
-              { label: "KYC Pending",    value: String(systemStats?.kyc_pending_count ?? 0),    color: "#f97316" },
+              { label: "KYC Pending",    value: String(systemStats?.kyc_pending_count ?? 0),    color: "#e8650f" },
               { label: "KYC Approved",   value: String(systemStats?.kyc_approved_count ?? 0),   color: GREEN },
             ].map(({ label, value, color }, i, arr) => (
-              <div key={label} style={{ padding: "14px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-                <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+              <div key={label} style={{ padding: "14px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(21,32,26,0.05)" : "none" }}>
+                <div style={{ fontSize: 10, color: "#6e7872", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color }}>{value}</div>
               </div>
             ))}
@@ -129,7 +129,7 @@ export default function AdminReportsPage() {
 
         {/* Filters */}
         <motion.div {...fadeUp(0.1)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "16px 18px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, padding: "16px 18px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             <StyledSelect
               value={statusFilter}
               onChange={(v) => updateParams({ status: v })}
@@ -148,10 +148,10 @@ export default function AdminReportsPage() {
               options={campaignOptions.map((c) => ({ value: c.id, label: c.label }))}
               style={{ minWidth: 200 }}
             />
-            <button onClick={() => updateParams({ status: null, type: null, campaign: null })} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 12, cursor: "pointer" }}>Reset</button>
-            <span style={{ fontSize: 12, color: "#4a5568" }}>{filteredTx.length} transaction{filteredTx.length !== 1 ? "s" : ""}</span>
+            <button onClick={() => updateParams({ status: null, type: null, campaign: null })} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 12, cursor: "pointer" }}>Reset</button>
+            <span style={{ fontSize: 12, color: "#6e7872" }}>{filteredTx.length} transaction{filteredTx.length !== 1 ? "s" : ""}</span>
             {campaignFilter !== "ALL" && (
-              <Link href={`/admin/reports/campaign/${campaignFilter}`} style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+              <Link href={`/admin/reports/campaign/${campaignFilter}`} style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
                 Campaign Report
               </Link>
             )}
@@ -165,13 +165,13 @@ export default function AdminReportsPage() {
           cols="1fr 120px 110px 110px 110px 140px 90px"
           rows={txRows}
           renderRow={(t: AdminTransaction) => [
-            <Link key="campaign" href={`/admin/reports/campaign/${t.campaign_id}`} style={{ color: "#f0f6ff", fontSize: 13, fontWeight: 600, textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{campaignNameById[String(t.campaign_id)] ?? `Campaign ${t.campaign_id}`}</Link>,
+            <Link key="campaign" href={`/admin/reports/campaign/${t.campaign_id}`} style={{ color: "#15201a", fontSize: 13, fontWeight: 600, textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{campaignNameById[String(t.campaign_id)] ?? `Campaign ${t.campaign_id}`}</Link>,
             <TypeChip key="type" type={String(t.transaction_type)} />,
             <StatusChip key="status" status={String(t.status)} />,
-            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(t.gross_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
-            <span key="net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(t.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
-            <span key="ref" style={{ fontSize: 11, color: "#8899aa", fontFamily: "monospace" }}>{t.external_reference || "—"}</span>,
-            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(t.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
+            <span key="gross" style={{ fontSize: 13, color: "#15201a" }}>{Number(t.gross_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#6e7872" }}>GMD</span></span>,
+            <span key="net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(t.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#6e7872" }}>GMD</span></span>,
+            <span key="ref" style={{ fontSize: 11, color: "#56625b", fontFamily: "monospace" }}>{t.external_reference || "—"}</span>,
+            <span key="date" style={{ fontSize: 11, color: "#6e7872" }}>{new Date(t.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
           ]}
           page={txPage}
           totalPages={txPages}
@@ -186,12 +186,12 @@ export default function AdminReportsPage() {
           cols="1fr 160px 110px 110px 110px 90px"
           rows={payRows}
           renderRow={(p: AdminPayoutOverview) => [
-            <span key="campaign" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600 }}>{p.campaign_title}</span>,
-            <span key="user" style={{ fontSize: 12, color: "#8899aa" }}>{p.user_name}</span>,
-            <span key="gross" style={{ fontSize: 13, color: "#f0f6ff" }}>{Number(p.gross_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
-            <span key="net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></span>,
+            <span key="campaign" style={{ fontSize: 13, color: "#15201a", fontWeight: 600 }}>{p.campaign_title}</span>,
+            <span key="user" style={{ fontSize: 12, color: "#56625b" }}>{p.user_name}</span>,
+            <span key="gross" style={{ fontSize: 13, color: "#15201a" }}>{Number(p.gross_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#6e7872" }}>GMD</span></span>,
+            <span key="net" style={{ fontSize: 13, color: GREEN, fontWeight: 700 }}>{Number(p.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#6e7872" }}>GMD</span></span>,
             <StatusChip key="status" status={String(p.status)} />,
-            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
+            <span key="date" style={{ fontSize: 11, color: "#6e7872" }}>{new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
           ]}
           page={payPage}
           totalPages={payPages}
@@ -207,9 +207,9 @@ export default function AdminReportsPage() {
           rows={auditRows}
           renderRow={(a: AdminAuditLog) => [
             <span key="action" style={{ fontSize: 12, fontWeight: 700, color: BLUE }}>{a.action_type.replace(/_/g, " ")}</span>,
-            <span key="entity" style={{ fontSize: 12, color: "#8899aa" }}>{a.target_entity_type}</span>,
-            <span key="desc" style={{ fontSize: 12, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.description}</span>,
-            <span key="date" style={{ fontSize: 11, color: "#4a5568" }}>{new Date(a.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
+            <span key="entity" style={{ fontSize: 12, color: "#56625b" }}>{a.target_entity_type}</span>,
+            <span key="desc" style={{ fontSize: 12, color: "#626d66", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.description}</span>,
+            <span key="date" style={{ fontSize: 11, color: "#6e7872" }}>{new Date(a.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })}</span>,
           ]}
           page={auditPage}
           totalPages={auditPages}
@@ -235,17 +235,17 @@ function AdminTable<T>({ title, headers, cols, rows, renderRow, page, totalPages
 }) {
   return (
     <div>
-      <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
-        <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{title}</div>
+      <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, overflowX: "auto" }}>
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(21,32,26,0.06)", fontSize: 13, fontWeight: 700, color: "#15201a" }}>{title}</div>
         <div className="admin-table-wrap" style={{ minWidth: 560 }}>
-        <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: cols, padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+        <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: cols, padding: "10px 18px", borderBottom: "1px solid rgba(21,32,26,0.06)", fontSize: 10, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.07em" }}>
           {headers.map((h) => <div key={h}>{h}</div>)}
         </div>
         {rows.length === 0 ? (
-          <div style={{ padding: "36px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>{emptyText}</div>
+          <div style={{ padding: "36px 24px", textAlign: "center", color: "#6e7872", fontSize: 14 }}>{emptyText}</div>
         ) : rows.map((row, i) => (
-          <div key={i} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: cols, padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s", gap: 8 }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
+          <div key={i} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: cols, padding: "12px 18px", alignItems: "center", borderBottom: "1px solid rgba(21,32,26,0.04)", transition: "background 0.15s", gap: 8 }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(21,32,26,0.02)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
           >
             {renderRow(row).map((cell, j) => <div key={j} data-label={headers[j]}>{cell}</div>)}
@@ -265,5 +265,5 @@ function AdminTable<T>({ title, headers, cols, rows, renderRow, page, totalPages
 }
 
 function pageBtnStyle(active: boolean): React.CSSProperties {
-  return { width: 32, height: 32, borderRadius: 8, fontSize: 13, fontWeight: 700, border: `1px solid ${active ? "rgba(29,197,255,0.4)" : "rgba(255,255,255,0.1)"}`, background: active ? "rgba(29,197,255,0.12)" : "rgba(255,255,255,0.03)", color: active ? "#1dc5ff" : "#8899aa", cursor: "pointer" };
+  return { width: 32, height: 32, borderRadius: 8, fontSize: 13, fontWeight: 700, border: `1px solid ${active ? "rgba(20,120,74,0.4)" : "rgba(21,32,26,0.1)"}`, background: active ? "rgba(20,120,74,0.12)" : "rgba(21,32,26,0.03)", color: active ? "#14784a" : "#56625b", cursor: "pointer" };
 }

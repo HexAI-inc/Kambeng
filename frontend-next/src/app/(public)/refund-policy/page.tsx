@@ -18,7 +18,7 @@ export default function RefundPolicyPage() {
           body: (
             <p>
               Donations made on Kambeng are voluntary contributions to campaign creators. Because funds are typically
-              transferred to campaign creators after processing, <strong style={{ color: "#f0f6ff" }}>donations are generally
+              transferred to campaign creators after processing, <strong style={{ color: "#15201a" }}>donations are generally
               non-refundable</strong> once confirmed. We encourage donors to research campaigns carefully before giving.
             </p>
           ),
@@ -30,16 +30,16 @@ export default function RefundPolicyPage() {
               <p style={{ marginBottom: 12 }}>We will consider a refund in the following circumstances:</p>
               <ul style={{ paddingLeft: 20, margin: "0 0 12px", display: "flex", flexDirection: "column", gap: 6 }}>
                 <li>
-                  <strong style={{ color: "#f0f6ff" }}>Duplicate payment:</strong> If you were charged more than once for the same donation due to a technical error, we will refund the duplicate charge in full.
+                  <strong style={{ color: "#15201a" }}>Duplicate payment:</strong> If you were charged more than once for the same donation due to a technical error, we will refund the duplicate charge in full.
                 </li>
                 <li>
-                  <strong style={{ color: "#f0f6ff" }}>Payment processing error:</strong> If you were charged an incorrect amount due to a platform error, the difference will be refunded.
+                  <strong style={{ color: "#15201a" }}>Payment processing error:</strong> If you were charged an incorrect amount due to a platform error, the difference will be refunded.
                 </li>
                 <li>
-                  <strong style={{ color: "#f0f6ff" }}>Campaign found to be fraudulent:</strong> If Kambeng determines through investigation that a campaign was fraudulent and the funds have not yet been disbursed to the creator, we will attempt to refund affected donors.
+                  <strong style={{ color: "#15201a" }}>Campaign found to be fraudulent:</strong> If Kambeng determines through investigation that a campaign was fraudulent and the funds have not yet been disbursed to the creator, we will attempt to refund affected donors.
                 </li>
                 <li>
-                  <strong style={{ color: "#f0f6ff" }}>Campaign cancelled before payout:</strong> If a campaign creator cancels their campaign and requests funds be returned before any payout has been processed, we will refund donors where technically possible.
+                  <strong style={{ color: "#15201a" }}>Campaign cancelled before payout:</strong> If a campaign creator cancels their campaign and requests funds be returned before any payout has been processed, we will refund donors where technically possible.
                 </li>
               </ul>
               <p>
@@ -65,7 +65,7 @@ export default function RefundPolicyPage() {
           body: (
             <>
               <p style={{ marginBottom: 12 }}>
-                To request a refund, email <a href="mailto:support@hexai.gm" style={{ color: "#1dc5ff" }}>support@hexai.gm</a> with:
+                To request a refund, email <a href="mailto:support@hexai.gm" style={{ color: "#14784a" }}>support@hexai.gm</a> with:
               </p>
               <ul style={{ paddingLeft: 20, margin: "0 0 12px", display: "flex", flexDirection: "column", gap: 6 }}>
                 <li>Your full name and account email address.</li>

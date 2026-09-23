@@ -19,8 +19,8 @@ import { useAppFeedback } from "@/components/ui";
 import MediaViewer from "@/components/ui/MediaViewer";
 import { motion } from "framer-motion";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -121,24 +121,24 @@ export default function CampaignImagesPage() {
     }
   };
 
-  if (!campaignId) return <div style={{ color: "#f0f6ff", padding: 32 }}>Invalid campaign ID</div>;
+  if (!campaignId) return <div style={{ color: "#15201a", padding: 32 }}>Invalid campaign ID</div>;
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
         <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-              <Link href="/dashboard/my-campaigns" style={{ fontSize: 12, color: "#4a5568", fontWeight: 500 }}>
+              <Link href="/dashboard/my-campaigns" style={{ fontSize: 12, color: "#6e7872", fontWeight: 500 }}>
                 ← My Campaigns
               </Link>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 4 }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", marginBottom: 4 }}>
               {campaignsLoading ? "Loading…" : campaign?.title ?? "Campaign"}
             </div>
-            <div style={{ fontSize: 13, color: "#6b7a8d" }}>Manage campaign images and proof uploads</div>
+            <div style={{ fontSize: 13, color: "#626d66" }}>Manage campaign images and proof uploads</div>
           </div>
 
           {campaignSlug && (
@@ -146,28 +146,28 @@ export default function CampaignImagesPage() {
               <Link href={`/campaigns/${campaignSlug}`}>
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
-                  border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
-                  color: "#8899aa", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)",
+                  color: "#56625b", fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Public page ↗</button>
               </Link>
               <Link href={`/dashboard/my-campaigns/${campaignId}/updates`}>
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
-                  border: `1px solid rgba(29,197,255,0.25)`, background: "rgba(29,197,255,0.08)",
+                  border: `1px solid rgba(20,120,74,0.25)`, background: "rgba(20,120,74,0.08)",
                   color: BLUE, fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Updates</button>
               </Link>
               <Link href={`/dashboard/my-campaigns/${campaignId}/withdrawals`}>
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
-                  border: "1px solid rgba(27,191,136,0.25)", background: "rgba(27,191,136,0.08)",
+                  border: "1px solid rgba(31,153,96,0.25)", background: "rgba(31,153,96,0.08)",
                   color: GREEN, fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Withdraw funds</button>
               </Link>
               <Link href="/dashboard/kyc">
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
-                  border: "1px solid rgba(27,191,136,0.3)", background: "rgba(27,191,136,0.07)",
+                  border: "1px solid rgba(31,153,96,0.3)", background: "rgba(31,153,96,0.07)",
                   color: GREEN, fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>KYC docs</button>
               </Link>
@@ -176,13 +176,13 @@ export default function CampaignImagesPage() {
         </motion.div>
 
         {/* Tabs */}
-        <motion.div {...fadeUp(0.05)} style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: 3, width: "fit-content" }}>
+        <motion.div {...fadeUp(0.05)} style={{ display: "flex", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 10, padding: 3, width: "fit-content" }}>
           {(["images", "proof", "cover"] as const).map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               padding: "8px 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
-              background: activeTab === tab ? `linear-gradient(135deg, ${BLUE}, #079bd4)` : "transparent",
-              color: activeTab === tab ? "#fff" : "#6b7a8d",
-              boxShadow: activeTab === tab ? "0 2px 10px rgba(29,197,255,0.25)" : "none",
+              background: activeTab === tab ? `${BLUE}` : "transparent",
+              color: activeTab === tab ? "#fff" : "#626d66",
+              boxShadow: activeTab === tab ? "0 2px 10px rgba(20,120,74,0.25)" : "none",
               transition: "all 0.2s",
             }}>
               {tab === "images" ? "Campaign Images" : tab === "proof" ? "Proof & Evidence" : "Cover Image"}
@@ -202,15 +202,15 @@ export default function CampaignImagesPage() {
                 onDrop={(e) => { e.preventDefault(); setDragging(false); void handleFiles(e.dataTransfer.files); }}
                 style={{
                   padding: "36px 24px", borderRadius: 14, textAlign: "center", cursor: "pointer",
-                  border: `2px dashed ${dragging ? BLUE : "rgba(255,255,255,0.1)"}`,
-                  background: dragging ? "rgba(29,197,255,0.05)" : "rgba(255,255,255,0.02)",
+                  border: `2px dashed ${dragging ? BLUE : "rgba(21,32,26,0.1)"}`,
+                  background: dragging ? "rgba(20,120,74,0.05)" : "rgba(21,32,26,0.02)",
                   transition: "all 0.2s",
                 }}
               >
                 <input ref={fileInputRef} type="file" multiple accept="image/png,image/jpeg,image/webp" onChange={(e) => void handleFiles(e.target.files)} style={{ display: "none" }} />
                 <div style={{
                   width: 52, height: 52, borderRadius: 12,
-                  background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.15)",
+                  background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)",
                   display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
                 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -219,10 +219,10 @@ export default function CampaignImagesPage() {
                     <line x1="12" y1="3" x2="12" y2="15" stroke={BLUE} strokeWidth="1.8" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a", marginBottom: 6 }}>
                   {dragging ? "Drop to upload" : "Click to upload or drag & drop"}
                 </div>
-                <div style={{ fontSize: 12, color: "#6b7a8d" }}>PNG, JPEG, WebP · max 10MB each</div>
+                <div style={{ fontSize: 12, color: "#626d66" }}>PNG, JPEG, WebP · max 10MB each</div>
               </div>
 
               {/* Uploading indicators */}
@@ -231,7 +231,7 @@ export default function CampaignImagesPage() {
                   {uploading.map((name) => (
                     <div key={name} style={{
                       display: "flex", alignItems: "center", gap: 10, padding: "8px 14px",
-                      background: "rgba(29,197,255,0.06)", border: "1px solid rgba(29,197,255,0.15)",
+                      background: "rgba(20,120,74,0.06)", border: "1px solid rgba(20,120,74,0.15)",
                       borderRadius: 8,
                     }}>
                       <div style={{ width: 14, height: 14, borderRadius: "50%", border: `2px solid ${BLUE}`, borderTopColor: "transparent", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />
@@ -246,18 +246,18 @@ export default function CampaignImagesPage() {
             <motion.div {...fadeUp(0.12)}>
               {imagesLoading ? (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
-                  {[1,2,3,4].map((i) => <div key={i} style={{ aspectRatio: "1", borderRadius: 10, background: "rgba(255,255,255,0.05)" }} />)}
+                  {[1,2,3,4].map((i) => <div key={i} style={{ aspectRatio: "1", borderRadius: 10, background: "rgba(21,32,26,0.05)" }} />)}
                 </div>
               ) : images && images.length > 0 ? (
                 <>
-                  <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, color: "#6e7872", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 12 }}>
                     {images.length} image{images.length !== 1 ? "s" : ""} uploaded
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
                     {images.map((img, imgIdx) => (
                       <div key={img.file_name} style={{
                         borderRadius: 10, overflow: "hidden",
-                        background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+                        background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)",
                         position: "relative", aspectRatio: "1",
                       }}>
                         <Image src={img.url} alt={img.original_name ?? img.file_name} fill unoptimized sizes="180px" style={{ objectFit: "cover" }} />
@@ -265,7 +265,7 @@ export default function CampaignImagesPage() {
                           <div style={{
                             position: "absolute", top: 7, left: 7, zIndex: 2,
                             padding: "2px 8px", borderRadius: 6,
-                            background: "rgba(29,197,255,0.9)", color: "#fff",
+                            background: "rgba(20,120,74,0.9)", color: "#fff",
                             fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
                           }}>Cover</div>
                         )}
@@ -281,12 +281,12 @@ export default function CampaignImagesPage() {
                         >
                           <button onClick={() => setViewer({ src: img.url, type: img.content_type ?? "image/jpeg" })} style={{
                             padding: "6px 14px", borderRadius: 7, border: "none",
-                            background: "rgba(255,255,255,0.15)", color: "#fff",
+                            background: "rgba(21,32,26,0.15)", color: "#fff",
                             fontSize: 11, fontWeight: 600, cursor: "pointer",
                           }}>View</button>
                           <button onClick={() => void handleDelete(img.file_name)} style={{
                             padding: "6px 14px", borderRadius: 7, border: "none",
-                            background: "rgba(239,68,68,0.3)", color: "#fca5a5",
+                            background: "rgba(239,68,68,0.3)", color: "#b42323",
                             fontSize: 11, fontWeight: 600, cursor: "pointer",
                           }}>Delete</button>
                         </div>
@@ -297,10 +297,10 @@ export default function CampaignImagesPage() {
                           background: "linear-gradient(transparent, rgba(0,0,0,0.8))",
                           pointerEvents: "none",
                         }}>
-                          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <div style={{ fontSize: 10, color: "rgba(21,32,26,0.7)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {img.original_name ?? img.file_name}
                           </div>
-                          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>{(img.size / 1024).toFixed(0)} KB</div>
+                          <div style={{ fontSize: 9, color: "rgba(21,32,26,0.4)" }}>{(img.size / 1024).toFixed(0)} KB</div>
                         </div>
                       </div>
                     ))}
@@ -309,10 +309,10 @@ export default function CampaignImagesPage() {
               ) : (
                 <div style={{
                   padding: "40px 24px", textAlign: "center",
-                  background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.08)",
+                  background: "rgba(21,32,26,0.02)", border: "1px dashed rgba(21,32,26,0.08)",
                   borderRadius: 14,
                 }}>
-                  <div style={{ fontSize: 13, color: "#4a5568" }}>No images yet — upload your first one above</div>
+                  <div style={{ fontSize: 13, color: "#6e7872" }}>No images yet — upload your first one above</div>
                 </div>
               )}
             </motion.div>
@@ -324,11 +324,11 @@ export default function CampaignImagesPage() {
               <>
                 {/* Upload form */}
                 <div style={{
-                  background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+                  background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)",
                   borderRadius: 14, padding: "24px",
                 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Upload Proof & Evidence</div>
-                  <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 20 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>Upload Proof & Evidence</div>
+                  <div style={{ fontSize: 13, color: "#626d66", marginBottom: 20 }}>
                     Add receipts, photos, ID screenshots, or documents that show donors how funds were used.
                   </div>
                   <ProofUploadForm slug={campaignSlug} />
@@ -336,11 +336,11 @@ export default function CampaignImagesPage() {
 
                 {/* Existing proofs */}
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#8899aa", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 12 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#56625b", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 12 }}>
                     Uploaded Documents ({proofs.length})
                   </div>
                   {proofsLoading ? (
-                    <div style={{ fontSize: 13, color: "#4a5568", padding: "20px 0" }}>Loading…</div>
+                    <div style={{ fontSize: 13, color: "#6e7872", padding: "20px 0" }}>Loading…</div>
                   ) : (
                     <ProofList
                       proofs={proofs}
@@ -352,19 +352,19 @@ export default function CampaignImagesPage() {
                 </div>
               </>
             ) : (
-              <div style={{ fontSize: 13, color: "#4a5568", padding: 24 }}>Loading campaign…</div>
+              <div style={{ fontSize: 13, color: "#6e7872", padding: 24 }}>Loading campaign…</div>
             )}
           </motion.div>
         ) : (
           /* Cover Image tab */
           <motion.div {...fadeUp(0.08)}>
             <div style={{
-              background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+              background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 14, padding: "24px", display: "flex", flexDirection: "column", gap: 20,
             }}>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Cover Image</div>
-                <div style={{ fontSize: 13, color: "#6b7a8d" }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>Cover Image</div>
+                <div style={{ fontSize: 13, color: "#626d66" }}>
                   This image appears at the top of your public campaign page and in campaign cards.
                 </div>
               </div>
@@ -372,12 +372,12 @@ export default function CampaignImagesPage() {
               {/* Current cover preview */}
               {campaign?.cover_image_url && (
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10 }}>
                     Current cover
                   </div>
                   <div style={{
                     position: "relative", borderRadius: 12, overflow: "hidden",
-                    border: "1px solid rgba(255,255,255,0.09)",
+                    border: "1px solid rgba(21,32,26,0.09)",
                     maxWidth: 480, aspectRatio: "16/9",
                   }}>
                     <Image
@@ -394,7 +394,7 @@ export default function CampaignImagesPage() {
 
               {/* Upload zone */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 10 }}>
                   {campaign?.cover_image_url ? "Replace cover" : "Upload cover"}
                 </div>
                 <div
@@ -405,8 +405,8 @@ export default function CampaignImagesPage() {
                   onDrop={(e) => { e.preventDefault(); setCoverDragging(false); void handleCoverFile(e.dataTransfer.files); }}
                   style={{
                     padding: "36px 24px", borderRadius: 14, textAlign: "center", cursor: "pointer",
-                    border: `2px dashed ${coverDragging ? BLUE : "rgba(255,255,255,0.1)"}`,
-                    background: coverDragging ? "rgba(29,197,255,0.05)" : "rgba(255,255,255,0.02)",
+                    border: `2px dashed ${coverDragging ? BLUE : "rgba(21,32,26,0.1)"}`,
+                    background: coverDragging ? "rgba(20,120,74,0.05)" : "rgba(21,32,26,0.02)",
                     transition: "all 0.2s",
                     maxWidth: 480,
                   }}
@@ -420,7 +420,7 @@ export default function CampaignImagesPage() {
                   />
                   <div style={{
                     width: 52, height: 52, borderRadius: 12,
-                    background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.15)",
+                    background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)",
                     display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
                   }}>
                     {coverUploading ? (
@@ -433,10 +433,10 @@ export default function CampaignImagesPage() {
                       </svg>
                     )}
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 6 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a", marginBottom: 6 }}>
                     {coverUploading ? "Uploading…" : coverDragging ? "Drop to upload" : "Click to upload or drag & drop"}
                   </div>
-                  <div style={{ fontSize: 12, color: "#6b7a8d" }}>PNG, JPEG, WebP · max 8MB</div>
+                  <div style={{ fontSize: 12, color: "#626d66" }}>PNG, JPEG, WebP · max 8MB</div>
                 </div>
               </div>
             </div>

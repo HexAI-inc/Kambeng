@@ -24,8 +24,8 @@ type PaymentMethod = "wave" | "aps" | "card";
 function ProgressBar({ value, max }: { value: number; max: number }) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
-    <div style={{ height: 6, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden" }}>
-      <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg, #1dc5ff, #079bd4)", borderRadius: 3, transition: "width 0.6s ease" }} />
+    <div style={{ height: 6, background: "rgba(21,32,26,0.08)", borderRadius: 3, overflow: "hidden" }}>
+      <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg, #14784a, #0f5e3a)", borderRadius: 3, transition: "width 0.6s ease" }} />
     </div>
   );
 }
@@ -61,8 +61,8 @@ const METHODS: { id: PaymentMethod; label: string; shortLabel: string }[] = [
 ];
 
 const METHOD_ACCENT: Record<PaymentMethod, string> = {
-  wave: "#1dc5ff",
-  aps: "#f59e0b",
+  wave: "#14784a",
+  aps: "#c97a06",
   card: "#6366f1",
 };
 
@@ -257,20 +257,20 @@ export default function QuickPayPage() {
 
   const inputStyle = {
     width: "100%", padding: "12px 16px", borderRadius: 10,
-    border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
-    color: "#f0f6ff", fontSize: 15, outline: "none",
+    border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+    color: "#15201a", fontSize: 15, outline: "none",
   };
 
   const labelStyle = {
     display: "block" as const,
-    fontSize: 11, color: "#8899aa", fontWeight: 600 as const,
+    fontSize: 11, color: "#56625b", fontWeight: 600 as const,
     marginBottom: 7, letterSpacing: "0.05em",
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0f1a", padding: "32px clamp(16px, 4vw, 48px) 80px" }}>
+    <div style={{ minHeight: "100vh", background: "#f6f4ef", padding: "32px clamp(16px, 4vw, 48px) 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <Link href={`/campaigns/${slug}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#8899aa", fontSize: 14, marginBottom: 32 }}>
+        <Link href={`/campaigns/${slug}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#56625b", fontSize: 14, marginBottom: 32 }}>
           ← Back to campaign
         </Link>
 
@@ -279,48 +279,48 @@ export default function QuickPayPage() {
           {/* ── Left: Campaign info ── */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
             {isLoading ? (
-              <div style={{ background: "#111827", borderRadius: 20, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                <div style={{ height: 280, background: "rgba(255,255,255,0.04)" }} />
+              <div style={{ background: "#ffffff", borderRadius: 20, border: "1px solid rgba(21,32,26,0.06)", overflow: "hidden" }}>
+                <div style={{ height: 280, background: "rgba(21,32,26,0.04)" }} />
                 <div style={{ padding: 28 }}>
                   {[["30%", 14], ["70%", 24], ["90%", 14]].map(([w, h], i) => (
-                    <div key={i} style={{ height: h as number, width: w as string, background: "rgba(255,255,255,0.05)", borderRadius: 6, marginBottom: 16 }} />
+                    <div key={i} style={{ height: h as number, width: w as string, background: "rgba(21,32,26,0.05)", borderRadius: 6, marginBottom: 16 }} />
                   ))}
                 </div>
               </div>
             ) : campaign ? (
-              <div style={{ background: "#111827", borderRadius: 20, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+              <div style={{ background: "#ffffff", borderRadius: 20, border: "1px solid rgba(21,32,26,0.06)", overflow: "hidden" }}>
                 {campaign.cover_image_url && (
                   <div style={{ position: "relative", height: 280 }}>
                     <Image src={campaign.cover_image_url} alt={campaign.title} fill unoptimized sizes="(max-width: 768px) 100vw, 60vw" style={{ objectFit: "cover" }} />
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(17,24,39,0.95))" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(21,32,26,0.95))" }} />
                   </div>
                 )}
                 <div style={{ padding: 28 }}>
-                  <div style={{ display: "inline-block", padding: "3px 10px", borderRadius: 4, background: "rgba(29,197,255,0.1)", color: "#1dc5ff", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
+                  <div style={{ display: "inline-block", padding: "3px 10px", borderRadius: 4, background: "rgba(20,120,74,0.1)", color: "#14784a", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
                     {campaign.mode}
                   </div>
-                  <h2 style={{ margin: "0 0 12px", fontSize: 24, fontWeight: 800, color: "#f0f6ff", lineHeight: 1.2 }}>{campaign.title}</h2>
-                  <p style={{ margin: "0 0 24px", color: "#8899aa", lineHeight: 1.7, fontSize: 15 }}>{campaign.description}</p>
+                  <h2 style={{ margin: "0 0 12px", fontSize: 24, fontWeight: 800, color: "#15201a", lineHeight: 1.2 }}>{campaign.title}</h2>
+                  <p style={{ margin: "0 0 24px", color: "#56625b", lineHeight: 1.7, fontSize: 15 }}>{campaign.description}</p>
                   <ProgressBar value={campaign.amount_raised} max={campaign.target_amount ?? 0} />
                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10 }}>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: "#1dc5ff" }}>{campaign.amount_raised.toLocaleString()} GMD raised</span>
-                    <span style={{ fontSize: 13, color: "#4a5568" }}>{percent.toFixed(0)}% of {(campaign.target_amount ?? 0).toLocaleString()} GMD</span>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: "#14784a" }}>{campaign.amount_raised.toLocaleString()} GMD raised</span>
+                    <span style={{ fontSize: 13, color: "#6e7872" }}>{percent.toFixed(0)}% of {(campaign.target_amount ?? 0).toLocaleString()} GMD</span>
                   </div>
                   {activeGoals.length > 0 && (
                     <div style={{ marginTop: 24 }}>
-                      <p style={{ color: "#8899aa", fontSize: 12, fontWeight: 600, marginBottom: 12, letterSpacing: "0.05em" }}>ACTIVE GOALS</p>
+                      <p style={{ color: "#56625b", fontSize: 12, fontWeight: 600, marginBottom: 12, letterSpacing: "0.05em" }}>ACTIVE GOALS</p>
                       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {activeGoals.map((goal: CampaignGoal) => {
                           const gPct = Math.min(100, (goal.amount_raised / goal.target_amount) * 100);
                           const active = selectedGoalId === goal.id;
                           return (
-                            <div key={goal.id} onClick={() => setSelectedGoalId(active ? null : goal.id)} style={{ padding: "14px 16px", background: "rgba(255,255,255,0.03)", borderRadius: 12, border: active ? "1px solid rgba(29,197,255,0.4)" : "1px solid rgba(255,255,255,0.06)", cursor: "pointer", transition: "all 0.2s" }}>
+                            <div key={goal.id} onClick={() => setSelectedGoalId(active ? null : goal.id)} style={{ padding: "14px 16px", background: "rgba(21,32,26,0.03)", borderRadius: 12, border: active ? "1px solid rgba(20,120,74,0.4)" : "1px solid rgba(21,32,26,0.06)", cursor: "pointer", transition: "all 0.2s" }}>
                               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                                <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#1dc5ff" : "#f0f6ff" }}>{goal.title}</span>
-                                <span style={{ fontSize: 12, color: "#4a5568" }}>{gPct.toFixed(0)}%</span>
+                                <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#14784a" : "#15201a" }}>{goal.title}</span>
+                                <span style={{ fontSize: 12, color: "#6e7872" }}>{gPct.toFixed(0)}%</span>
                               </div>
                               <ProgressBar value={goal.amount_raised} max={goal.target_amount} />
-                              <div style={{ fontSize: 12, color: "#4a5568", marginTop: 6 }}>{goal.amount_raised.toLocaleString()} / {goal.target_amount.toLocaleString()} GMD</div>
+                              <div style={{ fontSize: 12, color: "#6e7872", marginTop: 6 }}>{goal.amount_raised.toLocaleString()} / {goal.target_amount.toLocaleString()} GMD</div>
                             </div>
                           );
                         })}
@@ -334,14 +334,14 @@ export default function QuickPayPage() {
 
           {/* ── Right: Donation form ── */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.1 }} style={{ position: "sticky", top: 88 }}>
-            <div style={{ background: "#111827", borderRadius: 20, border: "1px solid rgba(255,255,255,0.08)", padding: 28, boxShadow: "0 24px 60px rgba(0,0,0,0.4)" }}>
-              <h3 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 700, color: "#f0f6ff" }}>Make a donation</h3>
-              <p style={{ margin: "0 0 22px", fontSize: 13, color: selectedGoal ? "#1dc5ff" : "#8899aa" }}>
+            <div style={{ background: "#ffffff", borderRadius: 20, border: "1px solid rgba(21,32,26,0.08)", padding: 28, boxShadow: "0 24px 60px rgba(21,32,26,0.12)" }}>
+              <h3 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 700, color: "#15201a" }}>Make a donation</h3>
+              <p style={{ margin: "0 0 22px", fontSize: 13, color: selectedGoal ? "#14784a" : "#56625b" }}>
                 {selectedGoal ? `Funding: ${selectedGoal.title}` : "General campaign support"}
               </p>
 
               {/* ── Payment method tabs ── */}
-              <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 4, gap: 2, marginBottom: 24 }}>
+              <div style={{ display: "flex", background: "rgba(21,32,26,0.04)", borderRadius: 12, padding: 4, gap: 2, marginBottom: 24 }}>
                 {METHODS.map((m) => {
                   const active = paymentMethod === m.id;
                   return (
@@ -351,7 +351,7 @@ export default function QuickPayPage() {
                       style={{
                         flex: 1, padding: "9px 6px", borderRadius: 9, border: "none",
                         background: active ? METHOD_ACCENT[m.id] : "transparent",
-                        color: active ? "#fff" : "#6b7a8d",
+                        color: active ? "#fff" : "#626d66",
                         fontSize: 13, fontWeight: active ? 700 : 500,
                         cursor: "pointer", transition: "all 0.2s",
                         boxShadow: active ? `0 4px 14px ${METHOD_ACCENT[m.id]}55` : "none",
@@ -371,9 +371,9 @@ export default function QuickPayPage() {
                   {QUICK_AMOUNTS.map((qa) => (
                     <button key={qa} onClick={() => setAmount(String(qa))} style={{
                       padding: "8px 4px", borderRadius: 8,
-                      border: amount === String(qa) ? `1px solid ${accent}99` : "1px solid rgba(255,255,255,0.08)",
-                      background: amount === String(qa) ? `${accent}18` : "rgba(255,255,255,0.04)",
-                      color: amount === String(qa) ? "#f0f6ff" : "#8899aa",
+                      border: amount === String(qa) ? `1px solid ${accent}99` : "1px solid rgba(21,32,26,0.08)",
+                      background: amount === String(qa) ? `${accent}18` : "rgba(21,32,26,0.04)",
+                      color: amount === String(qa) ? "#15201a" : "#56625b",
                       fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s",
                     }}>
                       {qa}
@@ -386,7 +386,7 @@ export default function QuickPayPage() {
                   value={amount} onChange={(e) => setAmount(e.target.value)}
                   style={{ ...inputStyle, fontSize: 16, fontWeight: 600 }}
                   onFocus={(e) => { e.target.style.borderColor = `${accent}66`; }}
-                  onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                  onBlur={(e) => { e.target.style.borderColor = "rgba(21,32,26,0.1)"; }}
                 />
               </div>
 
@@ -398,7 +398,7 @@ export default function QuickPayPage() {
                   value={donorName} onChange={(e) => setDonorName(e.target.value)}
                   style={inputStyle}
                   onFocus={(e) => { e.target.style.borderColor = `${accent}66`; }}
-                  onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                  onBlur={(e) => { e.target.style.borderColor = "rgba(21,32,26,0.1)"; }}
                 />
               </div>
 
@@ -410,13 +410,13 @@ export default function QuickPayPage() {
                   value={message} onChange={(e) => setMessage(e.target.value)}
                   style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", fontSize: 14 }}
                   onFocus={(e) => { e.target.style.borderColor = `${accent}66`; }}
-                  onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                  onBlur={(e) => { e.target.style.borderColor = "rgba(21,32,26,0.1)"; }}
                 />
               </div>
 
               {/* ── Error ── */}
               {error && (
-                <div style={{ padding: "11px 14px", marginBottom: 16, borderRadius: 10, background: "rgba(255,107,107,0.1)", border: "1px solid rgba(255,107,107,0.2)", color: "#ff6b6b", fontSize: 13 }}>
+                <div style={{ padding: "11px 14px", marginBottom: 16, borderRadius: 10, background: "rgba(255,107,107,0.1)", border: "1px solid rgba(255,107,107,0.2)", color: "#d42f2f", fontSize: 13 }}>
                   {error}
                 </div>
               )}
@@ -431,10 +431,10 @@ export default function QuickPayPage() {
                       disabled={isSubmitting}
                       style={{
                         width: "100%", padding: "14px", borderRadius: 12, border: "none",
-                        background: isSubmitting ? "rgba(29,197,255,0.4)" : "linear-gradient(135deg, #1dc5ff, #079bd4)",
+                        background: isSubmitting ? "rgba(20,120,74,0.4)" : "#14784a",
                         color: "#fff", fontSize: 16, fontWeight: 700,
                         cursor: isSubmitting ? "not-allowed" : "pointer",
-                        boxShadow: isSubmitting ? "none" : "0 8px 24px rgba(29,197,255,0.3)",
+                        boxShadow: isSubmitting ? "none" : "0 8px 24px rgba(20,120,74,0.3)",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                         transition: "all 0.2s",
                       }}
@@ -443,8 +443,8 @@ export default function QuickPayPage() {
                       {isSubmitting ? "Redirecting to Wave…" : "Donate with Wave"}
                     </button>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center", marginTop: 12 }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z" fill="rgba(27,191,136,0.2)" stroke="#1bbf88" strokeWidth="1.5" /><path d="M9 12l2 2 4-4" stroke="#1bbf88" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      <span style={{ fontSize: 11, color: "#4a5568" }}>Secured by Wave Mobile Money</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z" fill="rgba(31,153,96,0.2)" stroke="#1f9960" strokeWidth="1.5" /><path d="M9 12l2 2 4-4" stroke="#1f9960" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      <span style={{ fontSize: 11, color: "#6e7872" }}>Secured by Wave Mobile Money</span>
                     </div>
                   </motion.div>
                 )}
@@ -454,7 +454,7 @@ export default function QuickPayPage() {
                     <div style={{ marginBottom: 14 }}>
                       <label style={labelStyle}>MOBILE NUMBER</label>
                       <div style={{ position: "relative" }}>
-                        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#8899aa", fontSize: 14, fontWeight: 600, userSelect: "none" }}>
+                        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#56625b", fontSize: 14, fontWeight: 600, userSelect: "none" }}>
                           +220
                         </span>
                         <input
@@ -466,11 +466,11 @@ export default function QuickPayPage() {
                           // final 7 digits at submit time.
                           onChange={(e) => setApsPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                           style={{ ...inputStyle, paddingLeft: 62 }}
-                          onFocus={(e) => { e.target.style.borderColor = "rgba(245,158,11,0.5)"; }}
-                          onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                          onFocus={(e) => { e.target.style.borderColor = "rgba(201,122,6,0.5)"; }}
+                          onBlur={(e) => { e.target.style.borderColor = "rgba(21,32,26,0.1)"; }}
                         />
                       </div>
-                      <p style={{ fontSize: 11, color: "#4a5568", marginTop: 6 }}>
+                      <p style={{ fontSize: 11, color: "#6e7872", marginTop: 6 }}>
                         APS will text a one-time code to this number to confirm the payment.
                       </p>
                     </div>
@@ -479,17 +479,17 @@ export default function QuickPayPage() {
                       disabled={isSubmitting}
                       style={{
                         width: "100%", padding: "14px", borderRadius: 12, border: "none",
-                        background: isSubmitting ? "rgba(245,158,11,0.4)" : "linear-gradient(135deg, #f59e0b, #d97706)",
+                        background: isSubmitting ? "rgba(201,122,6,0.4)" : "linear-gradient(135deg, #c97a06, #d97706)",
                         color: "#fff", fontSize: 16, fontWeight: 700,
                         cursor: isSubmitting ? "not-allowed" : "pointer",
-                        boxShadow: isSubmitting ? "none" : "0 8px 24px rgba(245,158,11,0.3)",
+                        boxShadow: isSubmitting ? "none" : "0 8px 24px rgba(201,122,6,0.3)",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                         transition: "all 0.2s",
                       }}
                     >
                       {isSubmitting ? "Sending code…" : "Send verification code"}
                     </button>
-                    <p style={{ fontSize: 11, color: "#4a5568", textAlign: "center", marginTop: 12 }}>
+                    <p style={{ fontSize: 11, color: "#6e7872", textAlign: "center", marginTop: 12 }}>
                       Secured by APS Mobile Money
                     </p>
                   </motion.div>
@@ -504,15 +504,15 @@ export default function QuickPayPage() {
                         value={apsOtp}
                         onChange={(e) => setApsOtp(e.target.value.replace(/\D/g, "").slice(0, 10))}
                         style={{ ...inputStyle, textAlign: "center", letterSpacing: "0.3em", fontSize: 20, fontWeight: 700 }}
-                        onFocus={(e) => { e.target.style.borderColor = "rgba(245,158,11,0.5)"; }}
-                        onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                        onFocus={(e) => { e.target.style.borderColor = "rgba(201,122,6,0.5)"; }}
+                        onBlur={(e) => { e.target.style.borderColor = "rgba(21,32,26,0.1)"; }}
                       />
-                      <p style={{ fontSize: 11, color: "#4a5568", marginTop: 6 }}>
+                      <p style={{ fontSize: 11, color: "#6e7872", marginTop: 6 }}>
                         Enter the code sent to +220{normalizeApsMobile(apsPhone) ?? apsPhone}.{" "}
                         <button
                           type="button"
                           onClick={() => { setApsStep("phone"); setApsOtp(""); setError(null); }}
-                          style={{ background: "none", border: "none", padding: 0, color: "#f59e0b", fontSize: 11, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
+                          style={{ background: "none", border: "none", padding: 0, color: "#c97a06", fontSize: 11, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
                         >
                           Change number
                         </button>
@@ -523,10 +523,10 @@ export default function QuickPayPage() {
                       disabled={isSubmitting}
                       style={{
                         width: "100%", padding: "14px", borderRadius: 12, border: "none",
-                        background: isSubmitting ? "rgba(245,158,11,0.4)" : "linear-gradient(135deg, #f59e0b, #d97706)",
+                        background: isSubmitting ? "rgba(201,122,6,0.4)" : "linear-gradient(135deg, #c97a06, #d97706)",
                         color: "#fff", fontSize: 16, fontWeight: 700,
                         cursor: isSubmitting ? "not-allowed" : "pointer",
-                        boxShadow: isSubmitting ? "none" : "0 8px 24px rgba(245,158,11,0.3)",
+                        boxShadow: isSubmitting ? "none" : "0 8px 24px rgba(201,122,6,0.3)",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                         transition: "all 0.2s",
                       }}
@@ -544,8 +544,8 @@ export default function QuickPayPage() {
                       borderRadius: 10, padding: "10px 14px", marginBottom: 14,
                     }}>
                       <LockOutlined style={{ color: "#6366f1", fontSize: 13 }} />
-                      <span style={{ fontSize: 12, color: "#8899aa", flex: 1 }}>
-                        Secured by <strong style={{ color: "#f0f6ff" }}>Waychit</strong>
+                      <span style={{ fontSize: 12, color: "#56625b", flex: 1 }}>
+                        Secured by <strong style={{ color: "#15201a" }}>Waychit</strong>
                       </span>
                       <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                         <VisaIcon />
@@ -559,9 +559,9 @@ export default function QuickPayPage() {
                         value={donorEmail} onChange={(e) => setDonorEmail(e.target.value)}
                         style={inputStyle}
                         onFocus={(e) => { e.target.style.borderColor = "rgba(99,102,241,0.5)"; }}
-                        onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                        onBlur={(e) => { e.target.style.borderColor = "rgba(21,32,26,0.1)"; }}
                       />
-                      <p style={{ fontSize: 11, color: "#4a5568", marginTop: 6 }}>
+                      <p style={{ fontSize: 11, color: "#6e7872", marginTop: 6 }}>
                         We&apos;ll send your receipt here.
                       </p>
                     </div>
@@ -581,7 +581,7 @@ export default function QuickPayPage() {
                       <CreditCardOutlined />
                       {isSubmitting ? "Redirecting to Card checkout…" : "Donate with Card"}
                     </button>
-                    <p style={{ fontSize: 11, color: "#4a5568", textAlign: "center", marginTop: 12 }}>
+                    <p style={{ fontSize: 11, color: "#6e7872", textAlign: "center", marginTop: 12 }}>
                       You&apos;ll be redirected to a secure page to enter your card details.
                     </p>
                   </motion.div>

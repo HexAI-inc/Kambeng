@@ -7,9 +7,9 @@ import { motion } from "framer-motion";
 import { useAdminUsers, useUpdateAdminUserStatus } from "@/hooks/use-frontend-data";
 import { AdminUserOverview } from "@/types/frontend";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
-const RED = "#ef4444";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
+const RED = "#d42f2f";
 
 function fadeUp(delay = 0) {
   return {
@@ -54,43 +54,43 @@ export default function AdminUsersPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
         {toast && (
           <div style={{
             position: "fixed", top: 24, right: 24, zIndex: 999,
             padding: "12px 20px", borderRadius: 10,
-            background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)",
-            border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`,
+            background: toast.ok ? "rgba(31,153,96,0.15)" : "rgba(239,68,68,0.15)",
+            border: `1px solid ${toast.ok ? "rgba(31,153,96,0.3)" : "rgba(239,68,68,0.3)"}`,
             color: toast.ok ? GREEN : RED, fontSize: 13, fontWeight: 600,
-            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+            boxShadow: "0 8px 32px rgba(21,32,26,0.12)",
           }}>{toast.msg}</div>
         )}
 
         <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Users</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>{total} total accounts</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Users</div>
+            <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>{total} total accounts</div>
           </div>
           <input
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search by name, email, or Wave…"
             style={{
-              padding: "9px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)",
-              background: "rgba(255,255,255,0.05)", color: "#f0f6ff", fontSize: 13, outline: "none", width: 260,
+              padding: "9px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)",
+              background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 13, outline: "none", width: 260,
             }}
           />
         </motion.div>
 
         <motion.div {...fadeUp(0.06)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, overflowX: "auto" }}>
             <div className="admin-table-wrap" style={{ minWidth: 740 }}>
             <div className="admin-table-header" style={{
               display: "grid", gridTemplateColumns: "1fr 100px 110px 140px 60px 160px",
-              padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)",
-              fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em",
+              padding: "10px 18px", borderBottom: "1px solid rgba(21,32,26,0.06)",
+              fontSize: 10, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.07em",
             }}>
               <div>User</div><div>Role</div><div>Status</div><div>KYC</div><div>Camps</div><div>Actions</div>
             </div>
@@ -98,10 +98,10 @@ export default function AdminUsersPage() {
             {isLoading ? (
               <div style={{ padding: 40, textAlign: "center" }}>
                 <div style={{ width: 32, height: 32, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
-                <div style={{ color: "#4a5568", fontSize: 13 }}>Loading users…</div>
+                <div style={{ color: "#6e7872", fontSize: 13 }}>Loading users…</div>
               </div>
             ) : pageRows.length === 0 ? (
-              <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No users found</div>
+              <div style={{ padding: "48px 24px", textAlign: "center", color: "#6e7872", fontSize: 14 }}>No users found</div>
             ) : pageRows.map((u: AdminUserOverview, i) => (
               <motion.div
                 key={u.id}
@@ -110,44 +110,44 @@ export default function AdminUsersPage() {
                 style={{
                   display: "grid", gridTemplateColumns: "1fr 100px 110px 140px 60px 160px",
                   padding: "13px 18px", alignItems: "center",
-                  borderBottom: "1px solid rgba(255,255,255,0.04)",
+                  borderBottom: "1px solid rgba(21,32,26,0.04)",
                   transition: "background 0.15s",
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(21,32,26,0.02)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
                 <div data-label="User">
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>{u.full_name}</div>
-                  <div style={{ fontSize: 11, color: "#4a5568" }}>{u.email}</div>
-                  {u.wave_number && <div style={{ fontSize: 11, color: "#4a5568", fontFamily: "monospace" }}>{u.wave_number}</div>}
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a" }}>{u.full_name}</div>
+                  <div style={{ fontSize: 11, color: "#6e7872" }}>{u.email}</div>
+                  {u.wave_number && <div style={{ fontSize: 11, color: "#6e7872", fontFamily: "monospace" }}>{u.wave_number}</div>}
                 </div>
                 <div data-label="Role">
                   <Chip
                     label={String(u.role)}
-                    color={u.role === "ADMIN" ? "#f97316" : BLUE}
-                    bg={u.role === "ADMIN" ? "rgba(249,115,22,0.1)" : "rgba(29,197,255,0.1)"}
-                    border={u.role === "ADMIN" ? "rgba(249,115,22,0.25)" : "rgba(29,197,255,0.2)"}
+                    color={u.role === "ADMIN" ? "#e8650f" : BLUE}
+                    bg={u.role === "ADMIN" ? "rgba(232,101,15,0.1)" : "rgba(20,120,74,0.1)"}
+                    border={u.role === "ADMIN" ? "rgba(232,101,15,0.25)" : "rgba(20,120,74,0.2)"}
                   />
                 </div>
                 <div data-label="Status">
                   <Chip
                     label={u.is_active ? "Active" : "Suspended"}
                     color={u.is_active ? GREEN : RED}
-                    bg={u.is_active ? "rgba(27,191,136,0.1)" : "rgba(239,68,68,0.1)"}
-                    border={u.is_active ? "rgba(27,191,136,0.25)" : "rgba(239,68,68,0.25)"}
+                    bg={u.is_active ? "rgba(31,153,96,0.1)" : "rgba(239,68,68,0.1)"}
+                    border={u.is_active ? "rgba(31,153,96,0.25)" : "rgba(239,68,68,0.25)"}
                   />
                 </div>
                 <div data-label="KYC">
                   {u.kyc_status && (
                     <Chip
                       label={String(u.kyc_status)}
-                      color={u.kyc_status === "APPROVED" ? GREEN : u.kyc_status === "REJECTED" ? RED : "#f97316"}
-                      bg={u.kyc_status === "APPROVED" ? "rgba(27,191,136,0.1)" : u.kyc_status === "REJECTED" ? "rgba(239,68,68,0.1)" : "rgba(249,115,22,0.1)"}
-                      border={u.kyc_status === "APPROVED" ? "rgba(27,191,136,0.25)" : u.kyc_status === "REJECTED" ? "rgba(239,68,68,0.25)" : "rgba(249,115,22,0.25)"}
+                      color={u.kyc_status === "APPROVED" ? GREEN : u.kyc_status === "REJECTED" ? RED : "#e8650f"}
+                      bg={u.kyc_status === "APPROVED" ? "rgba(31,153,96,0.1)" : u.kyc_status === "REJECTED" ? "rgba(239,68,68,0.1)" : "rgba(232,101,15,0.1)"}
+                      border={u.kyc_status === "APPROVED" ? "rgba(31,153,96,0.25)" : u.kyc_status === "REJECTED" ? "rgba(239,68,68,0.25)" : "rgba(232,101,15,0.25)"}
                     />
                   )}
                 </div>
-                <div data-label="Campaigns" style={{ fontSize: 13, color: "#8899aa", fontWeight: 600 }}>{u.campaign_count ?? 0}</div>
+                <div data-label="Campaigns" style={{ fontSize: 13, color: "#56625b", fontWeight: 600 }}>{u.campaign_count ?? 0}</div>
                 <div data-label="Actions">
                   <div style={{ display: "flex", gap: 6 }}>
                   <button onClick={() => router.push(`/admin/users/${u.id}/view`)} style={btnStyle("default")}>View</button>
@@ -191,13 +191,13 @@ export default function AdminUsersPage() {
 
 function btnStyle(variant: "default" | "green" | "red"): React.CSSProperties {
   const map = {
-    default: { color: "#8899aa", border: "rgba(255,255,255,0.1)", bg: "rgba(255,255,255,0.04)" },
-    green:   { color: "#1bbf88", border: "rgba(27,191,136,0.25)", bg: "rgba(27,191,136,0.08)" },
-    red:     { color: "#ef4444", border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" },
+    default: { color: "#56625b", border: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" },
+    green:   { color: "#1f9960", border: "rgba(31,153,96,0.25)", bg: "rgba(31,153,96,0.08)" },
+    red:     { color: "#d42f2f", border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" },
   }[variant];
   return { padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid ${map.border}`, background: map.bg, color: map.color, cursor: "pointer" };
 }
 
 function pageBtnStyle(active: boolean): React.CSSProperties {
-  return { width: 32, height: 32, borderRadius: 8, fontSize: 13, fontWeight: 700, border: `1px solid ${active ? "rgba(29,197,255,0.4)" : "rgba(255,255,255,0.1)"}`, background: active ? "rgba(29,197,255,0.12)" : "rgba(255,255,255,0.03)", color: active ? "#1dc5ff" : "#8899aa", cursor: "pointer" };
+  return { width: 32, height: 32, borderRadius: 8, fontSize: 13, fontWeight: 700, border: `1px solid ${active ? "rgba(20,120,74,0.4)" : "rgba(21,32,26,0.1)"}`, background: active ? "rgba(20,120,74,0.12)" : "rgba(21,32,26,0.03)", color: active ? "#14784a" : "#56625b", cursor: "pointer" };
 }

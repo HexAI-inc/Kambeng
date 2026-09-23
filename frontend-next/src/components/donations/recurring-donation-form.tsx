@@ -182,16 +182,16 @@ export function RecurringDonationForm({
                 {/* Summary */}
                 <div
                   style={{
-                    background: "rgba(29,197,255,0.05)",
+                    background: "rgba(20,120,74,0.05)",
                     padding: 12,
                     borderRadius: 4,
-                    border: "1px solid rgba(29,197,255,0.2)",
+                    border: "1px solid rgba(20,120,74,0.2)",
                   }}
                 >
                   <AppText strong style={{ marginBottom: 4 }}>
                     You&apos;ll donate:
                   </AppText>
-                  <AppText style={{ fontSize: 16, color: "#1dc5ff", marginBottom: 8 }}>
+                  <AppText style={{ fontSize: 16, color: "#14784a", marginBottom: 8 }}>
                     {form.watch("amount")} GMD {form.watch("frequency").toLowerCase()}
                   </AppText>
                   <AppText type="secondary" style={{ fontSize: 12 }}>

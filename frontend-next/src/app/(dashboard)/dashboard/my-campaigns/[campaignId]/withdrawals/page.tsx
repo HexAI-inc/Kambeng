@@ -8,8 +8,8 @@ import { motion } from "framer-motion";
 import { useAppFeedback } from "@/components/ui";
 import { useCampaignWithdrawalSummary, useSessionProfile, useWithdrawCampaignFunds } from "@/hooks/use-frontend-data";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
 
 function fadeUp(delay = 0) {
   return {
@@ -27,11 +27,11 @@ function fmt(value: number) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    ACTIVE: { color: GREEN, bg: "rgba(27,191,136,0.12)" },
-    DRAFT: { color: "#fbbf24", bg: "rgba(251,191,36,0.10)" },
-    PAUSED: { color: "#8899aa", bg: "rgba(255,255,255,0.06)" },
-    COMPLETED: { color: BLUE, bg: "rgba(29,197,255,0.10)" },
-    REJECTED: { color: "#ef4444", bg: "rgba(239,68,68,0.10)" },
+    ACTIVE: { color: GREEN, bg: "rgba(31,153,96,0.12)" },
+    DRAFT: { color: "#d9870b", bg: "rgba(217,135,11,0.10)" },
+    PAUSED: { color: "#56625b", bg: "rgba(21,32,26,0.06)" },
+    COMPLETED: { color: BLUE, bg: "rgba(20,120,74,0.10)" },
+    REJECTED: { color: "#d42f2f", bg: "rgba(239,68,68,0.10)" },
   };
   const chip = map[status] ?? map.PAUSED;
 
@@ -130,25 +130,25 @@ export default function CampaignWithdrawalsPage() {
   };
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 980, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
         <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-              <Link href="/dashboard/my-campaigns" style={{ fontSize: 12, color: "#4a5568", fontWeight: 500 }}>← My Campaigns</Link>
+              <Link href="/dashboard/my-campaigns" style={{ fontSize: 12, color: "#6e7872", fontWeight: 500 }}>← My Campaigns</Link>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 4 }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", marginBottom: 4 }}>
               Withdraw Funds
             </div>
-            <div style={{ fontSize: 13, color: "#6b7a8d" }}>
+            <div style={{ fontSize: 13, color: "#626d66" }}>
               {summary?.campaign_title ?? ""}
             </div>
           </div>
 
           <Link href={summary ? `/dashboard/my-campaigns/${summary.campaign_id}/images` : "/dashboard/my-campaigns"}>
             <button style={{
-              padding: "9px 16px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)",
-              background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 12, fontWeight: 600, cursor: "pointer",
+              padding: "9px 16px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)",
+              background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 12, fontWeight: 600, cursor: "pointer",
             }}>
               Back to campaign
             </button>
@@ -156,45 +156,45 @@ export default function CampaignWithdrawalsPage() {
         </motion.div>
 
         {sessionLoading || summaryLoading ? (
-          <div style={{ height: 220, borderRadius: 16, background: "rgba(255,255,255,0.04)" }} />
+          <div style={{ height: 220, borderRadius: 16, background: "rgba(21,32,26,0.04)" }} />
         ) : summaryError || !summary ? (
-          <div style={{ padding: 28, borderRadius: 16, border: "1px dashed rgba(29,197,255,0.2)", background: "rgba(29,197,255,0.03)", color: "#6b7a8d" }}>
+          <div style={{ padding: 28, borderRadius: 16, border: "1px dashed rgba(20,120,74,0.2)", background: "rgba(20,120,74,0.03)", color: "#626d66" }}>
             Campaign not found. Return to your campaigns list and try again.
           </div>
         ) : (
           <>
             {!kycApproved && (
-              <motion.div {...fadeUp(0.04)} style={{ padding: "14px 18px", borderRadius: 12, background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.25)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                <div style={{ fontSize: 13, color: "#f97316", fontWeight: 600 }}>Identity verification is required before you can withdraw.</div>
-                <Link href="/dashboard/kyc" style={{ fontSize: 12, fontWeight: 700, color: "#f97316", textDecoration: "underline" }}>Complete KYC →</Link>
+              <motion.div {...fadeUp(0.04)} style={{ padding: "14px 18px", borderRadius: 12, background: "rgba(232,101,15,0.08)", border: "1px solid rgba(232,101,15,0.25)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <div style={{ fontSize: 13, color: "#e8650f", fontWeight: 600 }}>Identity verification is required before you can withdraw.</div>
+                <Link href="/dashboard/kyc" style={{ fontSize: 12, fontWeight: 700, color: "#e8650f", textDecoration: "underline" }}>Complete KYC →</Link>
               </motion.div>
             )}
 
-            <motion.div {...fadeUp(0.06)} style={{ background: "#0d1120", border: "1px solid rgba(29,197,255,0.18)", borderRadius: 16, padding: "22px 24px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+            <motion.div {...fadeUp(0.06)} style={{ background: "#ffffff", border: "1px solid rgba(20,120,74,0.18)", borderRadius: 16, padding: "22px 24px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
               <div>
                 <div style={{ fontSize: 11, color: BLUE, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 6 }}>Available to withdraw</div>
-                <div style={{ fontSize: "clamp(30px, 5vw, 40px)", fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", lineHeight: 1 }}>
-                  {availableBalance.toLocaleString()} <span style={{ fontSize: 16, color: "#4a5568", fontWeight: 700 }}>GMD</span>
+                <div style={{ fontSize: "clamp(30px, 5vw, 40px)", fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                  {availableBalance.toLocaleString()} <span style={{ fontSize: 16, color: "#6e7872", fontWeight: 700 }}>GMD</span>
                 </div>
               </div>
               <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
                 <div>
-                  <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, marginBottom: 4 }}>Raised</div>
+                  <div style={{ fontSize: 10, color: "#6e7872", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, marginBottom: 4 }}>Raised</div>
                   <div style={{ fontSize: 17, fontWeight: 800, color: GREEN }}>{fmt(summary.amount_raised)} GMD</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, marginBottom: 4 }}>Withdrawn</div>
-                  <div style={{ fontSize: 17, fontWeight: 800, color: "#8899aa" }}>{fmt(summary.total_withdrawn)} GMD</div>
+                  <div style={{ fontSize: 10, color: "#6e7872", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const, marginBottom: 4 }}>Withdrawn</div>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: "#56625b" }}>{fmt(summary.total_withdrawn)} GMD</div>
                 </div>
               </div>
             </motion.div>
 
-            <motion.div {...fadeUp(0.1)} style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: 24, maxWidth: isDesktop ? 560 : undefined }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color: "#f0f6ff", marginBottom: 16 }}>Request Withdrawal</div>
+            <motion.div {...fadeUp(0.1)} style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: 24, maxWidth: isDesktop ? 560 : undefined }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#15201a", marginBottom: 16 }}>Request Withdrawal</div>
 
               <div style={{ display: "grid", gap: 14 }}>
                 <div>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", display: "block", marginBottom: 6 }}>Amount (GMD)</label>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#56625b", display: "block", marginBottom: 6 }}>Amount (GMD)</label>
                   <div style={{ position: "relative" }}>
                     <input
                       type="number"
@@ -207,8 +207,8 @@ export default function CampaignWithdrawalsPage() {
                       disabled={!canWithdraw}
                       style={{
                         width: "100%", padding: "12px 64px 12px 14px", borderRadius: 10,
-                        border: "1px solid rgba(255,255,255,0.1)", background: canWithdraw ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.03)",
-                        color: canWithdraw ? "#f0f6ff" : "#4a5568", fontSize: 14, outline: "none", boxSizing: "border-box",
+                        border: "1px solid rgba(21,32,26,0.1)", background: canWithdraw ? "rgba(21,32,26,0.04)" : "rgba(21,32,26,0.03)",
+                        color: canWithdraw ? "#15201a" : "#6e7872", fontSize: 14, outline: "none", boxSizing: "border-box",
                       }}
                     />
                     {canWithdraw && (
@@ -216,8 +216,8 @@ export default function CampaignWithdrawalsPage() {
                         onClick={() => setGrossAmount(String(Math.floor(availableBalance)))}
                         style={{
                           position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                          padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(29,197,255,0.3)",
-                          background: "rgba(29,197,255,0.1)", color: BLUE, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                          padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(20,120,74,0.3)",
+                          background: "rgba(20,120,74,0.1)", color: BLUE, fontSize: 11, fontWeight: 700, cursor: "pointer",
                         }}
                       >
                         Max
@@ -227,26 +227,26 @@ export default function CampaignWithdrawalsPage() {
                 </div>
 
                 {previewValid && (
-                  <div style={{ padding: "14px 16px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", display: "grid", gap: 7, fontSize: 13 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#8899aa" }}>
+                  <div style={{ padding: "14px 16px", borderRadius: 12, background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.08)", display: "grid", gap: 7, fontSize: 13 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#56625b" }}>
                       <span>Withdrawal</span><span>{parsedAmount.toLocaleString()} GMD</span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#6b7a8d" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#626d66" }}>
                       <span>Wave processing fee (2%, min {WAVE_FEE_MIN_GMD} GMD)</span><span>−{previewWaveFee.toLocaleString()} GMD</span>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#6b7a8d" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#626d66" }}>
                       <span>Platform fee</span><span>−{PLATFORM_FEE_GMD} GMD</span>
                     </div>
-                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 8, display: "flex", justifyContent: "space-between", fontWeight: 800, color: previewNet > 0 ? GREEN : "#ef4444" }}>
+                    <div style={{ borderTop: "1px solid rgba(21,32,26,0.08)", paddingTop: 8, display: "flex", justifyContent: "space-between", fontWeight: 800, color: previewNet > 0 ? GREEN : "#d42f2f" }}>
                       <span>You receive{me?.wave_number ? ` on ${me.wave_number}` : ""}</span>
                       <span>{previewNet > 0 ? previewNet.toLocaleString() : "0"} GMD</span>
                     </div>
-                    <div style={{ fontSize: 12, color: "#8899aa" }}>
+                    <div style={{ fontSize: 12, color: "#56625b" }}>
                       Wave sends whole dalasi only. The {WAVE_FEE_MIN_GMD} GMD minimum processing fee applies to
                       any withdrawal up to {Math.round(WAVE_FEE_MIN_GMD / WAVE_FEE_RATE).toLocaleString()} GMD.
                     </div>
                     {previewNet <= 0 && (
-                      <div style={{ fontSize: 12, color: "#ef4444" }}>Amount is too small to cover the fees.</div>
+                      <div style={{ fontSize: 12, color: "#d42f2f" }}>Amount is too small to cover the fees.</div>
                     )}
                   </div>
                 )}
@@ -256,10 +256,10 @@ export default function CampaignWithdrawalsPage() {
                   disabled={!canWithdraw || withdrawMutation.isPending}
                   style={{
                     padding: "12px 20px", borderRadius: 10, border: "none",
-                    background: canWithdraw ? `linear-gradient(135deg, ${BLUE}, #079bd4)` : "rgba(255,255,255,0.06)",
-                    color: canWithdraw ? "#fff" : "#4a5568", fontSize: 14, fontWeight: 700,
+                    background: canWithdraw ? `${BLUE}` : "rgba(21,32,26,0.06)",
+                    color: canWithdraw ? "#fff" : "#6e7872", fontSize: 14, fontWeight: 700,
                     cursor: canWithdraw ? "pointer" : "not-allowed",
-                    boxShadow: canWithdraw ? "0 4px 16px rgba(29,197,255,0.3)" : "none",
+                    boxShadow: canWithdraw ? "0 4px 16px rgba(20,120,74,0.3)" : "none",
                   }}
                 >
                   {withdrawMutation.isPending ? "Submitting…" : "Withdraw funds"}
@@ -267,20 +267,20 @@ export default function CampaignWithdrawalsPage() {
               </div>
             </motion.div>
 
-            <motion.div {...fadeUp(0.18)} style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
-              <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: "#f0f6ff" }}>Withdrawal History</div>
-                <div style={{ fontSize: 12, color: "#6b7a8d", marginTop: 4 }}>
+            <motion.div {...fadeUp(0.18)} style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, overflow: "hidden" }}>
+              <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(21,32,26,0.06)" }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#15201a" }}>Withdrawal History</div>
+                <div style={{ fontSize: 12, color: "#626d66", marginTop: 4 }}>
                   {withdrawalHistory.length} withdrawal{withdrawalHistory.length === 1 ? "" : "s"} recorded for this campaign.
                 </div>
               </div>
 
               {withdrawalHistory.length === 0 ? (
-                <div style={{ padding: 28, color: "#6b7a8d", fontSize: 13 }}>No withdrawals yet.</div>
+                <div style={{ padding: 28, color: "#626d66", fontSize: 13 }}>No withdrawals yet.</div>
               ) : isDesktop ? (
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
-                    <tr style={{ textAlign: "left", color: "#4a5568", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>
+                    <tr style={{ textAlign: "left", color: "#6e7872", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>
                       <th style={{ padding: "14px 20px" }}>Date</th>
                       <th style={{ padding: "14px 20px" }}>Reference</th>
                       <th style={{ padding: "14px 20px" }}>Gross</th>
@@ -294,8 +294,8 @@ export default function CampaignWithdrawalsPage() {
                       <tr
                         key={item.id}
                         style={{
-                          borderTop: index === 0 ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(255,255,255,0.05)",
-                          color: "#c0ccd8",
+                          borderTop: index === 0 ? "1px solid rgba(21,32,26,0.06)" : "1px solid rgba(21,32,26,0.05)",
+                          color: "#36443c",
                           fontSize: 13,
                         }}
                       >
@@ -316,29 +316,29 @@ export default function CampaignWithdrawalsPage() {
                   {withdrawalHistory.map((item) => (
                     <div key={item.id} style={{
                       padding: "16px 20px",
-                      borderTop: "1px solid rgba(255,255,255,0.05)",
+                      borderTop: "1px solid rgba(21,32,26,0.05)",
                       display: "flex", flexDirection: "column", gap: 10,
                     }}>
                       {/* Top row: status + date */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                         <StatusChip status={item.status} />
-                        <span style={{ fontSize: 11, color: "#4a5568" }}>
+                        <span style={{ fontSize: 11, color: "#6e7872" }}>
                           {new Date(item.created_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
                         </span>
                       </div>
                       {/* Reference */}
-                      <div style={{ fontSize: 11, color: "#6b7a8d", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <div style={{ fontSize: 11, color: "#626d66", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {item.client_reference}
                       </div>
                       {/* Amounts row */}
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
                         <div>
-                          <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 3 }}>Gross</div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#c0ccd8" }}>{fmt(item.gross_amount)}</div>
+                          <div style={{ fontSize: 10, color: "#6e7872", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 3 }}>Gross</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#36443c" }}>{fmt(item.gross_amount)}</div>
                         </div>
                         <div>
-                          <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 3 }}>Fees</div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#c0ccd8" }}>{fmt(item.hexai_fee + item.platform_commission)}</div>
+                          <div style={{ fontSize: 10, color: "#6e7872", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 3 }}>Fees</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#36443c" }}>{fmt(item.hexai_fee + item.platform_commission)}</div>
                         </div>
                         <div>
                           <div style={{ fontSize: 10, color: GREEN, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 3 }}>Net</div>

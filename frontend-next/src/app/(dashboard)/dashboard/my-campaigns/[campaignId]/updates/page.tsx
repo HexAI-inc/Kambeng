@@ -17,8 +17,8 @@ import { StyledSelect } from "@/components/ui/styled-select";
 import { UpdateFeedPost } from "@/components/UpdateFeedPost";
 import type { CampaignUpdate } from "@/types/frontend";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
 const MAX_ATTACHMENTS = 5;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -179,33 +179,33 @@ export default function CampaignUpdatesPage() {
   };
 
   if (!campaignId) {
-    return <div style={{ color: "#f0f6ff", padding: 32 }}>Invalid campaign ID</div>;
+    return <div style={{ color: "#15201a", padding: 32 }}>Invalid campaign ID</div>;
   }
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
         <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-              <Link href={`/dashboard/my-campaigns/${campaignId}/images`} style={{ fontSize: 12, color: "#4a5568", fontWeight: 500 }}>
+              <Link href={`/dashboard/my-campaigns/${campaignId}/images`} style={{ fontSize: 12, color: "#6e7872", fontWeight: 500 }}>
                 ← Campaign Media
               </Link>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 4 }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", marginBottom: 4 }}>
               {campaignsLoading ? "Loading…" : campaign?.title ?? "Campaign"}
             </div>
-            <div style={{ fontSize: 13, color: "#6b7a8d" }}>Post updates to keep your donors informed</div>
+            <div style={{ fontSize: 13, color: "#626d66" }}>Post updates to keep your donors informed</div>
           </div>
           {campaignSlug && (
             <div style={{ display: "flex", gap: 8 }}>
               <Link href={`/campaigns/${campaignSlug}`}>
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
-                  border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
-                  color: "#8899aa", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)",
+                  color: "#56625b", fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Public page ↗</button>
               </Link>
             </div>
@@ -215,18 +215,18 @@ export default function CampaignUpdatesPage() {
         {/* Composer card */}
         <motion.div {...fadeUp(0.06)}>
           <div style={{
-            background: "#0d1120", border: "1px solid rgba(255,255,255,0.08)",
+            background: "#ffffff", border: "1px solid rgba(21,32,26,0.08)",
             borderRadius: 16, padding: "20px 22px", display: "flex", flexDirection: "column", gap: 14,
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: 9,
-                background: "rgba(29,197,255,0.1)", border: "1px solid rgba(29,197,255,0.18)",
+                background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.18)",
                 display: "flex", alignItems: "center", justifyContent: "center", color: BLUE, flexShrink: 0,
               }}>
                 <IconBell />
               </div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff" }}>Post an update</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#15201a" }}>Post an update</div>
             </div>
 
             {/* Title input */}
@@ -237,8 +237,8 @@ export default function CampaignUpdatesPage() {
               placeholder="Update title (optional)"
               style={{
                 width: "100%", padding: "10px 14px", borderRadius: 9,
-                border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.04)",
-                color: "#f0f6ff", fontSize: 13, outline: "none", boxSizing: "border-box",
+                border: "1px solid rgba(21,32,26,0.09)", background: "rgba(21,32,26,0.04)",
+                color: "#15201a", fontSize: 13, outline: "none", boxSizing: "border-box",
               }}
             />
 
@@ -250,8 +250,8 @@ export default function CampaignUpdatesPage() {
               rows={5}
               style={{
                 width: "100%", padding: "10px 14px", borderRadius: 9,
-                border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.04)",
-                color: "#f0f6ff", fontSize: 13, resize: "vertical", outline: "none",
+                border: "1px solid rgba(21,32,26,0.09)", background: "rgba(21,32,26,0.04)",
+                color: "#15201a", fontSize: 13, resize: "vertical", outline: "none",
                 boxSizing: "border-box", lineHeight: 1.65,
               }}
             />
@@ -279,8 +279,8 @@ export default function CampaignUpdatesPage() {
                 step="1"
                 style={{
                   width: "100%", padding: "10px 14px", borderRadius: 9,
-                  border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.04)",
-                  color: "#f0f6ff", fontSize: 13, outline: "none", boxSizing: "border-box",
+                  border: "1px solid rgba(21,32,26,0.09)", background: "rgba(21,32,26,0.04)",
+                  color: "#15201a", fontSize: 13, outline: "none", boxSizing: "border-box",
                 }}
               />
             </div>
@@ -324,9 +324,9 @@ export default function CampaignUpdatesPage() {
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 6,
                     padding: "8px 14px", borderRadius: 8,
-                    border: "1px solid rgba(255,255,255,0.09)",
-                    background: "rgba(255,255,255,0.03)",
-                    color: attachments.length >= MAX_ATTACHMENTS ? "#4a5568" : "#8899aa",
+                    border: "1px solid rgba(21,32,26,0.09)",
+                    background: "rgba(21,32,26,0.03)",
+                    color: attachments.length >= MAX_ATTACHMENTS ? "#6e7872" : "#56625b",
                     fontSize: 12, fontWeight: 600, cursor: attachments.length >= MAX_ATTACHMENTS ? "not-allowed" : "pointer",
                   }}
                 >
@@ -340,12 +340,12 @@ export default function CampaignUpdatesPage() {
                 style={{
                   padding: "10px 24px", borderRadius: 10, border: "none",
                   background: submitting || !text.trim()
-                    ? "rgba(29,197,255,0.25)"
-                    : `linear-gradient(135deg, ${BLUE}, #079bd4)`,
-                  color: submitting || !text.trim() ? "rgba(255,255,255,0.4)" : "#fff",
+                    ? "rgba(20,120,74,0.25)"
+                    : `${BLUE}`,
+                  color: submitting || !text.trim() ? "rgba(21,32,26,0.4)" : "#fff",
                   fontSize: 13, fontWeight: 700,
                   cursor: submitting || !text.trim() ? "not-allowed" : "pointer",
-                  boxShadow: submitting || !text.trim() ? "none" : "0 4px 16px rgba(29,197,255,0.3)",
+                  boxShadow: submitting || !text.trim() ? "none" : "0 4px 16px rgba(20,120,74,0.3)",
                   transition: "all 0.2s",
                 }}
               >
@@ -364,11 +364,11 @@ export default function CampaignUpdatesPage() {
           ) : updates.length === 0 ? (
             <div style={{
               padding: "48px 24px", textAlign: "center",
-              background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.08)",
+              background: "rgba(21,32,26,0.02)", border: "1px dashed rgba(21,32,26,0.08)",
               borderRadius: 14,
             }}>
               <div style={{ color: BLUE, marginBottom: 10, opacity: 0.5 }}><IconBell /></div>
-              <div style={{ fontSize: 14, color: "#4a5568" }}>
+              <div style={{ fontSize: 14, color: "#6e7872" }}>
                 No updates yet. Post your first update to keep donors informed.
               </div>
             </div>

@@ -13,7 +13,7 @@ type StyledSelectProps = {
   disabled?: boolean;
 };
 
-const BLUE = "#1dc5ff";
+const BLUE = "#14784a";
 
 export function StyledSelect({ value, onChange, options, style, placeholder, disabled }: StyledSelectProps) {
   const [open, setOpen] = useState(false);
@@ -49,9 +49,9 @@ export function StyledSelect({ value, onChange, options, style, placeholder, dis
           width: "100%",
           padding: "10px 36px 10px 14px",
           borderRadius: 9,
-          border: `1px solid ${open ? "rgba(29,197,255,0.35)" : "rgba(255,255,255,0.1)"}`,
-          background: open ? "rgba(29,197,255,0.05)" : "rgba(255,255,255,0.04)",
-          color: current ? "#f0f6ff" : "#6b7a8d",
+          border: `1px solid ${open ? "rgba(20,120,74,0.35)" : "rgba(21,32,26,0.1)"}`,
+          background: open ? "rgba(20,120,74,0.05)" : "rgba(21,32,26,0.04)",
+          color: current ? "#15201a" : "#626d66",
           fontSize: 13,
           fontFamily: "inherit",
           textAlign: "left",
@@ -80,7 +80,7 @@ export function StyledSelect({ value, onChange, options, style, placeholder, dis
           pointerEvents: "none",
         }}
       >
-        <path d="M2.5 5L7 9.5L11.5 5" stroke="#6b7a8d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2.5 5L7 9.5L11.5 5" stroke="#626d66" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
 
       {open && (
@@ -92,10 +92,10 @@ export function StyledSelect({ value, onChange, options, style, placeholder, dis
             left: 0,
             right: 0,
             minWidth: "100%",
-            background: "#0d1120",
-            border: "1px solid rgba(29,197,255,0.2)",
+            background: "#ffffff",
+            border: "1px solid rgba(20,120,74,0.2)",
             borderRadius: 10,
-            boxShadow: "0 16px 40px rgba(0,0,0,0.65)",
+            boxShadow: "0 16px 40px rgba(21,32,26,0.12)",
             zIndex: 100,
             overflow: "hidden",
           }}
@@ -119,17 +119,17 @@ export function StyledSelect({ value, onChange, options, style, placeholder, dis
                   fontSize: 13,
                   fontFamily: "inherit",
                   cursor: "pointer",
-                  background: isSelected ? "rgba(29,197,255,0.08)" : "transparent",
+                  background: isSelected ? "rgba(20,120,74,0.08)" : "transparent",
                   color: isSelected ? BLUE : "#d0d8e8",
                   border: "none",
-                  borderBottom: i < options.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                  borderBottom: i < options.length - 1 ? "1px solid rgba(21,32,26,0.04)" : "none",
                   transition: "background 0.1s",
                 }}
                 onMouseEnter={(e) => {
-                  if (!isSelected) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
+                  if (!isSelected) (e.currentTarget as HTMLButtonElement).style.background = "rgba(21,32,26,0.04)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = isSelected ? "rgba(29,197,255,0.08)" : "transparent";
+                  (e.currentTarget as HTMLButtonElement).style.background = isSelected ? "rgba(20,120,74,0.08)" : "transparent";
                 }}
               >
                 <svg
@@ -138,7 +138,7 @@ export function StyledSelect({ value, onChange, options, style, placeholder, dis
                   aria-hidden="true"
                   style={{ flexShrink: 0, opacity: isSelected ? 1 : 0 }}
                 >
-                  <path d="M2 6L5 9L10 3" stroke="#1dc5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M2 6L5 9L10 3" stroke="#14784a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 {opt.label}
               </button>

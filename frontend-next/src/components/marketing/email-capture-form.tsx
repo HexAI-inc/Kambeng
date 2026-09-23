@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
 
 export type CaptureSource = "homepage" | "campaign_follow" | "post_donation" | "waitlist" | "guide";
 
@@ -53,7 +53,7 @@ export default function EmailCaptureForm({
 
   if (status === "done") {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 18px", borderRadius: 12, background: "rgba(27,191,136,0.08)", border: "1px solid rgba(27,191,136,0.3)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 18px", borderRadius: 12, background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.3)" }}>
         <span style={{ color: GREEN, fontWeight: 900, fontSize: 16 }}>✓</span>
         <span style={{ color: GREEN, fontSize: 14, fontWeight: 600 }}>{successMessage}</span>
       </div>
@@ -71,8 +71,8 @@ export default function EmailCaptureForm({
           placeholder={placeholder}
           style={{
             flex: "1 1 220px", minWidth: 0, padding: "13px 16px", borderRadius: 12,
-            border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)",
-            color: "#f0f6ff", fontSize: 14, outline: "none",
+            border: "1px solid rgba(21,32,26,0.12)", background: "rgba(21,32,26,0.05)",
+            color: "#15201a", fontSize: 14, outline: "none",
           }}
         />
         <button
@@ -80,15 +80,15 @@ export default function EmailCaptureForm({
           disabled={status === "sending"}
           style={{
             padding: "13px 24px", borderRadius: 12, border: "none", whiteSpace: "nowrap",
-            background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff",
+            background: `${BLUE}`, color: "#fff",
             fontSize: 14, fontWeight: 700, cursor: status === "sending" ? "wait" : "pointer",
-            opacity: status === "sending" ? 0.7 : 1, boxShadow: "0 4px 20px rgba(29,197,255,0.3)",
+            opacity: status === "sending" ? 0.7 : 1, boxShadow: "0 4px 20px rgba(20,120,74,0.3)",
           }}
         >
           {status === "sending" ? "Sending…" : buttonLabel}
         </button>
       </div>
-      {error && <div style={{ marginTop: 8, fontSize: 13, color: "#ef4444" }}>{error}</div>}
+      {error && <div style={{ marginTop: 8, fontSize: 13, color: "#d42f2f" }}>{error}</div>}
     </form>
   );
 }

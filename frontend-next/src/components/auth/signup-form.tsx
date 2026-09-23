@@ -8,8 +8,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
 
 const signupSchema = z
   .object({
@@ -27,7 +27,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
-  return <div style={{ fontSize: 11, color: "#ef4444", marginTop: 4 }}>{msg}</div>;
+  return <div style={{ fontSize: 11, color: "#d42f2f", marginTop: 4 }}>{msg}</div>;
 }
 
 export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
@@ -74,8 +74,8 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "11px 14px", borderRadius: 10,
-    border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
-    color: "#f0f6ff", fontSize: 16, outline: "none", boxSizing: "border-box",
+    border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+    color: "#15201a", fontSize: 16, outline: "none", boxSizing: "border-box",
     transition: "border-color 0.2s",
   };
 
@@ -87,13 +87,13 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#0a0f1a",
+      minHeight: "100vh", background: "#f6f4ef",
       display: "flex", alignItems: "center", justifyContent: "center",
       padding: "24px 16px", position: "relative", overflow: "hidden",
     }}>
       {/* Background glows */}
-      <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(29,197,255,0.08) 0%, transparent 70%)", right: "-20%", top: "-20%", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(27,191,136,0.06) 0%, transparent 70%)", left: "-10%", bottom: "-10%", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(20,120,74,0.08) 0%, transparent 70%)", right: "-20%", top: "-20%", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(31,153,96,0.06) 0%, transparent 70%)", left: "-10%", bottom: "-10%", pointerEvents: "none" }} />
 
       <div style={{ width: "100%", maxWidth: 440, position: "relative", zIndex: 1 }}>
         {/* Logo */}
@@ -101,27 +101,27 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
           <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
             <div style={{
               width: 40, height: 40, borderRadius: 10,
-              background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+              background: `${BLUE}`,
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 18, fontWeight: 900, color: "#fff",
             }}>K</div>
-            <span style={{ fontSize: 20, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Kambeng</span>
+            <span style={{ fontSize: 20, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Kambeng</span>
           </Link>
         </div>
 
         {/* Card */}
         <div style={{
-          background: "#0d1120", border: "1px solid rgba(255,255,255,0.08)",
+          background: "#ffffff", border: "1px solid rgba(21,32,26,0.08)",
           borderRadius: 20, padding: "32px",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
+          boxShadow: "0 24px 80px rgba(21,32,26,0.12)",
         }}>
           <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 6 }}>Create your account</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d" }}>Join Kambeng to support campaigns and track your donations.</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", marginBottom: 6 }}>Create your account</div>
+            <div style={{ fontSize: 13, color: "#626d66" }}>Join Kambeng to support campaigns and track your donations.</div>
           </div>
 
           {submitError && (
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#fca5a5", marginBottom: 16 }}>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#b42323", marginBottom: 16 }}>
               {submitError}
             </div>
           )}
@@ -129,7 +129,7 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
           <form onSubmit={(e) => void onSignup(e)} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {plainFields.map(({ name, label, placeholder, type, autoComplete, autoFocus }) => (
               <div key={name}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>{label}</label>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>{label}</label>
                 <input
                   {...form.register(name)}
                   type={type}
@@ -137,8 +137,8 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
                   autoComplete={autoComplete}
                   autoFocus={autoFocus}
                   style={inputStyle}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; }}
                 />
                 <FieldError msg={form.formState.errors[name]?.message} />
               </div>
@@ -146,7 +146,7 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
 
             {/* Password with show/hide toggle */}
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>Password</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>Password</label>
               <div style={{ position: "relative" }}>
                 <input
                   {...form.register("password")}
@@ -154,8 +154,8 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
                   placeholder="Min 8 characters"
                   autoComplete="new-password"
                   style={{ ...inputStyle, paddingRight: 44 }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; }}
                 />
                 <button
                   type="button"
@@ -163,7 +163,7 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
                   style={{
                     position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
                     background: "none", border: "none", cursor: "pointer",
-                    color: "#6b7a8d", fontSize: 16, padding: 0, display: "flex", alignItems: "center",
+                    color: "#626d66", fontSize: 16, padding: 0, display: "flex", alignItems: "center",
                   }}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
@@ -175,7 +175,7 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
 
             {/* Confirm password with show/hide toggle */}
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>Confirm password</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>Confirm password</label>
               <div style={{ position: "relative" }}>
                 <input
                   {...form.register("confirmPassword")}
@@ -183,8 +183,8 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
                   placeholder="Re-enter your password"
                   autoComplete="new-password"
                   style={{ ...inputStyle, paddingRight: 44 }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; }}
                 />
                 <button
                   type="button"
@@ -192,7 +192,7 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
                   style={{
                     position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
                     background: "none", border: "none", cursor: "pointer",
-                    color: "#6b7a8d", fontSize: 16, padding: 0, display: "flex", alignItems: "center",
+                    color: "#626d66", fontSize: 16, padding: 0, display: "flex", alignItems: "center",
                   }}
                   aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                 >
@@ -207,9 +207,9 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
               disabled={form.formState.isSubmitting}
               style={{
                 width: "100%", padding: "13px", borderRadius: 10, border: "none",
-                background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                background: `${BLUE}`,
                 color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(29,197,255,0.35)",
+                boxShadow: "0 4px 20px rgba(20,120,74,0.35)",
                 opacity: form.formState.isSubmitting ? 0.7 : 1,
                 marginTop: 4,
               }}
@@ -218,8 +218,8 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
             </button>
           </form>
 
-          <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
-            <span style={{ fontSize: 13, color: "#4a5568" }}>Already have an account? </span>
+          <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(21,32,26,0.06)", textAlign: "center" }}>
+            <span style={{ fontSize: 13, color: "#6e7872" }}>Already have an account? </span>
             <Link href="/auth/login" style={{ fontSize: 13, color: BLUE, fontWeight: 600 }}>Sign in</Link>
           </div>
         </div>
@@ -227,7 +227,7 @@ export function SignupFormCard({ errorMessage }: { errorMessage?: string }) {
         {/* Wave badge */}
         <div style={{ textAlign: "center", marginTop: 20, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Image src="/wave.png" alt="Wave" width={16} height={16} style={{ objectFit: "contain", borderRadius: 3 }} />
-          <span style={{ fontSize: 12, color: "#4a5568" }}>Powered by Wave Mobile Money</span>
+          <span style={{ fontSize: 12, color: "#6e7872" }}>Powered by Wave Mobile Money</span>
         </div>
       </div>
     </div>

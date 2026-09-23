@@ -99,7 +99,7 @@ export default function UIKitPage() {
       <AppPageHeader
         title="UI Kit"
         description="Approved building blocks for all frontend flows."
-        actions={<AppBadge count={rows.length} showZero color="#1dc5ff" />}
+        actions={<AppBadge count={rows.length} showZero color="#14784a" />}
       />
 
       <AppAlert

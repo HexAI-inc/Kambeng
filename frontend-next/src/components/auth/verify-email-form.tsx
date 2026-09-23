@@ -9,8 +9,8 @@ import { z } from "zod";
 import axios from "axios";
 import { api } from "@/lib/api";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
 
 const verifyEmailSchema = z.object({
   code: z.string().min(1, "Enter the verification code."),
@@ -25,13 +25,13 @@ type CredentialValues = z.infer<typeof credentialSchema>;
 
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
-  return <div style={{ fontSize: 11, color: "#ef4444", marginTop: 4 }}>{msg}</div>;
+  return <div style={{ fontSize: 11, color: "#d42f2f", marginTop: 4 }}>{msg}</div>;
 }
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "11px 14px", borderRadius: 10,
-  border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
-  color: "#f0f6ff", fontSize: 16, outline: "none", boxSizing: "border-box",
+  border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+  color: "#15201a", fontSize: 16, outline: "none", boxSizing: "border-box",
   transition: "border-color 0.2s",
 };
 
@@ -158,43 +158,43 @@ export function VerifyEmailForm({
   });
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0f1a", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(29,197,255,0.08) 0%, transparent 70%)", left: "-20%", top: "-20%", pointerEvents: "none" }} />
+    <div style={{ minHeight: "100vh", background: "#f6f4ef", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(20,120,74,0.08) 0%, transparent 70%)", left: "-20%", top: "-20%", pointerEvents: "none" }} />
       <div style={{ width: "100%", maxWidth: 440, position: "relative", zIndex: 1 }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900, color: "#fff" }}>K</div>
-            <span style={{ fontSize: 20, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Kambeng</span>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: `${BLUE}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900, color: "#fff" }}>K</div>
+            <span style={{ fontSize: 20, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Kambeng</span>
           </Link>
         </div>
 
-        <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px", boxShadow: "0 24px 80px rgba(0,0,0,0.5)" }}>
+        <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.08)", borderRadius: 20, padding: "32px", boxShadow: "0 24px 80px rgba(21,32,26,0.12)" }}>
           <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 6 }}>Verify your email</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d", lineHeight: 1.6 }}>
-              {fullName ? <div style={{ marginBottom: 4, color: "#f0f6ff", fontWeight: 600 }}>Welcome, {fullName}.</div> : null}
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", marginBottom: 6 }}>Verify your email</div>
+            <div style={{ fontSize: 13, color: "#626d66", lineHeight: 1.6 }}>
+              {fullName ? <div style={{ marginBottom: 4, color: "#15201a", fontWeight: 600 }}>Welcome, {fullName}.</div> : null}
               {effectiveEmail
                 ? `We'll send a code to ${effectiveEmail}.`
                 : "Enter your details below to receive a verification code."}
-              {effectiveWaveNumber ? <div>Wave: <span style={{ color: "#f0f6ff", fontFamily: "monospace" }}>{effectiveWaveNumber}</span></div> : null}
+              {effectiveWaveNumber ? <div>Wave: <span style={{ color: "#15201a", fontFamily: "monospace" }}>{effectiveWaveNumber}</span></div> : null}
             </div>
           </div>
 
           {notice && !success && (
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(27,191,136,0.08)", border: "1px solid rgba(27,191,136,0.2)", fontSize: 13, color: GREEN, marginBottom: 16 }}>{notice}</div>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.2)", fontSize: 13, color: GREEN, marginBottom: 16 }}>{notice}</div>
           )}
           {success && (
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(27,191,136,0.08)", border: "1px solid rgba(27,191,136,0.2)", fontSize: 13, color: GREEN, marginBottom: 16 }}>{success}</div>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.2)", fontSize: 13, color: GREEN, marginBottom: 16 }}>{success}</div>
           )}
           {error && (
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#fca5a5", marginBottom: 16 }}>{error}</div>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#b42323", marginBottom: 16 }}>{error}</div>
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {verified ? (
               <Link
                 href="/dashboard"
-                style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(29,197,255,0.35)", textDecoration: "none", textAlign: "center" }}
+                style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(20,120,74,0.35)", textDecoration: "none", textAlign: "center" }}
               >
                 Go to dashboard
               </Link>
@@ -204,35 +204,35 @@ export function VerifyEmailForm({
             {!verified && showCredentialForm && (
               <form onSubmit={(e) => void onSubmitCredentials(e)} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>Email address</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>Email address</label>
                   <input
                     {...credForm.register("email")}
                     type="email"
                     placeholder="you@example.com"
                     autoComplete="email"
                     style={inputStyle}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; }}
                   />
                   <FieldError msg={credForm.formState.errors.email?.message} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>Wave number</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>Wave number</label>
                   <input
                     {...credForm.register("waveNumber")}
                     type="tel"
                     placeholder="+220XXXXXXXX"
                     autoComplete="tel"
                     style={inputStyle}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; }}
                   />
                   <FieldError msg={credForm.formState.errors.waveNumber?.message} />
                 </div>
-                <button type="submit" disabled={sending} style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(29,197,255,0.35)", opacity: sending ? 0.7 : 1 }}>
+                <button type="submit" disabled={sending} style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(20,120,74,0.35)", opacity: sending ? 0.7 : 1 }}>
                   {sending ? "Sending…" : "Send verification code"}
                 </button>
-                <button type="button" onClick={() => setShowCredentialForm(false)} style={{ width: "100%", padding: "11px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                <button type="button" onClick={() => setShowCredentialForm(false)} style={{ width: "100%", padding: "11px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                   Cancel
                 </button>
               </form>
@@ -240,7 +240,7 @@ export function VerifyEmailForm({
 
             {/* Initial send — no code sent yet */}
             {!verified && !codeSent && !showCredentialForm ? (
-              <button onClick={() => void onRequestCode()} disabled={sending} style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(29,197,255,0.35)", opacity: sending ? 0.7 : 1 }}>
+              <button onClick={() => void onRequestCode()} disabled={sending} style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(20,120,74,0.35)", opacity: sending ? 0.7 : 1 }}>
                 {sending ? "Sending…" : "Send verification code"}
               </button>
             ) : null}
@@ -249,42 +249,42 @@ export function VerifyEmailForm({
             {!verified && codeSent && !showCredentialForm ? (
               <form onSubmit={(e) => void onVerify(e)} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>Verification code</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>Verification code</label>
                   <input
                     {...codeForm.register("code")}
                     placeholder="• • • • • •"
                     maxLength={6}
                     inputMode="numeric"
                     style={{ ...inputStyle, letterSpacing: "0.2em", textAlign: "center" }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; }}
                   />
                   <FieldError msg={codeForm.formState.errors.code?.message} />
                 </div>
 
-                <button type="submit" disabled={codeForm.formState.isSubmitting} style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(29,197,255,0.35)", opacity: codeForm.formState.isSubmitting ? 0.7 : 1 }}>
+                <button type="submit" disabled={codeForm.formState.isSubmitting} style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(20,120,74,0.35)", opacity: codeForm.formState.isSubmitting ? 0.7 : 1 }}>
                   {codeForm.formState.isSubmitting ? "Verifying…" : "Verify email"}
                 </button>
 
-                <button type="button" onClick={() => void onRequestCode()} disabled={sending} style={{ width: "100%", padding: "11px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: sending ? 0.6 : 1 }}>
+                <button type="button" onClick={() => void onRequestCode()} disabled={sending} style={{ width: "100%", padding: "11px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: sending ? 0.6 : 1 }}>
                   {sending ? "Sending…" : "Resend code"}
                 </button>
               </form>
             ) : null}
 
-            <div style={{ fontSize: 12, color: "#4a5568", textAlign: "center", lineHeight: 1.6 }}>
+            <div style={{ fontSize: 12, color: "#6e7872", textAlign: "center", lineHeight: 1.6 }}>
               Code expires in 10 minutes. Check your spam folder if you don&apos;t see it.
             </div>
 
-            <div style={{ paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
-              <Link href="/dashboard" style={{ fontSize: 13, color: "#4a5568" }}>Back to Dashboard</Link>
+            <div style={{ paddingTop: 8, borderTop: "1px solid rgba(21,32,26,0.06)", textAlign: "center" }}>
+              <Link href="/dashboard" style={{ fontSize: 13, color: "#6e7872" }}>Back to Dashboard</Link>
             </div>
           </div>
         </div>
 
         <div style={{ textAlign: "center", marginTop: 20, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           <Image src="/wave.png" alt="Wave" width={16} height={16} style={{ objectFit: "contain", borderRadius: 3 }} />
-          <span style={{ fontSize: 12, color: "#4a5568" }}>Powered by Wave Mobile Money</span>
+          <span style={{ fontSize: 12, color: "#6e7872" }}>Powered by Wave Mobile Money</span>
         </div>
       </div>
     </div>

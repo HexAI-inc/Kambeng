@@ -11,7 +11,7 @@ import { usePublicCampaignImages } from "@/hooks/use-frontend-data";
 import MediaViewer from "@/components/ui/MediaViewer";
 import type { CampaignDiscoveryItem, PublicCampaignImage } from "@/types/frontend";
 
-const BLUE = "#1dc5ff";
+const BLUE = "#14784a";
 
 function fadeUp(delay = 0) {
   return {
@@ -54,30 +54,30 @@ export default function CampaignGalleryPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0f1a", paddingBottom: 60 }}>
+    <div style={{ minHeight: "100vh", background: "#f6f4ef", paddingBottom: 60 }}>
       {/* Header bar */}
       <div style={{
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
-        background: "rgba(13,17,32,0.95)", backdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(21,32,26,0.07)",
+        background: "rgba(246,244,239,0.95)", backdropFilter: "blur(12px)",
         position: "sticky", top: 0, zIndex: 50,
         padding: "0 20px",
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 16, height: 56 }}>
           <Link
             href={slug ? `/campaigns/${slug}` : "/"}
-            style={{ display: "flex", alignItems: "center", gap: 6, color: "#8899aa", fontSize: 13, fontWeight: 600, textDecoration: "none" }}
+            style={{ display: "flex", alignItems: "center", gap: 6, color: "#56625b", fontSize: 13, fontWeight: 600, textDecoration: "none" }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
             Back to campaign
           </Link>
-          <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
-          <span style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ color: "rgba(21,32,26,0.15)" }}>|</span>
+          <span style={{ fontSize: 13, color: "#15201a", fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {campaignLoading ? "Loading…" : campaign?.title ?? "Campaign Gallery"}
           </span>
           {!imagesLoading && images.length > 0 && (
-            <span style={{ marginLeft: "auto", fontSize: 12, color: "#4a5568", fontWeight: 600 }}>
+            <span style={{ marginLeft: "auto", fontSize: 12, color: "#6e7872", fontWeight: 600 }}>
               {images.length} photo{images.length !== 1 ? "s" : ""}
             </span>
           )}
@@ -91,7 +91,7 @@ export default function CampaignGalleryPage() {
               {Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}
-                  style={{ aspectRatio: "4/3", borderRadius: 12, background: "rgba(255,255,255,0.04)",
+                  style={{ aspectRatio: "4/3", borderRadius: 12, background: "rgba(21,32,26,0.04)",
                     animation: "pulse 1.5s ease-in-out infinite", animationDelay: `${i * 0.07}s` }}
                 />
               ))}
@@ -99,11 +99,11 @@ export default function CampaignGalleryPage() {
           </motion.div>
         ) : images.length === 0 ? (
           <motion.div {...fadeUp(0)} style={{ textAlign: "center", padding: "80px 20px" }}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto 16px" }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(21,32,26,0.12)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto 16px" }}>
               <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
             </svg>
-            <p style={{ fontSize: 15, color: "#4a5568", fontWeight: 600 }}>No photos yet</p>
-            <p style={{ fontSize: 13, color: "#2d3748", marginTop: 6 }}>The campaign owner hasn&apos;t uploaded any gallery photos yet.</p>
+            <p style={{ fontSize: 15, color: "#6e7872", fontWeight: 600 }}>No photos yet</p>
+            <p style={{ fontSize: 13, color: "#6e7872", marginTop: 6 }}>The campaign owner hasn&apos;t uploaded any gallery photos yet.</p>
             <Link
               href={slug ? `/campaigns/${slug}` : "/"}
               style={{ display: "inline-block", marginTop: 20, color: BLUE, fontSize: 13, fontWeight: 700 }}
@@ -130,13 +130,13 @@ export default function CampaignGalleryPage() {
                     style={{
                       position: "relative", aspectRatio: "4/3", borderRadius: 12,
                       overflow: "hidden", cursor: "zoom-in",
-                      border: "1px solid rgba(255,255,255,0.07)",
-                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(21,32,26,0.07)",
+                      background: "rgba(21,32,26,0.03)",
                       transition: "transform 0.2s, box-shadow 0.2s",
                     }}
                     onMouseEnter={(e) => {
                       (e.currentTarget as HTMLElement).style.transform = "scale(1.02)";
-                      (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(0,0,0,0.5)";
+                      (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(21,32,26,0.12)";
                     }}
                     onMouseLeave={(e) => {
                       (e.currentTarget as HTMLElement).style.transform = "scale(1)";
@@ -154,14 +154,14 @@ export default function CampaignGalleryPage() {
                     {/* Hover overlay */}
                     <div style={{
                       position: "absolute", inset: 0,
-                      background: "rgba(29,197,255,0.0)",
+                      background: "rgba(20,120,74,0.0)",
                       transition: "background 0.2s",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(29,197,255,0.08)"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(29,197,255,0)"; }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(20,120,74,0.08)"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(20,120,74,0)"; }}
                     >
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0)"
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(21,32,26,0)"
                         strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
                         style={{ transition: "stroke 0.2s" }}
                       >

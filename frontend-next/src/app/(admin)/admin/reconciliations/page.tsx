@@ -7,9 +7,9 @@ import { motion } from "framer-motion";
 import { useAdminPendingDonations, useApproveDonation, useRejectDonation } from "@/hooks/use-frontend-data";
 import type { AdminDonation } from "@/types/frontend";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
-const RED = "#ef4444";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
+const RED = "#d42f2f";
 
 function fadeUp(delay = 0) {
   return { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay, ease: "easeOut" as const } };
@@ -18,9 +18,9 @@ function fadeUp(delay = 0) {
 function StatusChip({ status }: { status: string }) {
   const s = status.toLowerCase();
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    pending:   { color: "#f97316", bg: "rgba(249,115,22,0.1)", border: "rgba(249,115,22,0.25)" },
-    approved:  { color: GREEN,     bg: "rgba(27,191,136,0.1)", border: "rgba(27,191,136,0.25)" },
-    completed: { color: BLUE,      bg: "rgba(29,197,255,0.1)", border: "rgba(29,197,255,0.2)" },
+    pending:   { color: "#e8650f", bg: "rgba(232,101,15,0.1)", border: "rgba(232,101,15,0.25)" },
+    approved:  { color: GREEN,     bg: "rgba(31,153,96,0.1)", border: "rgba(31,153,96,0.25)" },
+    completed: { color: BLUE,      bg: "rgba(20,120,74,0.1)", border: "rgba(20,120,74,0.2)" },
     rejected:  { color: RED,       bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.25)" },
   };
   const cfg = map[s] ?? map.pending;
@@ -84,28 +84,28 @@ export default function ReconciliationsPage() {
   };
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
-          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : RED, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>{toast.msg}</div>
+          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(31,153,96,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(31,153,96,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : RED, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(21,32,26,0.12)" }}>{toast.msg}</div>
         )}
 
         <motion.div {...fadeUp(0)}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Donation Reconciliation</div>
-              <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Review incoming payments and clear legitimate donations</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Donation Reconciliation</div>
+              <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>Review incoming payments and clear legitimate donations</div>
             </div>
           </div>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 12, overflow: "hidden" }}>
             {[
-              { label: "Pending review", value: String(pendingCount), color: pendingCount > 0 ? "#f97316" : "#8899aa" },
+              { label: "Pending review", value: String(pendingCount), color: pendingCount > 0 ? "#e8650f" : "#56625b" },
               { label: "Reviewed", value: String(rows.length - pendingCount), color: GREEN },
-              { label: "Total loaded", value: String(rows.length), color: "#f0f6ff" },
+              { label: "Total loaded", value: String(rows.length), color: "#15201a" },
             ].map(({ label, value, color }, i, arr) => (
-              <div key={label} style={{ padding: "12px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-                <div style={{ fontSize: 10, color: "#4a5568", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+              <div key={label} style={{ padding: "12px 18px", borderRight: i < arr.length - 1 ? "1px solid rgba(21,32,26,0.05)" : "none" }}>
+                <div style={{ fontSize: 10, color: "#6e7872", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
                 <div style={{ fontSize: 20, fontWeight: 800, color }}>{value}</div>
               </div>
             ))}
@@ -113,47 +113,47 @@ export default function ReconciliationsPage() {
         </motion.div>
 
         {rejectingRef && (
-          <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ background: "#0d1120", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 14, padding: "22px 24px" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Reject Donation</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 14 }}>Ref: <span style={{ color: "#8899aa", fontFamily: "monospace" }}>{rejectingRef}</span></div>
+          <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} style={{ background: "#ffffff", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 14, padding: "22px 24px" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>Reject Donation</div>
+            <div style={{ fontSize: 13, color: "#626d66", marginBottom: 14 }}>Ref: <span style={{ color: "#56625b", fontFamily: "monospace" }}>{rejectingRef}</span></div>
             <textarea value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Explain why this donation is being rejected…" rows={3}
-              style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)", color: "#f0f6ff", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
+              style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)", color: "#15201a", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
             <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
               <button onClick={() => void handleRejectSubmit()} disabled={rejectDonation.isPending} style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: "rgba(239,68,68,0.85)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 {rejectDonation.isPending ? "Rejecting…" : "Confirm Rejection"}
               </button>
-              <button onClick={() => { setRejectingRef(null); setRejectionReason(""); }} style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => { setRejectingRef(null); setRejectionReason(""); }} style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
             </div>
           </motion.div>
         )}
 
         <motion.div {...fadeUp(0.08)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflowX: "auto" }}>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, overflowX: "auto" }}>
             <div className="admin-table-wrap" style={{ minWidth: 900 }}>
-            <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "130px 1fr 110px 90px 100px 80px 210px", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+            <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: "130px 1fr 110px 90px 100px 80px 210px", padding: "10px 18px", borderBottom: "1px solid rgba(21,32,26,0.06)", fontSize: 10, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.07em" }}>
               <div>Reference</div><div>Campaign</div><div>Donor</div><div>Amount</div><div>Status</div><div>Source</div><div>Actions</div>
             </div>
 
             {isLoading ? (
               <div style={{ padding: 40, textAlign: "center" }}>
                 <div style={{ width: 32, height: 32, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
-                <div style={{ color: "#4a5568", fontSize: 13 }}>Loading donations…</div>
+                <div style={{ color: "#6e7872", fontSize: 13 }}>Loading donations…</div>
               </div>
             ) : rows.length === 0 ? (
-              <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>No donations waiting for review</div>
+              <div style={{ padding: "48px 24px", textAlign: "center", color: "#6e7872", fontSize: 14 }}>No donations waiting for review</div>
             ) : pageRows.map((d: AdminDonation) => {
               const isPending = !d.reconciliation_source && d.status.toLowerCase() === "pending";
               return (
-                <div key={d.client_reference} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "130px 1fr 110px 90px 100px 80px 210px", padding: "13px 18px", alignItems: "start", borderBottom: "1px solid rgba(255,255,255,0.04)", borderLeft: isPending ? `3px solid #f97316` : "3px solid transparent", transition: "background 0.15s" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
+                <div key={d.client_reference} className="admin-table-row" style={{ display: "grid", gridTemplateColumns: "130px 1fr 110px 90px 100px 80px 210px", padding: "13px 18px", alignItems: "start", borderBottom: "1px solid rgba(21,32,26,0.04)", borderLeft: isPending ? `3px solid #e8650f` : "3px solid transparent", transition: "background 0.15s" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(21,32,26,0.02)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                 >
-                  <div data-label="Reference" style={{ fontSize: 11, fontFamily: "monospace", color: "#8899aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.client_reference}</div>
-                  <div data-label="Campaign" style={{ fontSize: 13, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.campaign_title}</div>
-                  <div data-label="Donor" style={{ fontSize: 12, color: "#8899aa" }}>{d.donor_name || "Anonymous"}</div>
-                  <div data-label="Amount" style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{d.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#4a5568" }}>GMD</span></div>
+                  <div data-label="Reference" style={{ fontSize: 11, fontFamily: "monospace", color: "#56625b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.client_reference}</div>
+                  <div data-label="Campaign" style={{ fontSize: 13, color: "#15201a", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.campaign_title}</div>
+                  <div data-label="Donor" style={{ fontSize: 12, color: "#56625b" }}>{d.donor_name || "Anonymous"}</div>
+                  <div data-label="Amount" style={{ fontSize: 13, fontWeight: 700, color: GREEN }}>{d.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} <span style={{ fontSize: 10, color: "#6e7872" }}>GMD</span></div>
                   <div data-label="Status"><StatusChip status={d.status} /></div>
-                  <div data-label="Source" style={{ fontSize: 12, color: "#4a5568" }}>{d.reconciliation_source || "—"}</div>
+                  <div data-label="Source" style={{ fontSize: 12, color: "#6e7872" }}>{d.reconciliation_source || "—"}</div>
                   <div data-label="Actions">
                     <div style={{ display: "flex", flexDirection: "column", gap: 5, alignItems: "flex-start" }}>
                       <button onClick={() => router.push(`/admin/campaigns/${d.campaign_id}/view`)} style={btnStyle("default")}>View Campaign</button>
@@ -163,7 +163,7 @@ export default function ReconciliationsPage() {
                           <button onClick={() => setRejectingRef(d.client_reference)} style={btnStyle("red")}>Reject</button>
                         </>
                       )}
-                      {!isPending && <span style={{ fontSize: 11, color: "#4a5568", padding: "2px 0" }}>Reconciled</span>}
+                      {!isPending && <span style={{ fontSize: 11, color: "#6e7872", padding: "2px 0" }}>Reconciled</span>}
                     </div>
                   </div>
                 </div>
@@ -187,9 +187,9 @@ export default function ReconciliationsPage() {
 }
 
 function btnStyle(v: "default" | "green" | "red"): React.CSSProperties {
-  const m = { default: { c: "#8899aa", b: "rgba(255,255,255,0.1)", bg: "rgba(255,255,255,0.04)" }, green: { c: "#1bbf88", b: "rgba(27,191,136,0.25)", bg: "rgba(27,191,136,0.08)" }, red: { c: "#ef4444", b: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" } }[v];
+  const m = { default: { c: "#56625b", b: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" }, green: { c: "#1f9960", b: "rgba(31,153,96,0.25)", bg: "rgba(31,153,96,0.08)" }, red: { c: "#d42f2f", b: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" } }[v];
   return { padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid ${m.b}`, background: m.bg, color: m.c, cursor: "pointer" };
 }
 function pageBtnStyle(active: boolean): React.CSSProperties {
-  return { width: 32, height: 32, borderRadius: 8, fontSize: 13, fontWeight: 700, border: `1px solid ${active ? "rgba(29,197,255,0.4)" : "rgba(255,255,255,0.1)"}`, background: active ? "rgba(29,197,255,0.12)" : "rgba(255,255,255,0.03)", color: active ? "#1dc5ff" : "#8899aa", cursor: "pointer" };
+  return { width: 32, height: 32, borderRadius: 8, fontSize: 13, fontWeight: 700, border: `1px solid ${active ? "rgba(20,120,74,0.4)" : "rgba(21,32,26,0.1)"}`, background: active ? "rgba(20,120,74,0.12)" : "rgba(21,32,26,0.03)", color: active ? "#14784a" : "#56625b", cursor: "pointer" };
 }

@@ -44,7 +44,7 @@
   background: white;
 
   &:focus-within {
-    border-color: #40a9ff;
+    border-color: #1d8f5a;
     box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
   }
 
@@ -166,7 +166,7 @@
 }
 
 .infoCard {
-  border-left: 4px solid #faad14;
+  border-left: 4px solid #c97a06;
   background: #fffbe6;
 
   h4 {

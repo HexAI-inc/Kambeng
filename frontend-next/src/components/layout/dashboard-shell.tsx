@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSessionProfile } from "@/hooks/use-frontend-data";
 
-const BLUE = "#1dc5ff";
-const BLUE_10 = "rgba(29,197,255,0.1)";
+const BLUE = "#14784a";
+const BLUE_10 = "rgba(20,120,74,0.1)";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
@@ -109,9 +109,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* ── Top header ─────────────────────────────────────────── */}
       <header style={{
         position: "sticky", top: 0, zIndex: 60,
-        background: "rgba(10,15,26,0.94)",
+        background: "rgba(246,244,239,0.94)",
         backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
+        borderBottom: "1px solid rgba(21,32,26,0.07)",
         height: 60,
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 clamp(16px,4vw,48px)",
@@ -122,12 +122,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
           <div style={{
             width: 34, height: 34, borderRadius: 10,
-            background: "linear-gradient(135deg, #1dc5ff, #079bd4)",
+            background: "#14784a",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontWeight: 900, fontSize: 16, color: "#fff",
-            boxShadow: "0 4px 12px rgba(29,197,255,0.4)",
+            boxShadow: "0 4px 12px rgba(20,120,74,0.4)",
           }}>K</div>
-          <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "#f0f6ff", letterSpacing: "-0.03em" }}>
+          <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "#15201a", letterSpacing: "-0.03em" }}>
             Kambeng
           </span>
         </Link>
@@ -136,7 +136,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <nav className="dash-top-nav" style={{ display: "none", alignItems: "center", gap: 2 }}>
           {tabs.map((tab) => {
             const active = isActive(pathname, tab.href);
-            const col = active ? BLUE : "#8899aa";
+            const col = active ? BLUE : "#56625b";
             return (
               <Link key={tab.key} href={tab.href} style={{ textDecoration: "none" }}>
                 <div style={{
@@ -161,12 +161,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{
                 width: 30, height: 30, borderRadius: "50%",
-                background: "linear-gradient(135deg, #0d2340, #0a3d5c)",
-                border: "2px solid rgba(29,197,255,0.3)",
+                background: "linear-gradient(135deg, #e6f4ec, #cfe8da)",
+                border: "2px solid rgba(20,120,74,0.3)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 11, fontWeight: 800, color: BLUE, flexShrink: 0,
               }}>{initials}</div>
-              <span style={{ fontSize: 13, color: "#8899aa", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: 13, color: "#56625b", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {firstName}
               </span>
             </div>
@@ -175,11 +175,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <button style={{
               display: "flex", alignItems: "center", gap: 6,
               padding: "7px 12px", borderRadius: 8,
-              border: "1px solid rgba(255,255,255,0.1)",
-              background: "rgba(255,255,255,0.04)",
-              color: "#6b7a8d", fontSize: 12, fontWeight: 600, cursor: "pointer",
+              border: "1px solid rgba(21,32,26,0.1)",
+              background: "rgba(21,32,26,0.04)",
+              color: "#626d66", fontSize: 12, fontWeight: 600, cursor: "pointer",
             }}>
-              <IcLogout c="#6b7a8d" />
+              <IcLogout c="#626d66" />
               Sign out
             </button>
           </Link>
@@ -190,12 +190,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <Link href="/auth/logout" style={{ textDecoration: "none" }}>
             <button style={{
               width: 38, height: 38, borderRadius: 9,
-              border: "1px solid rgba(255,255,255,0.1)",
-              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(21,32,26,0.1)",
+              background: "rgba(21,32,26,0.04)",
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer",
             }}>
-              <IcLogout c="#6b7a8d" />
+              <IcLogout c="#626d66" />
             </button>
           </Link>
         </div>
@@ -209,16 +209,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* ── Mobile bottom tab bar ──────────────────────────────── */}
       <nav className="dash-btm" style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 60,
-        background: "rgba(10,15,26,0.97)",
+        background: "rgba(246,244,239,0.97)",
         backdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(255,255,255,0.07)",
+        borderTop: "1px solid rgba(21,32,26,0.07)",
         display: "none",
         alignItems: "stretch",
         padding: "0 0 env(safe-area-inset-bottom)",
       }}>
         {tabs.map((tab) => {
           const active = isActive(pathname, tab.href);
-          const col = active ? BLUE : "#4a5568";
+          const col = active ? BLUE : "#6e7872";
           return (
             <Link key={tab.key} href={tab.href} style={{ flex: 1, textDecoration: "none" }}>
               <div style={{

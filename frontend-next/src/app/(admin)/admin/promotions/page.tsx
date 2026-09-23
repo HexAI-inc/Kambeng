@@ -7,10 +7,10 @@ import { isAxiosError } from "axios";
 import { api } from "@/lib/api";
 import { StyledSelect } from "@/components/ui/styled-select";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
-const RED = "#ef4444";
-const AMBER = "#f59e0b";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
+const RED = "#d42f2f";
+const AMBER = "#c97a06";
 
 const PROMO_TYPES = [
   { value: "campaign_fee_waiver", label: "Campaign fee waiver" },
@@ -70,20 +70,20 @@ function fadeUp(delay = 0) {
 }
 
 function statusOf(promo: Promotion): { label: string; color: string } {
-  if (!promo.is_active) return { label: "Off", color: "#8899aa" };
+  if (!promo.is_active) return { label: "Off", color: "#56625b" };
   const now = Date.now();
   if (new Date(promo.starts_at).getTime() > now) return { label: "Scheduled", color: AMBER };
-  if (promo.ends_at && new Date(promo.ends_at).getTime() < now) return { label: "Ended", color: "#8899aa" };
+  if (promo.ends_at && new Date(promo.ends_at).getTime() < now) return { label: "Ended", color: "#56625b" };
   return { label: "Active", color: GREEN };
 }
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 13px", borderRadius: 9, boxSizing: "border-box",
-  border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)",
-  color: "#f0f6ff", fontSize: 13, outline: "none",
+  border: "1px solid rgba(21,32,26,0.12)", background: "rgba(21,32,26,0.05)",
+  color: "#15201a", fontSize: 13, outline: "none",
 };
 
-const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 600, color: "#8899aa", marginBottom: 5 };
+const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 600, color: "#56625b", marginBottom: 5 };
 
 export default function AdminPromotionsPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
@@ -198,18 +198,18 @@ export default function AdminPromotionsPage() {
   const canCreate = form.slug.trim().length >= 3 && form.name.trim().length >= 3 && (SELF_LIMITING.has(form.promo_type) || form.ends_at);
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
     <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
       <motion.div {...fadeUp(0)} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Promotions</h1>
-          <p style={{ margin: 0, fontSize: 13, color: "#8899aa" }}>
+          <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Promotions</h1>
+          <p style={{ margin: 0, fontSize: 13, color: "#56625b" }}>
             Fee waivers, rebates, matched donations, and the organiser referral reward — one engine, configured as rows.
           </p>
         </div>
         <button
           onClick={() => setShowCreate((v) => !v)}
-          style={{ padding: "10px 18px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+          style={{ padding: "10px 18px", borderRadius: 10, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
         >
           {showCreate ? "Cancel" : "+ New promotion"}
         </button>
@@ -220,7 +220,7 @@ export default function AdminPromotionsPage() {
       )}
 
       {showCreate && (
-        <motion.div {...fadeUp(0.05)} style={{ background: "#0d1120", border: "1px solid rgba(29,197,255,0.18)", borderRadius: 14, padding: 20 }}>
+        <motion.div {...fadeUp(0.05)} style={{ background: "#ffffff", border: "1px solid rgba(20,120,74,0.18)", borderRadius: 14, padding: 20 }}>
           <div className="promo-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
             <div>
               <label style={labelStyle}>Slug</label>
@@ -286,7 +286,7 @@ export default function AdminPromotionsPage() {
           <button
             onClick={createPromotion}
             disabled={creating || !canCreate}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: creating || !canCreate ? 0.5 : 1 }}
+            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: creating || !canCreate ? 0.5 : 1 }}
           >
             {creating ? "Creating…" : "Create promotion"}
           </button>
@@ -294,44 +294,44 @@ export default function AdminPromotionsPage() {
       )}
 
       {loading ? (
-        <div style={{ padding: "32px 0", textAlign: "center", color: "#4a5568", fontSize: 13 }}>Loading…</div>
+        <div style={{ padding: "32px 0", textAlign: "center", color: "#6e7872", fontSize: 13 }}>Loading…</div>
       ) : promotions.length === 0 ? (
-        <div style={{ padding: "32px 0", textAlign: "center", color: "#4a5568", fontSize: 13 }}>No promotions yet — create one above.</div>
+        <div style={{ padding: "32px 0", textAlign: "center", color: "#6e7872", fontSize: 13 }}>No promotions yet — create one above.</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {promotions.map((promo) => {
             const status = statusOf(promo);
             const typeLabel = PROMO_TYPES.find((t) => t.value === promo.promo_type)?.label ?? promo.promo_type;
             return (
-              <motion.div key={promo.id} {...fadeUp(0.02)} style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, overflow: "hidden" }}>
+              <motion.div key={promo.id} {...fadeUp(0.02)} style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden" }}>
                 <div
                   onClick={() => toggleExpand(promo)}
                   style={{ padding: "16px 18px", cursor: "pointer", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12 }}
                 >
                   <div style={{ flex: "1 1 220px", minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff" }}>{promo.name}</div>
-                    <div style={{ fontSize: 11, color: "#4a5568", marginTop: 2 }}>{typeLabel} · {promo.slug}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#15201a" }}>{promo.name}</div>
+                    <div style={{ fontSize: 11, color: "#6e7872", marginTop: 2 }}>{typeLabel} · {promo.slug}</div>
                   </div>
                   <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: status.color, background: `${status.color}18`, border: `1px solid ${status.color}35` }}>
                     {status.label}
                   </span>
                   {promo.max_campaigns != null && (
-                    <span style={{ fontSize: 11, color: "#8899aa" }}>{promo.campaigns_used} / {promo.max_campaigns} campaigns</span>
+                    <span style={{ fontSize: 11, color: "#56625b" }}>{promo.campaigns_used} / {promo.max_campaigns} campaigns</span>
                   )}
                   {promo.match_pool_total != null && (
-                    <span style={{ fontSize: 11, color: "#8899aa" }}>{promo.match_pool_remaining?.toLocaleString()} / {promo.match_pool_total.toLocaleString()} GMD pool</span>
+                    <span style={{ fontSize: 11, color: "#56625b" }}>{promo.match_pool_remaining?.toLocaleString()} / {promo.match_pool_total.toLocaleString()} GMD pool</span>
                   )}
                   <span style={{ fontSize: 12, fontWeight: 700, color: GREEN }}>{promo.total_fee_waived.toLocaleString()} GMD waived</span>
                   <button
                     onClick={(e) => { e.stopPropagation(); toggleActive(promo); }}
-                    style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)", background: promo.is_active ? "rgba(239,68,68,0.1)" : "rgba(27,191,136,0.1)", color: promo.is_active ? RED : GREEN, fontSize: 11, fontWeight: 700, cursor: "pointer" }}
+                    style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.14)", background: promo.is_active ? "rgba(239,68,68,0.1)" : "rgba(31,153,96,0.1)", color: promo.is_active ? RED : GREEN, fontSize: 11, fontWeight: 700, cursor: "pointer" }}
                   >
                     {promo.is_active ? "Turn off" : "Turn on"}
                   </button>
                 </div>
 
                 {expandedId === promo.id && (
-                  <div style={{ padding: "0 18px 18px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div style={{ padding: "0 18px 18px", borderTop: "1px solid rgba(21,32,26,0.06)" }}>
                     <div style={{ paddingTop: 14, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
                       <input
                         value={assignCampaignId}
@@ -351,16 +351,16 @@ export default function AdminPromotionsPage() {
                       )}
                     </div>
 
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#f0f6ff", marginBottom: 8 }}>Applications</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#15201a", marginBottom: 8 }}>Applications</div>
                     {applicationsLoading ? (
-                      <div style={{ fontSize: 12, color: "#4a5568" }}>Loading…</div>
+                      <div style={{ fontSize: 12, color: "#6e7872" }}>Loading…</div>
                     ) : applications.length === 0 ? (
-                      <div style={{ fontSize: 12, color: "#4a5568" }}>No applications yet.</div>
+                      <div style={{ fontSize: 12, color: "#6e7872" }}>No applications yet.</div>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                         {applications.map((app) => (
-                          <div key={app.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                            <span style={{ color: "#c0ccd8" }}>
+                          <div key={app.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(21,32,26,0.02)", border: "1px solid rgba(21,32,26,0.05)" }}>
+                            <span style={{ color: "#36443c" }}>
                               {app.campaign_title ?? `Campaign #${app.campaign_id ?? "—"}`}
                               {app.reversed && <span style={{ color: RED, marginLeft: 8 }}>(reversed)</span>}
                             </span>

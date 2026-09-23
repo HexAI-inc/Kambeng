@@ -20,11 +20,11 @@ import {
 } from "@/hooks/use-frontend-data";
 import { AdminTransaction, AdminAuditLog } from "@/types/frontend";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
-const ORANGE = "#f97316";
-const RED = "#ef4444";
-const PURPLE = "#a855f7";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
+const ORANGE = "#e8650f";
+const RED = "#d42f2f";
+const PURPLE = "#8b3fd9";
 
 function fadeUp(delay = 0) {
   return {
@@ -42,16 +42,16 @@ function KPI({
 }) {
   const content = (
     <div className="kpi-card" style={{
-      background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14,
+      background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14,
       padding: "20px 22px", display: "flex", flexDirection: "column", gap: 6,
       cursor: href ? "pointer" : "default", transition: "border-color 0.2s, transform 0.2s",
     }}
-      onMouseEnter={(e) => { if (href) { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(29,197,255,0.3)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; } }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.07)"; (e.currentTarget as HTMLDivElement).style.transform = ""; }}
+      onMouseEnter={(e) => { if (href) { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(20,120,74,0.3)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; } }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(21,32,26,0.07)"; (e.currentTarget as HTMLDivElement).style.transform = ""; }}
     >
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 900, color: color ?? "#f0f6ff", letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: "#6b7a8d" }}>{sub}</div>}
+      <div style={{ fontSize: 10, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+      <div style={{ fontSize: 26, fontWeight: 900, color: color ?? "#15201a", letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: "#626d66" }}>{sub}</div>}
     </div>
   );
   return href ? <Link href={href} style={{ textDecoration: "none" }}>{content}</Link> : content;
@@ -63,8 +63,8 @@ type DarkTooltipProps = { active?: boolean; payload?: TooltipPayloadItem[]; labe
 function DarkTooltip({ active, payload, label, prefix = "", suffix = "" }: DarkTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 14px", fontSize: 12 }}>
-      {label && <div style={{ color: "#8899aa", marginBottom: 6, fontWeight: 600 }}>{label}</div>}
+    <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.1)", borderRadius: 10, padding: "10px 14px", fontSize: 12 }}>
+      {label && <div style={{ color: "#56625b", marginBottom: 6, fontWeight: 600 }}>{label}</div>}
       {payload.map((p) => (
         <div key={p.dataKey} style={{ color: p.color, fontWeight: 700 }}>{p.name}: {prefix}{typeof p.value === "number" ? p.value.toLocaleString(undefined, { maximumFractionDigits: 0 }) : p.value}{suffix}</div>
       ))}
@@ -78,15 +78,15 @@ function ActivityRow({ log }: { log: AdminAuditLog }) {
     APPROVE: GREEN, REJECT: RED, SUSPEND: ORANGE, CREATE: BLUE, UPDATE: PURPLE, DELETE: RED,
   };
   const key = Object.keys(actionColor).find((k) => log.action_type?.toUpperCase().includes(k));
-  const color = key ? actionColor[key] : "#8899aa";
+  const color = key ? actionColor[key] : "#56625b";
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(21,32,26,0.04)" }}>
       <div style={{ width: 7, height: 7, borderRadius: "50%", background: color, flexShrink: 0, marginTop: 5 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12, color: "#f0f6ff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{humanize(log.action_type)}</div>
-        <div style={{ fontSize: 11, color: "#6b7a8d", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.description}</div>
+        <div style={{ fontSize: 12, color: "#15201a", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{humanize(log.action_type)}</div>
+        <div style={{ fontSize: 11, color: "#626d66", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.description}</div>
       </div>
-      <div style={{ fontSize: 10, color: "#4a5568", flexShrink: 0 }}>{new Date(log.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+      <div style={{ fontSize: 10, color: "#6e7872", flexShrink: 0 }}>{new Date(log.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
     </div>
   );
 }
@@ -142,7 +142,7 @@ export default function AdminOverviewPage() {
     return [
       { status: "Active", count: active, fill: GREEN },
       { status: "Suspended", count: suspended, fill: ORANGE },
-      { status: "Closed", count: closed, fill: "#4a5568" },
+      { status: "Closed", count: closed, fill: "#6e7872" },
     ];
   }, [campaigns]);
 
@@ -181,19 +181,19 @@ export default function AdminOverviewPage() {
   const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
 
         {/* Header */}
         <motion.div {...fadeUp(0)}>
-          <div style={{ fontSize: 24, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Platform Overview</div>
-          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Real-time metrics across all Kambeng activity</div>
+          <div style={{ fontSize: 24, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Platform Overview</div>
+          <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>Real-time metrics across all Kambeng activity</div>
         </motion.div>
 
         {/* KPI row 1 */}
         <motion.div {...fadeUp(0.05)}>
           <div className="kpi-grid">
-            <KPI label="Total Users" value={statsLoading ? "—" : fmt(stats?.total_users ?? 0)} sub="registered accounts" color="#f0f6ff" href="/admin/users" />
+            <KPI label="Total Users" value={statsLoading ? "—" : fmt(stats?.total_users ?? 0)} sub="registered accounts" color="#15201a" href="/admin/users" />
             <KPI label="Total Raised" value={statsLoading ? "—" : `${fmt(totalRaised)} GMD`} sub="all succeeded donations" color={GREEN} />
             <KPI label="Platform Revenue" value={statsLoading ? "—" : `${fmt(stats?.total_platform_revenue ?? 0)} GMD`} sub="commissions earned" color={BLUE} href="/admin/commissions" />
             <KPI label="Active Campaigns" value={statsLoading ? "—" : fmt(stats?.active_campaigns ?? 0)} sub={`of ${stats?.total_campaigns ?? 0} total`} color={ORANGE} href="/admin/campaigns" />
@@ -214,9 +214,9 @@ export default function AdminOverviewPage() {
         <motion.div {...fadeUp(0.13)}>
         <div className="chart-row-1">
           {/* Area chart */}
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Donations (Last 14 Days)</div>
-            <div style={{ fontSize: 11, color: "#4a5568", marginBottom: 16 }}>Succeeded donation volume in GMD</div>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>Donations (Last 14 Days)</div>
+            <div style={{ fontSize: 11, color: "#6e7872", marginBottom: 16 }}>Succeeded donation volume in GMD</div>
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={donationTimeline} margin={{ top: 0, right: 4, left: -20, bottom: 0 }}>
                 <defs>
@@ -225,9 +225,9 @@ export default function AdminOverviewPage() {
                     <stop offset="95%" stopColor={BLUE} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" />
-                <XAxis dataKey="date" tick={{ fill: "#4a5568", fontSize: 10 }} axisLine={false} tickLine={false} interval={2} />
-                <YAxis tick={{ fill: "#4a5568", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <CartesianGrid stroke="rgba(21,32,26,0.04)" strokeDasharray="4 4" />
+                <XAxis dataKey="date" tick={{ fill: "#6e7872", fontSize: 10 }} axisLine={false} tickLine={false} interval={2} />
+                <YAxis tick={{ fill: "#6e7872", fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<DarkTooltip suffix=" GMD" />} />
                 <Area type="monotone" dataKey="amount" name="Donations" stroke={BLUE} strokeWidth={2} fill="url(#donGrad)" dot={false} activeDot={{ r: 4, fill: BLUE }} />
               </AreaChart>
@@ -235,11 +235,11 @@ export default function AdminOverviewPage() {
           </div>
 
           {/* Pie: tx types */}
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Transaction Types</div>
-            <div style={{ fontSize: 11, color: "#4a5568", marginBottom: 8 }}>Distribution by type</div>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>Transaction Types</div>
+            <div style={{ fontSize: 11, color: "#6e7872", marginBottom: 8 }}>Distribution by type</div>
             {txTypeBreakdown.length === 0 ? (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 200, color: "#4a5568", fontSize: 13 }}>No transactions yet</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 200, color: "#6e7872", fontSize: 13 }}>No transactions yet</div>
             ) : (
               <>
                 <ResponsiveContainer width="100%" height={160}>
@@ -252,7 +252,7 @@ export default function AdminOverviewPage() {
                 </ResponsiveContainer>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 14px", justifyContent: "center" }}>
                   {txTypeBreakdown.map((item, i) => (
-                    <div key={item.name} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#8899aa" }}>
+                    <div key={item.name} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#56625b" }}>
                       <div style={{ width: 8, height: 8, borderRadius: "50%", background: PIE_COLORS[i % PIE_COLORS.length] }} />
                       {item.name} ({item.value})
                     </div>
@@ -268,20 +268,20 @@ export default function AdminOverviewPage() {
         <motion.div {...fadeUp(0.17)}>
         <div className="chart-row-2">
           {/* Bar: revenue per campaign */}
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Commission Revenue by Campaign</div>
-            <div style={{ fontSize: 11, color: "#4a5568", marginBottom: 16 }}>Platform commission earned per campaign (GMD)</div>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>Commission Revenue by Campaign</div>
+            <div style={{ fontSize: 11, color: "#6e7872", marginBottom: 16 }}>Platform commission earned per campaign (GMD)</div>
             {revenuePerCampaign.length === 0 ? (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 200, color: "#4a5568", fontSize: 13 }}>No commission data yet</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 200, color: "#6e7872", fontSize: 13 }}>No commission data yet</div>
             ) : (
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={revenuePerCampaign} margin={{ top: 0, right: 4, left: -20, bottom: 0 }}>
-                  <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fill: "#4a5568", fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: "#4a5568", fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <CartesianGrid stroke="rgba(21,32,26,0.04)" strokeDasharray="4 4" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fill: "#6e7872", fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#6e7872", fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip content={<DarkTooltip suffix=" GMD" />} />
                   <Bar dataKey="revenue" name="Revenue" radius={[6, 6, 0, 0]}>
-                    {revenuePerCampaign.map((_, i) => <Cell key={i} fill={i === 0 ? BLUE : `rgba(29,197,255,${0.7 - i * 0.07})`} />)}
+                    {revenuePerCampaign.map((_, i) => <Cell key={i} fill={i === 0 ? BLUE : `rgba(20,120,74,${0.7 - i * 0.07})`} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -289,9 +289,9 @@ export default function AdminOverviewPage() {
           </div>
 
           {/* KYC status donut */}
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>KYC Status</div>
-            <div style={{ fontSize: 11, color: "#4a5568", marginBottom: 8 }}>Verification breakdown</div>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>KYC Status</div>
+            <div style={{ fontSize: 11, color: "#6e7872", marginBottom: 8 }}>Verification breakdown</div>
             <ResponsiveContainer width="100%" height={160}>
               <PieChart>
                 <Pie data={kycBreakdown} cx="50%" cy="50%" innerRadius={46} outerRadius={70} paddingAngle={3} dataKey="value">
@@ -303,7 +303,7 @@ export default function AdminOverviewPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
               {kycBreakdown.map((item) => (
                 <div key={item.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#8899aa" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#56625b" }}>
                     <div style={{ width: 8, height: 8, borderRadius: "50%", background: item.color }} />{item.name}
                   </div>
                   <span style={{ color: item.color, fontWeight: 700 }}>{item.value}</span>
@@ -318,14 +318,14 @@ export default function AdminOverviewPage() {
         <motion.div {...fadeUp(0.21)}>
         <div className="chart-row-3">
           {/* Campaign status bar chart */}
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Campaign Status Distribution</div>
-            <div style={{ fontSize: 11, color: "#4a5568", marginBottom: 16 }}>Active vs suspended vs closed</div>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: "20px 20px 12px" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>Campaign Status Distribution</div>
+            <div style={{ fontSize: 11, color: "#6e7872", marginBottom: 16 }}>Active vs suspended vs closed</div>
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={campaignStatusData} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
-                <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" horizontal={false} />
-                <XAxis type="number" tick={{ fill: "#4a5568", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="status" tick={{ fill: "#8899aa", fontSize: 12 }} axisLine={false} tickLine={false} width={72} />
+                <CartesianGrid stroke="rgba(21,32,26,0.04)" strokeDasharray="4 4" horizontal={false} />
+                <XAxis type="number" tick={{ fill: "#6e7872", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="status" tick={{ fill: "#56625b", fontSize: 12 }} axisLine={false} tickLine={false} width={72} />
                 <Tooltip content={<DarkTooltip />} />
                 <Bar dataKey="count" name="Campaigns" radius={[0, 6, 6, 0]}>
                   {campaignStatusData.map((item, i) => <Cell key={i} fill={item.fill} />)}
@@ -335,17 +335,17 @@ export default function AdminOverviewPage() {
           </div>
 
           {/* Recent admin activity */}
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px" }}>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: "20px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff" }}>Recent Activity</div>
-                <div style={{ fontSize: 11, color: "#4a5568" }}>Latest admin actions</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a" }}>Recent Activity</div>
+                <div style={{ fontSize: 11, color: "#6e7872" }}>Latest admin actions</div>
               </div>
               <Link href="/admin/reports" style={{ fontSize: 11, color: BLUE, textDecoration: "none", fontWeight: 600 }}>View all →</Link>
             </div>
             <div style={{ overflowY: "auto", maxHeight: 240 }}>
               {recentLogs.length === 0 ? (
-                <div style={{ color: "#4a5568", fontSize: 13, textAlign: "center", paddingTop: 40 }}>No activity yet</div>
+                <div style={{ color: "#6e7872", fontSize: 13, textAlign: "center", paddingTop: 40 }}>No activity yet</div>
               ) : recentLogs.map((log) => <ActivityRow key={log.id} log={log} />)}
             </div>
           </div>
@@ -354,7 +354,7 @@ export default function AdminOverviewPage() {
 
         {/* Quick links */}
         <motion.div {...fadeUp(0.25)}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Quick Actions</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Quick Actions</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             {[
               { label: "Review KYC Queue", href: "/admin/kyc-queue", color: BLUE },

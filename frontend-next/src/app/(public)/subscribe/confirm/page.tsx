@@ -4,9 +4,9 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
-const RED = "#ef4444";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
+const RED = "#d42f2f";
 
 function ConfirmContent() {
   const searchParams = useSearchParams();
@@ -37,17 +37,17 @@ function ConfirmContent() {
             <div style={{ width: 28, height: 28, border: `3px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.9s linear infinite" }} />
           )}
         </div>
-        <h1 style={{ fontSize: 24, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em", marginBottom: 10 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", marginBottom: 10 }}>
           {state === "confirmed" ? "You're subscribed!" : state === "error" ? "Link not valid" : "Confirming…"}
         </h1>
-        <p style={{ fontSize: 14, color: "#8899aa", lineHeight: 1.7, marginBottom: 28 }}>
+        <p style={{ fontSize: 14, color: "#56625b", lineHeight: 1.7, marginBottom: 28 }}>
           {state === "confirmed"
             ? "Thanks for confirming. You'll get one short email a week from Kambeng — no spam, unsubscribe anytime."
             : state === "error"
               ? "This confirmation link is invalid or has expired. Try subscribing again from the homepage."
               : "One moment while we confirm your email."}
         </p>
-        <Link href="/campaigns" style={{ display: "inline-block", padding: "13px 28px", borderRadius: 10, background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>
+        <Link href="/campaigns" style={{ display: "inline-block", padding: "13px 28px", borderRadius: 10, background: `${BLUE}`, color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>
           Browse live campaigns
         </Link>
       </div>

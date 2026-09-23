@@ -5,9 +5,9 @@ import { isAxiosError } from "axios";
 import { useUploadCampaignProof } from "@/hooks/use-frontend-data";
 import { StyledSelect } from "@/components/ui/styled-select";
 
-const BLUE = "#1dc5ff";
-const RED = "#ef4444";
-const GREEN = "#1bbf88";
+const BLUE = "#14784a";
+const RED = "#d42f2f";
+const GREEN = "#1f9960";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const ALLOWED_TYPES: Record<string, string> = {
@@ -55,8 +55,8 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
 
   const fieldStyle: React.CSSProperties = {
     width: "100%", padding: "11px 14px", borderRadius: 10,
-    border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
-    color: "#f0f6ff", fontSize: 14, outline: "none", boxSizing: "border-box",
+    border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+    color: "#15201a", fontSize: 14, outline: "none", boxSizing: "border-box",
     fontFamily: "inherit", transition: "border-color 0.2s",
   };
 
@@ -108,7 +108,7 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
 
   if (success) {
     return (
-      <div style={{ padding: "16px 18px", borderRadius: 12, background: "rgba(27,191,136,0.08)", border: "1px solid rgba(27,191,136,0.2)", color: GREEN, fontSize: 14, fontWeight: 600, textAlign: "center" }}>
+      <div style={{ padding: "16px 18px", borderRadius: 12, background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.2)", color: GREEN, fontSize: 14, fontWeight: 600, textAlign: "center" }}>
         Proof uploaded successfully!{" "}
         <button onClick={() => setSuccess(false)} style={{ background: "none", border: "none", color: BLUE, cursor: "pointer", fontWeight: 700, fontSize: 14, padding: 0, marginLeft: 4 }}>
           Upload another
@@ -120,33 +120,33 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
   return (
     <form onSubmit={(e) => void handleSubmit(e)} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {error && (
-        <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#fca5a5" }}>
+        <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#b42323" }}>
           {error}
         </div>
       )}
 
       {/* File picker */}
       <div>
-        <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>
-          File <span style={{ color: "#4a5568", fontWeight: 400 }}>(PNG, JPEG, or PDF — max 50 MB)</span>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>
+          File <span style={{ color: "#6e7872", fontWeight: 400 }}>(PNG, JPEG, or PDF — max 50 MB)</span>
         </label>
         <div
           onClick={() => fileInputRef.current?.click()}
           style={{
             display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-            border: `2px dashed ${selectedFile ? "rgba(29,197,255,0.4)" : "rgba(255,255,255,0.12)"}`,
-            borderRadius: 10, background: "rgba(255,255,255,0.03)",
+            border: `2px dashed ${selectedFile ? "rgba(20,120,74,0.4)" : "rgba(21,32,26,0.12)"}`,
+            borderRadius: 10, background: "rgba(21,32,26,0.03)",
             cursor: "pointer", transition: "border-color 0.2s",
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={selectedFile ? BLUE : "#4a5568"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={selectedFile ? BLUE : "#6e7872"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
           </svg>
-          <span style={{ fontSize: 13, color: selectedFile ? "#f0f6ff" : "#4a5568", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ fontSize: 13, color: selectedFile ? "#15201a" : "#6e7872", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {selectedFile ? selectedFile.name : "Click to choose a file…"}
           </span>
           {selectedFile && (
-            <span style={{ fontSize: 11, color: "#6b7a8d", flexShrink: 0 }}>
+            <span style={{ fontSize: 11, color: "#626d66", flexShrink: 0 }}>
               {(selectedFile.size / 1024).toFixed(0)} KB
             </span>
           )}
@@ -156,7 +156,7 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
 
       {/* Document type */}
       <div>
-        <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>Document type</label>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>Document type</label>
         <StyledSelect
           value={documentType}
           onChange={setDocumentType}
@@ -167,22 +167,22 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
 
       {/* Visibility */}
       <div>
-        <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>Who can see this?</label>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>Who can see this?</label>
         <StyledSelect
           value={visibility}
           onChange={setVisibility}
           options={VISIBILITY_OPTIONS}
           disabled={isUploading}
         />
-        <p style={{ margin: "6px 0 0", fontSize: 12, color: "#4a5568", fontStyle: "italic" }}>
+        <p style={{ margin: "6px 0 0", fontSize: 12, color: "#6e7872", fontStyle: "italic" }}>
           {VISIBILITY_HINTS[visibility]}
         </p>
       </div>
 
       {/* Description */}
       <div>
-        <label style={{ fontSize: 12, fontWeight: 600, color: "#8899aa", display: "block", marginBottom: 6 }}>
-          Description <span style={{ color: "#4a5568", fontWeight: 400 }}>(optional)</span>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#56625b", display: "block", marginBottom: 6 }}>
+          Description <span style={{ color: "#6e7872", fontWeight: 400 }}>(optional)</span>
         </label>
         <textarea
           value={description}
@@ -192,10 +192,10 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
           rows={3}
           disabled={isUploading}
           style={{ ...fieldStyle, resize: "vertical", minHeight: 80 }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; }}
         />
-        <span style={{ fontSize: 11, color: "#4a5568", display: "block", textAlign: "right", marginTop: 3 }}>{description.length}/500</span>
+        <span style={{ fontSize: 11, color: "#6e7872", display: "block", textAlign: "right", marginTop: 3 }}>{description.length}/500</span>
       </div>
 
       <button
@@ -203,11 +203,11 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
         disabled={!selectedFile || isUploading}
         style={{
           width: "100%", padding: "12px", borderRadius: 10, border: "none",
-          background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+          background: `${BLUE}`,
           color: "#fff", fontSize: 14, fontWeight: 700,
           cursor: !selectedFile || isUploading ? "not-allowed" : "pointer",
           opacity: !selectedFile || isUploading ? 0.6 : 1,
-          boxShadow: "0 4px 16px rgba(29,197,255,0.25)", transition: "opacity 0.2s",
+          boxShadow: "0 4px 16px rgba(20,120,74,0.25)", transition: "opacity 0.2s",
         }}
       >
         {isUploading ? "Uploading…" : "Upload Proof"}

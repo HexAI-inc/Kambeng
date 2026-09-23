@@ -6,9 +6,9 @@ import { useSessionProfile, useUpdateMyProfile } from "@/hooks/use-frontend-data
 import { kycLabel } from "@/lib/fmt";
 import { StyledSelect } from "@/components/ui/styled-select";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
-const RED = "#ef4444";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
+const RED = "#d42f2f";
 
 function fade(delay = 0) {
   return { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.32, delay, ease: "easeOut" as const } };
@@ -17,11 +17,11 @@ function fade(delay = 0) {
 function KYCChip({ status }: { status?: string | null }) {
   const s = (status ?? "NOT_SUBMITTED").toUpperCase();
   const map: Record<string, { color: string; bg: string; border: string; label: string }> = {
-    APPROVED:      { color: GREEN,     bg: "rgba(27,191,136,0.1)",  border: "rgba(27,191,136,0.25)", label: "Verified" },
-    SUBMITTED:     { color: BLUE,      bg: "rgba(29,197,255,0.1)",  border: "rgba(29,197,255,0.2)",  label: "Under review" },
-    REVIEWING:     { color: BLUE,      bg: "rgba(29,197,255,0.1)",  border: "rgba(29,197,255,0.2)",  label: "Under review" },
+    APPROVED:      { color: GREEN,     bg: "rgba(31,153,96,0.1)",  border: "rgba(31,153,96,0.25)", label: "Verified" },
+    SUBMITTED:     { color: BLUE,      bg: "rgba(20,120,74,0.1)",  border: "rgba(20,120,74,0.2)",  label: "Under review" },
+    REVIEWING:     { color: BLUE,      bg: "rgba(20,120,74,0.1)",  border: "rgba(20,120,74,0.2)",  label: "Under review" },
     REJECTED:      { color: RED,       bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)", label: "Rejected" },
-    NOT_SUBMITTED: { color: "#f97316", bg: "rgba(249,115,22,0.1)",  border: "rgba(249,115,22,0.25)", label: "Not submitted" },
+    NOT_SUBMITTED: { color: "#e8650f", bg: "rgba(232,101,15,0.1)",  border: "rgba(232,101,15,0.25)", label: "Not submitted" },
   };
   const t = map[s] ?? map.NOT_SUBMITTED;
   return <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 20, color: t.color, background: t.bg, border: `1px solid ${t.border}` }}>{t.label}</span>;
@@ -30,7 +30,7 @@ function KYCChip({ status }: { status?: string | null }) {
 function Avatar({ name, size = 60 }: { name: string; size?: number }) {
   const initials = name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: "linear-gradient(135deg, #0d2340, #0a3d5c)", border: "2px solid rgba(29,197,255,0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.36, fontWeight: 800, color: BLUE, flexShrink: 0 }}>
+    <div style={{ width: size, height: size, borderRadius: "50%", background: "linear-gradient(135deg, #e6f4ec, #cfe8da)", border: "2px solid rgba(20,120,74,0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.36, fontWeight: 800, color: BLUE, flexShrink: 0 }}>
       {initials}
     </div>
   );
@@ -96,15 +96,15 @@ export default function ProfilePage() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "10px 14px", borderRadius: 9,
-    border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
-    color: "#f0f6ff", fontSize: 14, outline: "none", boxSizing: "border-box",
+    border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+    color: "#15201a", fontSize: 14, outline: "none", boxSizing: "border-box",
     transition: "border-color 0.2s",
   };
-  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.4)"; };
-  const onBlur  = (e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; };
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.4)"; };
+  const onBlur  = (e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; };
 
   if (isLoading) return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ width: 36, height: 36, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
@@ -113,30 +113,30 @@ export default function ProfilePage() {
   if (!me) return null;
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
-          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : RED, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>{toast.msg}</div>
+          <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(31,153,96,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(31,153,96,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : RED, fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(21,32,26,0.12)" }}>{toast.msg}</div>
         )}
 
         <motion.div {...fade(0)}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>Profile &amp; Settings</div>
-          <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>Manage your personal details, public profile, and security</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Profile &amp; Settings</div>
+          <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>Manage your personal details, public profile, and security</div>
         </motion.div>
 
         {/* Identity card */}
         <motion.div {...fade(0.05)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", gap: 16 }}>
             <Avatar name={me.full_name ?? "U"} size={60} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 17, fontWeight: 800, color: "#f0f6ff", marginBottom: 2 }}>{me.full_name}</div>
-              <div style={{ fontSize: 13, color: "#6b7a8d", marginBottom: 10 }}>{me.email}</div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: "#15201a", marginBottom: 2 }}>{me.full_name}</div>
+              <div style={{ fontSize: 13, color: "#626d66", marginBottom: 10 }}>{me.email}</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                 <KYCChip status={me.kyc_status} />
-                <span style={{ fontSize: 11, color: "#4a5568" }}>Member since {new Date(me.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                <span style={{ fontSize: 11, color: "#6e7872" }}>Member since {new Date(me.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                 {me.role === "ADMIN" && (
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", padding: "3px 10px", borderRadius: 20, color: "#f97316", background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.25)" }}>Admin</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", padding: "3px 10px", borderRadius: 20, color: "#e8650f", background: "rgba(232,101,15,0.1)", border: "1px solid rgba(232,101,15,0.25)" }}>Admin</span>
                 )}
               </div>
             </div>
@@ -145,23 +145,23 @@ export default function ProfilePage() {
 
         {/* Personal details */}
         <motion.div {...fade(0.08)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "24px" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 18 }}>Personal details</div>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: "24px" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#15201a", marginBottom: 18 }}>Personal details</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
-                <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>Full name</label>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>Full name</label>
                 <input value={fullName} onChange={(e) => setDetailOverrides((p) => ({ ...p, full_name: e.target.value }))} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
               </div>
               <div>
-                <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>Email address</label>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>Email address</label>
                 <input type="email" value={email} onChange={(e) => setDetailOverrides((p) => ({ ...p, email: e.target.value }))} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
               </div>
               <div>
-                <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>Wave number</label>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>Wave number</label>
                 <input type="tel" value={waveNumber} onChange={(e) => setDetailOverrides((p) => ({ ...p, wave_number: e.target.value }))} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
               </div>
               <div>
-                <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>What brings you to Kambeng?</label>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>What brings you to Kambeng?</label>
                 <StyledSelect
                   value={purpose}
                   onChange={(v) => setDetailOverrides((p) => ({ ...p, account_purpose: v }))}
@@ -172,10 +172,10 @@ export default function ProfilePage() {
                   ]}
                   style={{ width: "100%" }}
                 />
-                <div style={{ fontSize: 11, color: "#4a5568", marginTop: 5 }}>Just a preference — you can donate and fundraise either way.</div>
+                <div style={{ fontSize: 11, color: "#6e7872", marginTop: 5 }}>Just a preference — you can donate and fundraise either way.</div>
               </div>
             </div>
-            <button onClick={() => void handleSaveDetails()} disabled={saving} style={{ marginTop: 18, padding: "10px 24px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(29,197,255,0.3)", opacity: saving ? 0.7 : 1 }}>
+            <button onClick={() => void handleSaveDetails()} disabled={saving} style={{ marginTop: 18, padding: "10px 24px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(20,120,74,0.3)", opacity: saving ? 0.7 : 1 }}>
               {saving ? "Saving…" : "Save details"}
             </button>
           </div>
@@ -183,17 +183,17 @@ export default function ProfilePage() {
 
         {/* Public profile */}
         <motion.div {...fade(0.095)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(29,197,255,0.12)", borderRadius: 16, padding: "24px" }}>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(20,120,74,0.12)", borderRadius: 16, padding: "24px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 4 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff" }}>Public profile</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#15201a" }}>Public profile</div>
               <a href={`/profiles/${me.id}`} target="_blank" rel="noreferrer" style={{ fontSize: 12, fontWeight: 700, color: BLUE, textDecoration: "none" }}>
                 View public profile →
               </a>
             </div>
-            <div style={{ fontSize: 12, color: "#6b7a8d", marginBottom: 18 }}>
+            <div style={{ fontSize: 12, color: "#626d66", marginBottom: 18 }}>
               Your name and this bio are shown publicly on your campaigns, so donors know who they&apos;re giving to.
             </div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>Bio</label>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>Bio</label>
             <textarea
               value={bio}
               maxLength={500}
@@ -202,8 +202,8 @@ export default function ProfilePage() {
               onChange={(e) => setDetailOverrides((p) => ({ ...p, bio: e.target.value }))}
               style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", lineHeight: 1.5 }}
             />
-            <div style={{ fontSize: 11, color: "#4a5568", marginTop: 6, textAlign: "right" }}>{bio.length}/500</div>
-            <button onClick={() => void handleSaveDetails()} disabled={saving} style={{ marginTop: 10, padding: "10px 24px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(29,197,255,0.3)", opacity: saving ? 0.7 : 1 }}>
+            <div style={{ fontSize: 11, color: "#6e7872", marginTop: 6, textAlign: "right" }}>{bio.length}/500</div>
+            <button onClick={() => void handleSaveDetails()} disabled={saving} style={{ marginTop: 10, padding: "10px 24px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(20,120,74,0.3)", opacity: saving ? 0.7 : 1 }}>
               {saving ? "Saving…" : "Save public profile"}
             </button>
           </div>
@@ -211,9 +211,9 @@ export default function ProfilePage() {
 
         {/* Change password */}
         <motion.div {...fade(0.11)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "24px" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 4 }}>Change password</div>
-            <div style={{ fontSize: 12, color: "#6b7a8d", marginBottom: 18 }}>Leave blank if you don&apos;t want to change it.</div>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: "24px" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>Change password</div>
+            <div style={{ fontSize: 12, color: "#626d66", marginBottom: 18 }}>Leave blank if you don&apos;t want to change it.</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {([
                 { label: "Current password",     value: currentPassword, setter: setCurrentPassword },
@@ -221,12 +221,12 @@ export default function ProfilePage() {
                 { label: "Confirm new password", value: confirmPassword, setter: setConfirmPassword },
               ] as const).map(({ label, value, setter }) => (
                 <div key={label}>
-                  <label style={{ fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>{label}</label>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 6 }}>{label}</label>
                   <input type="password" value={value} onChange={(e) => setter(e.target.value)} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                 </div>
               ))}
             </div>
-            <button onClick={() => void handleChangePassword()} disabled={saving} style={{ marginTop: 18, padding: "10px 24px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(29,197,255,0.3)", opacity: saving ? 0.7 : 1 }}>
+            <button onClick={() => void handleChangePassword()} disabled={saving} style={{ marginTop: 18, padding: "10px 24px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(20,120,74,0.3)", opacity: saving ? 0.7 : 1 }}>
               {saving ? "Saving…" : "Change password"}
             </button>
           </div>
@@ -234,8 +234,8 @@ export default function ProfilePage() {
 
         {/* Read-only account info */}
         <motion.div {...fade(0.14)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "24px" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#f0f6ff", marginBottom: 18 }}>Account info</div>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: "24px" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#15201a", marginBottom: 18 }}>Account info</div>
             <div className="profile-info-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               {[
                 { label: "Role",           value: me.role === "ADMIN" ? "Admin" : "Member" },
@@ -244,8 +244,8 @@ export default function ProfilePage() {
                 { label: "Member since",   value: new Date(me.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) },
               ].map(({ label, value }) => (
                 <div key={label}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>{label}</div>
-                  <div style={{ fontSize: 13, color: "#8899aa", padding: "9px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>{value}</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>{label}</div>
+                  <div style={{ fontSize: 13, color: "#56625b", padding: "9px 12px", borderRadius: 8, background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.06)" }}>{value}</div>
                 </div>
               ))}
             </div>

@@ -30,9 +30,9 @@ function getServerErrorMessage(error: unknown) {
   return "Server error";
 }
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
-const RED = "#ef4444";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
+const RED = "#d42f2f";
 
 type NotificationEmail = {
   id: number;
@@ -190,8 +190,8 @@ export default function KycNotificationEmailsPage() {
   const pageRows = filteredRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div style={{ background: "#0a0f1a", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at top left, rgba(29,197,255,0.13), transparent 28%), radial-gradient(circle at 85% 10%, rgba(27,191,136,0.11), transparent 22%), linear-gradient(180deg, rgba(255,255,255,0.02), transparent 28%)", pointerEvents: "none" }} />
+    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at top left, rgba(20,120,74,0.13), transparent 28%), radial-gradient(circle at 85% 10%, rgba(31,153,96,0.11), transparent 22%), linear-gradient(180deg, rgba(21,32,26,0.02), transparent 28%)", pointerEvents: "none" }} />
 
       <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 20 }}>
         {toast && (
@@ -203,12 +203,12 @@ export default function KycNotificationEmailsPage() {
               zIndex: 999,
               padding: "12px 20px",
               borderRadius: 10,
-              background: toast.ok ? "rgba(27,191,136,0.15)" : "rgba(239,68,68,0.15)",
-              border: `1px solid ${toast.ok ? "rgba(27,191,136,0.3)" : "rgba(239,68,68,0.3)"}`,
+              background: toast.ok ? "rgba(31,153,96,0.15)" : "rgba(239,68,68,0.15)",
+              border: `1px solid ${toast.ok ? "rgba(31,153,96,0.3)" : "rgba(239,68,68,0.3)"}`,
               color: toast.ok ? GREEN : RED,
               fontSize: 13,
               fontWeight: 600,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+              boxShadow: "0 8px 32px rgba(21,32,26,0.12)",
             }}
           >
             {toast.msg}
@@ -217,9 +217,9 @@ export default function KycNotificationEmailsPage() {
 
         <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "#f0f6ff", letterSpacing: "-0.03em" }}>KYC Alert Emails</div>
-            <div style={{ fontSize: 13, color: "#6b7a8d", marginTop: 4 }}>
-              {rows.length} total · <span style={{ color: activeCount > 0 ? GREEN : "#4a5568" }}>{activeCount} active</span>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>KYC Alert Emails</div>
+            <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>
+              {rows.length} total · <span style={{ color: activeCount > 0 ? GREEN : "#6e7872" }}>{activeCount} active</span>
             </div>
           </div>
 
@@ -231,9 +231,9 @@ export default function KycNotificationEmailsPage() {
               style={{
                 padding: "9px 14px",
                 borderRadius: 9,
-                border: "1px solid rgba(255,255,255,0.1)",
-                background: "rgba(255,255,255,0.05)",
-                color: "#f0f6ff",
+                border: "1px solid rgba(21,32,26,0.1)",
+                background: "rgba(21,32,26,0.05)",
+                color: "#15201a",
                 fontSize: 13,
                 outline: "none",
                 minWidth: 240,
@@ -244,9 +244,9 @@ export default function KycNotificationEmailsPage() {
               style={{
                 padding: "9px 14px",
                 borderRadius: 9,
-                border: `1px solid ${includeInactive ? "rgba(29,197,255,0.25)" : "rgba(255,255,255,0.1)"}`,
-                background: includeInactive ? "rgba(29,197,255,0.08)" : "rgba(255,255,255,0.04)",
-                color: includeInactive ? BLUE : "#8899aa",
+                border: `1px solid ${includeInactive ? "rgba(20,120,74,0.25)" : "rgba(21,32,26,0.1)"}`,
+                background: includeInactive ? "rgba(20,120,74,0.08)" : "rgba(21,32,26,0.04)",
+                color: includeInactive ? BLUE : "#56625b",
                 fontSize: 13,
                 fontWeight: 700,
                 cursor: "pointer",
@@ -258,10 +258,10 @@ export default function KycNotificationEmailsPage() {
         </motion.div>
 
         <motion.div {...fadeUp(0.05)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: 20 }}>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, padding: 20 }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12 }}>
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Add recipient</label>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Add recipient</label>
                 <input
                   value={draftEmail}
                   onChange={(e) => setDraftEmail(e.target.value)}
@@ -270,15 +270,15 @@ export default function KycNotificationEmailsPage() {
                     width: "100%",
                     padding: "11px 14px",
                     borderRadius: 10,
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    background: "rgba(255,255,255,0.04)",
-                    color: "#f0f6ff",
+                    border: "1px solid rgba(21,32,26,0.1)",
+                    background: "rgba(21,32,26,0.04)",
+                    color: "#15201a",
                     fontSize: 14,
                     outline: "none",
                     boxSizing: "border-box",
                   }}
                 />
-                <div style={{ fontSize: 12, color: "#6b7a8d", marginTop: 8 }}>
+                <div style={{ fontSize: 12, color: "#626d66", marginTop: 8 }}>
                   These addresses get an email whenever a user submits KYC, plus a daily 08:00 GMT reminder while any submission is still awaiting review.
                 </div>
               </div>
@@ -290,7 +290,7 @@ export default function KycNotificationEmailsPage() {
                     padding: "11px 18px",
                     borderRadius: 10,
                     border: "none",
-                    background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                    background: `${BLUE}`,
                     color: "#fff",
                     fontSize: 13,
                     fontWeight: 700,
@@ -308,8 +308,8 @@ export default function KycNotificationEmailsPage() {
 
         {editId && (
           <motion.div {...fadeUp(0.06)}>
-            <div style={{ background: "#0d1120", border: "1px solid rgba(29,197,255,0.12)", borderRadius: 16, padding: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: "#f0f6ff", marginBottom: 10 }}>Edit recipient</div>
+            <div style={{ background: "#ffffff", border: "1px solid rgba(20,120,74,0.12)", borderRadius: 16, padding: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#15201a", marginBottom: 10 }}>Edit recipient</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12 }}>
                 <input
                   value={editEmail}
@@ -319,9 +319,9 @@ export default function KycNotificationEmailsPage() {
                     width: "100%",
                     padding: "11px 14px",
                     borderRadius: 10,
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    background: "rgba(255,255,255,0.04)",
-                    color: "#f0f6ff",
+                    border: "1px solid rgba(21,32,26,0.1)",
+                    background: "rgba(21,32,26,0.04)",
+                    color: "#15201a",
                     fontSize: 14,
                     outline: "none",
                     boxSizing: "border-box",
@@ -335,7 +335,7 @@ export default function KycNotificationEmailsPage() {
                       padding: "11px 18px",
                       borderRadius: 10,
                       border: "none",
-                      background: `linear-gradient(135deg, ${GREEN}, #0f8f66)`,
+                      background: `linear-gradient(135deg, ${GREEN}, #146c43)`,
                       color: "#fff",
                       fontSize: 13,
                       fontWeight: 700,
@@ -349,9 +349,9 @@ export default function KycNotificationEmailsPage() {
                     style={{
                       padding: "11px 16px",
                       borderRadius: 10,
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      background: "rgba(255,255,255,0.04)",
-                      color: "#8899aa",
+                      border: "1px solid rgba(21,32,26,0.1)",
+                      background: "rgba(21,32,26,0.04)",
+                      color: "#56625b",
                       fontSize: 13,
                       fontWeight: 700,
                       cursor: "pointer",
@@ -366,7 +366,7 @@ export default function KycNotificationEmailsPage() {
         )}
 
         <motion.div {...fadeUp(0.08)}>
-          <div style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden" }}>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, overflow: "hidden" }}>
             <div className="kne-head">
               <div>ID</div>
               <div>Email</div>
@@ -378,10 +378,10 @@ export default function KycNotificationEmailsPage() {
             {loading ? (
               <div style={{ padding: 40, textAlign: "center" }}>
                 <div style={{ width: 32, height: 32, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
-                <div style={{ color: "#4a5568", fontSize: 13 }}>Loading recipients…</div>
+                <div style={{ color: "#6e7872", fontSize: 13 }}>Loading recipients…</div>
               </div>
             ) : pageRows.length === 0 ? (
-              <div style={{ padding: "48px 24px", textAlign: "center", color: "#4a5568", fontSize: 14 }}>
+              <div style={{ padding: "48px 24px", textAlign: "center", color: "#6e7872", fontSize: 14 }}>
                 No notification emails configured — pending KYCs will go unnoticed until one is added
               </div>
             ) : pageRows.map((row, index) => (
@@ -389,20 +389,20 @@ export default function KycNotificationEmailsPage() {
                 key={row.id}
                 {...fadeUp(0.03 * index)}
                 className="kne-row"
-                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.02)"; }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(21,32,26,0.02)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
-                <div className="kne-id" style={{ fontSize: 12, color: "#4a5568", fontWeight: 600 }}>#{row.id}</div>
-                <div className="kne-email" style={{ fontSize: 13, fontWeight: 700, color: "#f0f6ff", overflowWrap: "anywhere" }}>{row.email}</div>
+                <div className="kne-id" style={{ fontSize: 12, color: "#6e7872", fontWeight: 600 }}>#{row.id}</div>
+                <div className="kne-email" style={{ fontSize: 13, fontWeight: 700, color: "#15201a", overflowWrap: "anywhere" }}>{row.email}</div>
                 <div className="kne-status">
                   <Chip
                     label={row.is_active ? "Active" : "Disabled"}
                     color={row.is_active ? GREEN : RED}
-                    bg={row.is_active ? "rgba(27,191,136,0.1)" : "rgba(239,68,68,0.1)"}
-                    border={row.is_active ? "rgba(27,191,136,0.25)" : "rgba(239,68,68,0.25)"}
+                    bg={row.is_active ? "rgba(31,153,96,0.1)" : "rgba(239,68,68,0.1)"}
+                    border={row.is_active ? "rgba(31,153,96,0.25)" : "rgba(239,68,68,0.25)"}
                   />
                 </div>
-                <div className="kne-updated" style={{ fontSize: 12, color: "#8899aa" }}>{new Date(row.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
+                <div className="kne-updated" style={{ fontSize: 12, color: "#56625b" }}>{new Date(row.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
                 <div className="kne-actions" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   <button
                     onClick={() => { setEditId(row.id); setEditEmail(row.email); }}
@@ -447,10 +447,10 @@ export default function KycNotificationEmailsPage() {
           display: grid;
           grid-template-columns: 52px 1fr 120px 120px 200px;
           padding: 10px 18px;
-          border-bottom: 1px solid rgba(255,255,255,0.06);
+          border-bottom: 1px solid rgba(21,32,26,0.06);
           font-size: 10px;
           font-weight: 700;
-          color: #4a5568;
+          color: #6e7872;
           text-transform: uppercase;
           letter-spacing: 0.07em;
         }
@@ -459,7 +459,7 @@ export default function KycNotificationEmailsPage() {
           grid-template-columns: 52px 1fr 120px 120px 200px;
           padding: 13px 18px;
           align-items: center;
-          border-bottom: 1px solid rgba(255,255,255,0.04);
+          border-bottom: 1px solid rgba(21,32,26,0.04);
           transition: background 0.15s;
         }
         @media (max-width: 720px) {
@@ -480,10 +480,10 @@ export default function KycNotificationEmailsPage() {
 
 function actionBtnStyle(variant: "default" | "green" | "amber" | "red"): React.CSSProperties {
   const map = {
-    default: { color: "#8899aa", border: "rgba(255,255,255,0.1)", bg: "rgba(255,255,255,0.04)" },
-    green: { color: "#1bbf88", border: "rgba(27,191,136,0.25)", bg: "rgba(27,191,136,0.08)" },
-    amber: { color: "#f97316", border: "rgba(249,115,22,0.25)", bg: "rgba(249,115,22,0.08)" },
-    red: { color: "#ef4444", border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" },
+    default: { color: "#56625b", border: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" },
+    green: { color: "#1f9960", border: "rgba(31,153,96,0.25)", bg: "rgba(31,153,96,0.08)" },
+    amber: { color: "#e8650f", border: "rgba(232,101,15,0.25)", bg: "rgba(232,101,15,0.08)" },
+    red: { color: "#d42f2f", border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" },
   }[variant];
 
   return {
@@ -506,9 +506,9 @@ function pageBtnStyle(active: boolean): React.CSSProperties {
     borderRadius: 8,
     fontSize: 13,
     fontWeight: 700,
-    border: `1px solid ${active ? "rgba(29,197,255,0.4)" : "rgba(255,255,255,0.1)"}`,
-    background: active ? "rgba(29,197,255,0.12)" : "rgba(255,255,255,0.03)",
-    color: active ? "#1dc5ff" : "#8899aa",
+    border: `1px solid ${active ? "rgba(20,120,74,0.4)" : "rgba(21,32,26,0.1)"}`,
+    background: active ? "rgba(20,120,74,0.12)" : "rgba(21,32,26,0.03)",
+    color: active ? "#14784a" : "#56625b",
     cursor: "pointer",
   };
 }

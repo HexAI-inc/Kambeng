@@ -147,7 +147,7 @@ export default function TermsPage() {
             <p>
               We may suspend or terminate your account at any time if we reasonably believe you have violated these Terms,
               engaged in fraudulent activity, or pose a risk to other users. Where possible, we will notify you before taking
-              action. You may close your account at any time by contacting <a href="mailto:support@hexai.gm" style={{ color: "#1dc5ff" }}>support@hexai.gm</a>.
+              action. You may close your account at any time by contacting <a href="mailto:support@hexai.gm" style={{ color: "#14784a" }}>support@hexai.gm</a>.
               Pending payout requests will be reviewed and processed or returned on a case-by-case basis.
             </p>
           ),

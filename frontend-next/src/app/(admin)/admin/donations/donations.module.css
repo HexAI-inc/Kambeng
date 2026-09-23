@@ -46,7 +46,7 @@
   padding: 0.9rem 1rem;
   border-radius: 16px;
   border: 1px solid rgba(24, 144, 255, 0.16);
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(21,32,26,0.82);
   backdrop-filter: blur(10px);
 }
 
@@ -71,10 +71,10 @@
 .rejectModal {
   margin-bottom: 1rem;
   border: 1px solid #ffd8cc;
-  border-left: 5px solid #ff7a45;
+  border-left: 5px solid #e8650f;
   border-radius: 18px;
   background: linear-gradient(180deg, #fff9f5 0%, #fffdfb 100%);
-  box-shadow: 0 14px 35px rgba(255, 122, 69, 0.1);
+  box-shadow: 0 14px 35px rgba(232,101,15, 0.1);
 }
 
 .modalSubtitle {
@@ -103,8 +103,8 @@
 
   &:focus {
     outline: none;
-    border-color: #ff7a45;
-    box-shadow: 0 0 0 3px rgba(255, 122, 69, 0.14);
+    border-color: #e8650f;
+    box-shadow: 0 0 0 3px rgba(232,101,15, 0.14);
   }
 }
 
@@ -117,12 +117,12 @@
 .reference {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-weight: 500;
-  color: #17312c;
+  color: #e6f4ec;
 }
 
 .amount {
   font-weight: 600;
-  color: #12805a;
+  color: #11603c;
 }
 
 .actions {
@@ -187,11 +187,11 @@
 
 .detailItem span:not(.label) {
   font-weight: 500;
-  color: #17312c;
+  color: #e6f4ec;
 }
 
 .detailItem .amount {
-  color: #12805a;
+  color: #11603c;
   font-size: 1.1rem;
 }
 

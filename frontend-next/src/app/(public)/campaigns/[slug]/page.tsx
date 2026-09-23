@@ -28,9 +28,9 @@ import {
 import { api } from "@/lib/api";
 import type { CampaignDiscoveryItem, CampaignGoal, CampaignReview, CampaignUpdate } from "@/types/frontend";
 
-const BLUE = "#1dc5ff";
-const GREEN = "#1bbf88";
-const RED = "#ef4444";
+const BLUE = "#14784a";
+const GREEN = "#1f9960";
+const RED = "#d42f2f";
 
 function fadeUp(delay = 0) {
   return {
@@ -141,10 +141,10 @@ function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
       <div style={{
         width: 34, height: 34, borderRadius: 9,
-        background: "rgba(29,197,255,0.1)", border: "1px solid rgba(29,197,255,0.18)",
+        background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.18)",
         display: "flex", alignItems: "center", justifyContent: "center", color: BLUE,
       }}>{icon}</div>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0f6ff", margin: 0 }}>{title}</h3>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: "#15201a", margin: 0 }}>{title}</h3>
     </div>
   );
 }
@@ -153,7 +153,7 @@ function StarRow({ rating }: { rating: number }) {
   return (
     <div style={{ display: "flex", gap: 2 }}>
       {Array.from({ length: 5 }).map((_, i) => (
-        <svg key={i} width="13" height="13" viewBox="0 0 24 24" fill={i < rating ? "#fbbf24" : "rgba(255,255,255,0.12)"}>
+        <svg key={i} width="13" height="13" viewBox="0 0 24 24" fill={i < rating ? "#d9870b" : "rgba(21,32,26,0.12)"}>
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
       ))}
@@ -238,15 +238,15 @@ async function generateSocialCard(opts: {
     } catch {
       // fallback gradient if image fails CORS
       const grad = ctx.createLinearGradient(0, 0, W, H);
-      grad.addColorStop(0, "#0d2a45");
-      grad.addColorStop(1, "#061420");
+      grad.addColorStop(0, "#e6f4ec");
+      grad.addColorStop(1, "#f6f4ef");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
     }
   } else {
     const grad = ctx.createLinearGradient(0, 0, W, H);
-    grad.addColorStop(0, "#0d2a45");
-    grad.addColorStop(1, "#061420");
+    grad.addColorStop(0, "#e6f4ec");
+    grad.addColorStop(1, "#f6f4ef");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
   }
@@ -257,24 +257,24 @@ async function generateSocialCard(opts: {
     // Light vignette at top (logo legibility), gentle mid fade, capped at 78% at bottom
     // so the image bleeds through even behind the text panel.
     const scrim = ctx.createLinearGradient(0, 0, 0, H);
-    scrim.addColorStop(0,    "rgba(6,10,20,0.25)");  // slight top vignette for logo
-    scrim.addColorStop(0.35, "rgba(6,10,20,0)");     // fully clear in the upper-middle
-    scrim.addColorStop(0.60, "rgba(6,10,20,0.45)");  // start darkening
-    scrim.addColorStop(0.85, "rgba(6,10,20,0.75)");  // text area — readable
-    scrim.addColorStop(1,    "rgba(6,10,20,0.82)");  // bottom — cap at 82%, image still visible
+    scrim.addColorStop(0,    "rgba(246,244,239,0.25)");  // slight top vignette for logo
+    scrim.addColorStop(0.35, "rgba(246,244,239,0)");     // fully clear in the upper-middle
+    scrim.addColorStop(0.60, "rgba(246,244,239,0.45)");  // start darkening
+    scrim.addColorStop(0.85, "rgba(246,244,239,0.75)");  // text area — readable
+    scrim.addColorStop(1,    "rgba(246,244,239,0.82)");  // bottom — cap at 82%, image still visible
     ctx.fillStyle = scrim;
     ctx.fillRect(0, 0, W, H);
   } else {
     const scrim = ctx.createLinearGradient(0, H * 0.1, 0, H);
-    scrim.addColorStop(0, "rgba(6,10,20,0)");
-    scrim.addColorStop(0.4, "rgba(6,10,20,0.85)");
-    scrim.addColorStop(1,   "rgba(6,10,20,0.97)");
+    scrim.addColorStop(0, "rgba(246,244,239,0)");
+    scrim.addColorStop(0.4, "rgba(246,244,239,0.85)");
+    scrim.addColorStop(1,   "rgba(246,244,239,0.97)");
     ctx.fillStyle = scrim;
     ctx.fillRect(0, 0, W, H);
   }
 
   // ── Blue accent bar at top ────────────────────────────────────────────────
-  ctx.fillStyle = "#1dc5ff";
+  ctx.fillStyle = "#14784a";
   ctx.fillRect(0, 0, W, 8);
 
   // ── "K" logo mark (top-left) ──────────────────────────────────────────────
@@ -291,8 +291,8 @@ async function generateSocialCard(opts: {
   ctx.arcTo(lx, ly, lx + logoSize, ly, logoR);
   ctx.closePath();
   const logoGrad = ctx.createLinearGradient(lx, ly, lx + logoSize, ly + logoSize);
-  logoGrad.addColorStop(0, "#1dc5ff");
-  logoGrad.addColorStop(1, "#079bd4");
+  logoGrad.addColorStop(0, "#14784a");
+  logoGrad.addColorStop(1, "#0f5e3a");
   ctx.fillStyle = logoGrad;
   ctx.fill();
   ctx.font = `900 ${Math.round(logoSize * 0.5)}px ${DISPLAY}`;
@@ -305,7 +305,7 @@ async function generateSocialCard(opts: {
   // ── "Kambeng" wordmark ────────────────────────────────────────────────────
   ctx.save();
   ctx.font = `700 ${isWide ? 28 : 36}px ${DISPLAY}`;
-  ctx.fillStyle = "#f0f6ff";
+  ctx.fillStyle = "#15201a";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   ctx.fillText("Kambeng", logoPad + logoSize + 18, ly + logoSize / 2);
@@ -321,7 +321,7 @@ async function generateSocialCard(opts: {
   const titleSize = isWide ? 52 : isStory ? 72 : 64;
   ctx.save();
   ctx.font = `800 ${titleSize}px ${DISPLAY}`;
-  ctx.fillStyle = "#f0f6ff";
+  ctx.fillStyle = "#15201a";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   const titleLines = wrapText(ctx, opts.title, maxTextW);
@@ -348,12 +348,12 @@ async function generateSocialCard(opts: {
   ctx.arcTo(pad, afterTitle + pillH, pad, afterTitle, pillR);
   ctx.arcTo(pad, afterTitle, pad + pillW, afterTitle, pillR);
   ctx.closePath();
-  ctx.fillStyle = "rgba(29,197,255,0.18)";
+  ctx.fillStyle = "rgba(20,120,74,0.18)";
   ctx.fill();
-  ctx.strokeStyle = "rgba(29,197,255,0.5)";
+  ctx.strokeStyle = "rgba(20,120,74,0.5)";
   ctx.lineWidth = 2;
   ctx.stroke();
-  ctx.fillStyle = "#1dc5ff";
+  ctx.fillStyle = "#14784a";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   ctx.fillText(raisedText, pad + pillPad, afterTitle + pillH / 2);
@@ -370,15 +370,15 @@ async function generateSocialCard(opts: {
     ctx.save();
     ctx.beginPath();
     ctx.roundRect(pad, barY, barW, barH, barR);
-    ctx.fillStyle = "rgba(255,255,255,0.12)";
+    ctx.fillStyle = "rgba(21,32,26,0.12)";
     ctx.fill();
     // fill
     if (pct > 0) {
       ctx.beginPath();
       ctx.roundRect(pad, barY, barW * pct, barH, barR);
       const barGrad = ctx.createLinearGradient(pad, 0, pad + barW, 0);
-      barGrad.addColorStop(0, "#1dc5ff");
-      barGrad.addColorStop(1, "#1bbf88");
+      barGrad.addColorStop(0, "#14784a");
+      barGrad.addColorStop(1, "#1f9960");
       ctx.fillStyle = barGrad;
       ctx.fill();
     }
@@ -407,7 +407,7 @@ async function generateSocialCard(opts: {
   // "Scan to donate" label — centered below QR for all formats
   ctx.save();
   ctx.font = `600 ${isWide ? 22 : 26}px ${BODY}`;
-  ctx.fillStyle = "rgba(255,255,255,0.55)";
+  ctx.fillStyle = "rgba(21,32,26,0.55)";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillText("Scan to donate", qrX + qrSize / 2, qrY + qrSize + 26);
@@ -416,7 +416,7 @@ async function generateSocialCard(opts: {
   // ── Domain watermark bottom-left — hostname only ──────────────────────────
   ctx.save();
   ctx.font = `500 ${isWide ? 22 : 26}px ${BODY}`;
-  ctx.fillStyle = "rgba(255,255,255,0.3)";
+  ctx.fillStyle = "rgba(21,32,26,0.3)";
   ctx.textAlign = "left";
   ctx.textBaseline = "bottom";
   const hostname = opts.campaignUrl.replace(/^https?:\/\//, "").split("/")[0];
@@ -522,8 +522,8 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
 
   const TAB_STYLE = (active: boolean): React.CSSProperties => ({
     flex: 1, padding: "8px 0", borderRadius: 8, border: "none",
-    background: active ? "rgba(29,197,255,0.12)" : "transparent",
-    color: active ? BLUE : "#8899aa",
+    background: active ? "rgba(20,120,74,0.12)" : "transparent",
+    color: active ? BLUE : "#56625b",
     fontSize: 13, fontWeight: 700, cursor: "pointer",
     borderBottom: active ? `2px solid ${BLUE}` : "2px solid transparent",
     transition: "all 0.15s",
@@ -542,9 +542,9 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
         transition={{ duration: 0.22, ease: "easeOut" }}
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#0d1120", border: "1px solid rgba(255,255,255,0.1)",
+          background: "#ffffff", border: "1px solid rgba(21,32,26,0.1)",
           borderRadius: 22, padding: "26px 22px", width: "100%", maxWidth: 460,
-          boxShadow: "0 40px 120px rgba(0,0,0,0.7)",
+          boxShadow: "0 40px 120px rgba(21,32,26,0.12)",
           margin: "auto",
         }}
       >
@@ -553,23 +553,23 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
               width: 34, height: 34, borderRadius: 9,
-              background: "rgba(29,197,255,0.1)", border: "1px solid rgba(29,197,255,0.18)",
+              background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.18)",
               display: "flex", alignItems: "center", justifyContent: "center", color: BLUE,
             }}><IconShare /></div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff" }}>Share Campaign</div>
-              <div style={{ fontSize: 12, color: "#4a5568", marginTop: 1, maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{campaign.title}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a" }}>Share Campaign</div>
+              <div style={{ fontSize: 12, color: "#6e7872", marginTop: 1, maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{campaign.title}</div>
             </div>
           </div>
           <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)",
-            background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer",
+            width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)",
+            background: "rgba(21,32,26,0.04)", color: "#56625b", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}><IconClose /></button>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 4, marginBottom: 20 }}>
+        <div style={{ display: "flex", gap: 4, background: "rgba(21,32,26,0.04)", borderRadius: 10, padding: 4, marginBottom: 20 }}>
           <button style={TAB_STYLE(tab === "links")} onClick={() => setTab("links")}>Links & QR</button>
           <button style={TAB_STYLE(tab === "social")} onClick={handleTabSocial}>Social Card</button>
         </div>
@@ -579,10 +579,10 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
           <>
             {/* QR Code */}
             <div style={{
-              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+              background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 14, padding: 18, textAlign: "center", marginBottom: 16,
             }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 12 }}>
                 Campaign QR Code
               </div>
               {qrLoading ? (
@@ -597,13 +597,13 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
                   <div style={{ marginTop: 12 }}>
                     <button onClick={downloadQR} style={{
                       padding: "7px 18px", borderRadius: 8, border: "none",
-                      background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                      background: `${BLUE}`,
                       color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
                     }}>Download QR</button>
                   </div>
                 </>
               ) : (
-                <div style={{ height: 148, display: "flex", alignItems: "center", justifyContent: "center", color: "#4a5568", fontSize: 13 }}>
+                <div style={{ height: 148, display: "flex", alignItems: "center", justifyContent: "center", color: "#6e7872", fontSize: 13 }}>
                   QR unavailable
                 </div>
               )}
@@ -616,21 +616,21 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
                 { label: "Direct donate link", url: donateUrl, key: "donate" },
               ].map(({ label, url, key }) => (
                 <div key={key} style={{
-                  background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+                  background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.07)",
                   borderRadius: 10, padding: "10px 14px",
                   display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
                 }}>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 11, color: "#4a5568", fontWeight: 600, marginBottom: 2 }}>{label}</div>
-                    <div style={{ fontSize: 12, color: "#8899aa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{url}</div>
+                    <div style={{ fontSize: 11, color: "#6e7872", fontWeight: 600, marginBottom: 2 }}>{label}</div>
+                    <div style={{ fontSize: 12, color: "#56625b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{url}</div>
                   </div>
                   <button
                     onClick={() => void copy(url, key)}
                     style={{
                       flexShrink: 0, padding: "6px 12px", borderRadius: 7,
-                      border: `1px solid ${copied === key ? "rgba(27,191,136,0.3)" : "rgba(255,255,255,0.1)"}`,
-                      background: copied === key ? "rgba(27,191,136,0.1)" : "rgba(255,255,255,0.04)",
-                      color: copied === key ? GREEN : "#8899aa",
+                      border: `1px solid ${copied === key ? "rgba(31,153,96,0.3)" : "rgba(21,32,26,0.1)"}`,
+                      background: copied === key ? "rgba(31,153,96,0.1)" : "rgba(21,32,26,0.04)",
+                      color: copied === key ? GREEN : "#56625b",
                       fontSize: 12, fontWeight: 600, cursor: "pointer",
                       display: "flex", alignItems: "center", gap: 5,
                     }}
@@ -654,9 +654,9 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
                   onClick={() => handleFormat(f.key)}
                   style={{
                     flex: 1, padding: "10px 6px", borderRadius: 10, cursor: "pointer",
-                    border: `1px solid ${cardFormat === f.key ? "rgba(29,197,255,0.4)" : "rgba(255,255,255,0.08)"}`,
-                    background: cardFormat === f.key ? "rgba(29,197,255,0.1)" : "rgba(255,255,255,0.03)",
-                    color: cardFormat === f.key ? BLUE : "#8899aa",
+                    border: `1px solid ${cardFormat === f.key ? "rgba(20,120,74,0.4)" : "rgba(21,32,26,0.08)"}`,
+                    background: cardFormat === f.key ? "rgba(20,120,74,0.1)" : "rgba(21,32,26,0.03)",
+                    color: cardFormat === f.key ? BLUE : "#56625b",
                     textAlign: "center" as const,
                   }}
                 >
@@ -668,20 +668,20 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
 
             {/* Card preview */}
             <div style={{
-              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+              background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 14, padding: 16, marginBottom: 16,
               display: "flex", alignItems: "center", justifyContent: "center",
               minHeight: 200,
             }}>
               {!qrSrc ? (
-                <div style={{ color: "#4a5568", fontSize: 13, textAlign: "center" }}>
+                <div style={{ color: "#6e7872", fontSize: 13, textAlign: "center" }}>
                   <div style={{ marginBottom: 8 }}>QR code loading…</div>
                   <div style={{ width: 24, height: 24, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto" }} />
                 </div>
               ) : cardLoading ? (
                 <div style={{ textAlign: "center" }}>
                   <div style={{ width: 28, height: 28, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 10px" }} />
-                  <div style={{ color: "#4a5568", fontSize: 13 }}>Generating card…</div>
+                  <div style={{ color: "#6e7872", fontSize: 13 }}>Generating card…</div>
                 </div>
               ) : cardSrc ? (
                 <div style={{ width: "100%", position: "relative" }}>
@@ -702,7 +702,7 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
                     onClick={() => void buildCard(cardFormat)}
                     style={{
                       padding: "10px 22px", borderRadius: 9, border: "none",
-                      background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                      background: `${BLUE}`,
                       color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
                     }}
                   >Generate Card</button>
@@ -717,9 +717,9 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
                   onClick={downloadCard}
                   style={{
                     flex: 1, padding: "11px 0", borderRadius: 10, border: "none",
-                    background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                    background: `${BLUE}`,
                     color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                    boxShadow: "0 4px 16px rgba(29,197,255,0.3)",
+                    boxShadow: "0 4px 16px rgba(20,120,74,0.3)",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
                   }}
                 >
@@ -732,9 +732,9 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
                   onClick={() => void copyCard()}
                   style={{
                     flex: 1, padding: "11px 0", borderRadius: 10,
-                    border: `1px solid ${cardCopied ? "rgba(27,191,136,0.35)" : "rgba(255,255,255,0.12)"}`,
-                    background: cardCopied ? "rgba(27,191,136,0.1)" : "rgba(255,255,255,0.04)",
-                    color: cardCopied ? GREEN : "#8899aa",
+                    border: `1px solid ${cardCopied ? "rgba(31,153,96,0.35)" : "rgba(21,32,26,0.12)"}`,
+                    background: cardCopied ? "rgba(31,153,96,0.1)" : "rgba(21,32,26,0.04)",
+                    color: cardCopied ? GREEN : "#56625b",
                     fontSize: 13, fontWeight: 700, cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
                   }}
@@ -745,7 +745,7 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
             )}
 
             {cardSrc && (
-              <div style={{ marginTop: 12, fontSize: 11, color: "#4a5568", textAlign: "center", lineHeight: 1.6 }}>
+              <div style={{ marginTop: 12, fontSize: 11, color: "#6e7872", textAlign: "center", lineHeight: 1.6 }}>
                 Download and share on WhatsApp Status, Instagram Stories, or any social platform.
                 {" "}Copy image pastes directly into WhatsApp or Telegram on supported browsers.
               </div>
@@ -800,20 +800,20 @@ function ReportModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.22, ease: "easeOut" }}
         onClick={(e) => e.stopPropagation()}
-        style={{ background: "#0d1120", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 22, padding: 24, width: "100%", maxWidth: 500, boxShadow: "0 40px 120px rgba(0,0,0,0.7)" }}
+        style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.1)", borderRadius: 22, padding: 24, width: "100%", maxWidth: 500, boxShadow: "0 40px 120px rgba(21,32,26,0.12)" }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff" }}>{isUpdate ? "Report Update" : "Report Campaign"}</div>
-            <div style={{ fontSize: 12, color: "#4a5568", marginTop: 2, maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{campaign.title}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a" }}>{isUpdate ? "Report Update" : "Report Campaign"}</div>
+            <div style={{ fontSize: 12, color: "#6e7872", marginTop: 2, maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{campaign.title}</div>
           </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", cursor: "pointer" }}>×</button>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", cursor: "pointer" }}>×</button>
         </div>
 
-        {toast && <div style={{ marginBottom: 12, color: "#f0f6ff", background: "rgba(29,197,255,0.08)", border: "1px solid rgba(29,197,255,0.18)", borderRadius: 10, padding: "10px 12px", fontSize: 13 }}>{toast}</div>}
+        {toast && <div style={{ marginBottom: 12, color: "#15201a", background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.18)", borderRadius: 10, padding: "10px 12px", fontSize: 13 }}>{toast}</div>}
 
         <div style={{ marginBottom: 14 }}>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Reason</label>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Reason</label>
           <StyledSelect
             value={reason}
             onChange={(v) => setReason(v as typeof reason)}
@@ -831,13 +831,13 @@ function ReportModal({
         </div>
 
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#8899aa", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Description</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} placeholder="Tell us what looks wrong…" style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#f0f6ff", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Description</label>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} placeholder="Tell us what looks wrong…" style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#15201a", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
         </div>
 
         <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={() => void handleSubmit()} disabled={submitReport.isPending} style={{ padding: "10px 18px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{submitReport.isPending ? "Submitting…" : "Submit report"}</button>
-          <button onClick={onClose} style={{ padding: "10px 18px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#8899aa", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={() => void handleSubmit()} disabled={submitReport.isPending} style={{ padding: "10px 18px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{submitReport.isPending ? "Submitting…" : "Submit report"}</button>
+          <button onClick={onClose} style={{ padding: "10px 18px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
         </div>
       </motion.div>
     </div>
@@ -898,7 +898,7 @@ export default function CampaignDetailPage() {
         <div style={{ textAlign: "center" }}>
           <div style={{ width: 44, height: 44, border: `3px solid ${BLUE}`, borderTopColor: "transparent",
             borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 14px" }} />
-          <p style={{ color: "#8899aa", fontSize: 14 }}>Loading campaign...</p>
+          <p style={{ color: "#56625b", fontSize: 14 }}>Loading campaign...</p>
         </div>
       </div>
     );
@@ -909,12 +909,12 @@ export default function CampaignDetailPage() {
       <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>😕</div>
-          <h2 style={{ color: "#f0f6ff", marginBottom: 8 }}>Campaign not found</h2>
-          <p style={{ color: "#8899aa", marginBottom: 24 }}>This campaign may have been removed or the link is incorrect.</p>
+          <h2 style={{ color: "#15201a", marginBottom: 8 }}>Campaign not found</h2>
+          <p style={{ color: "#56625b", marginBottom: 24 }}>This campaign may have been removed or the link is incorrect.</p>
           <Link href="/campaigns">
             <button style={{
               padding: "10px 20px", borderRadius: 10, border: "none",
-              background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+              background: `${BLUE}`,
               color: "#fff", fontWeight: 600, cursor: "pointer",
             }}>Browse All Campaigns</button>
           </Link>
@@ -930,9 +930,9 @@ export default function CampaignDetailPage() {
         <button style={{
           display: "inline-flex", alignItems: "center", gap: 8,
           padding: "7px 14px", borderRadius: 8,
-          border: "1px solid rgba(255,255,255,0.1)",
-          background: "rgba(255,255,255,0.04)",
-          color: "#8899aa", fontSize: 13, cursor: "pointer", marginBottom: 28,
+          border: "1px solid rgba(21,32,26,0.1)",
+          background: "rgba(21,32,26,0.04)",
+          color: "#56625b", fontSize: 13, cursor: "pointer", marginBottom: 28,
         }}>
           <IconArrowLeft /> Back to Campaigns
         </button>
@@ -942,9 +942,9 @@ export default function CampaignDetailPage() {
       <motion.div {...fadeUp(0)} style={{ marginBottom: 28 }}>
         <div style={{
           borderRadius: 20, overflow: "hidden",
-          background: "#0d1120",
-          border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.4)",
+          background: "#ffffff",
+          border: "1px solid rgba(21,32,26,0.08)",
+          boxShadow: "0 24px 80px rgba(21,32,26,0.12)",
         }}>
           <div className="campaign-hero">
             {/* Cover */}
@@ -958,10 +958,10 @@ export default function CampaignDetailPage() {
                 sizes="100vw"
                 style={{ objectFit: "cover" }}
               />
-              {/* Bottom-up scrim: image clear at top, dark at bottom for text legibility */}
+              {/* Soft fade into the card below */}
               <div style={{
                 position: "absolute", inset: 0,
-                background: "linear-gradient(to bottom, rgba(13,17,32,0) 0%, rgba(13,17,32,0.55) 55%, rgba(13,17,32,0.94) 100%)",
+                background: "linear-gradient(to bottom, rgba(255,255,255,0) 82%, rgba(255,255,255,0.6) 100%)",
                 pointerEvents: "none",
               }} />
               {!campaign.cover_image_url && (
@@ -969,7 +969,7 @@ export default function CampaignDetailPage() {
                   position: "absolute", bottom: 10, left: 10,
                   background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)",
                   borderRadius: 6, padding: "3px 8px",
-                  fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)",
+                  fontSize: 10, fontWeight: 700, color: "rgba(21,32,26,0.4)",
                   letterSpacing: "0.07em", textTransform: "uppercase" as const,
                   pointerEvents: "none",
                 }}>Sample image</div>
@@ -983,14 +983,14 @@ export default function CampaignDetailPage() {
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <span style={{
                     padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,
-                    background: campaign.status === "ACTIVE" ? "rgba(27,191,136,0.15)" : "rgba(100,100,100,0.15)",
-                    color: campaign.status === "ACTIVE" ? GREEN : "#8899aa",
-                    border: `1px solid ${campaign.status === "ACTIVE" ? "rgba(27,191,136,0.25)" : "rgba(100,100,100,0.25)"}`,
+                    background: campaign.status === "ACTIVE" ? "rgba(31,153,96,0.15)" : "rgba(100,100,100,0.15)",
+                    color: campaign.status === "ACTIVE" ? GREEN : "#56625b",
+                    border: `1px solid ${campaign.status === "ACTIVE" ? "rgba(31,153,96,0.25)" : "rgba(100,100,100,0.25)"}`,
                   }}>{campaign.status}</span>
                   <span style={{
                     padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,
-                    background: "rgba(29,197,255,0.1)", color: BLUE,
-                    border: "1px solid rgba(29,197,255,0.2)",
+                    background: "rgba(20,120,74,0.1)", color: BLUE,
+                    border: "1px solid rgba(20,120,74,0.2)",
                   }}>{campaign.mode}</span>
                 </div>
                 <button
@@ -998,13 +998,13 @@ export default function CampaignDetailPage() {
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 6,
                     padding: "7px 14px", borderRadius: 8,
-                    border: "1px solid rgba(29,197,255,0.25)",
-                    background: "rgba(29,197,255,0.08)",
+                    border: "1px solid rgba(20,120,74,0.25)",
+                    background: "rgba(20,120,74,0.08)",
                     color: BLUE, fontSize: 13, fontWeight: 600, cursor: "pointer",
                     transition: "background 0.2s",
                   }}
                 >
-                  <IconShare /> Share <span style={{ color: "rgba(29,197,255,0.5)" }}>/ QR</span>
+                  <IconShare /> Share <span style={{ color: "rgba(20,120,74,0.5)" }}>/ QR</span>
                 </button>
                 {isLoggedIn && (
                   <button
@@ -1014,9 +1014,9 @@ export default function CampaignDetailPage() {
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 6,
                       padding: "7px 14px", borderRadius: 8,
-                      border: `1px solid ${isSubscribed ? "rgba(27,191,136,0.3)" : "rgba(255,255,255,0.14)"}`,
-                      background: isSubscribed ? "rgba(27,191,136,0.1)" : "rgba(255,255,255,0.04)",
-                      color: isSubscribed ? GREEN : "#8899aa",
+                      border: `1px solid ${isSubscribed ? "rgba(31,153,96,0.3)" : "rgba(21,32,26,0.14)"}`,
+                      background: isSubscribed ? "rgba(31,153,96,0.1)" : "rgba(21,32,26,0.04)",
+                      color: isSubscribed ? GREEN : "#56625b",
                       fontSize: 13, fontWeight: 600, cursor: "pointer",
                       transition: "background 0.2s",
                       opacity: toggleSubscription.isPending ? 0.6 : 1,
@@ -1040,7 +1040,7 @@ export default function CampaignDetailPage() {
                 </button>
               </div>
 
-              <h1 style={{ fontSize: "clamp(20px,2.8vw,30px)", fontWeight: 800, color: "#f0f6ff",
+              <h1 style={{ fontSize: "clamp(20px,2.8vw,30px)", fontWeight: 800, color: "#15201a",
                 lineHeight: 1.2, letterSpacing: "-0.03em", marginBottom: 10 }}>
                 {campaign.title}
               </h1>
@@ -1051,29 +1051,29 @@ export default function CampaignDetailPage() {
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 9,
                       padding: "6px 12px 6px 7px", borderRadius: 24, marginBottom: 14,
-                      background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)",
+                      background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.09)",
                       transition: "border-color 0.2s",
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(29,197,255,0.35)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.35)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.09)"; }}
                   >
                     <div style={{
                       width: 26, height: 26, borderRadius: "50%", flexShrink: 0,
-                      background: "linear-gradient(135deg, #0d2340, #0a3d5c)",
-                      border: "1px solid rgba(29,197,255,0.35)",
+                      background: "linear-gradient(135deg, #e6f4ec, #cfe8da)",
+                      border: "1px solid rgba(20,120,74,0.35)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: 11, fontWeight: 800, color: BLUE,
                     }}>
                       {(campaign.owner.full_name ?? "?").split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
                     </div>
-                    <span style={{ fontSize: 13, color: "#8899aa" }}>
-                      Organized by <span style={{ color: "#f0f6ff", fontWeight: 700 }}>{campaign.owner.full_name ?? "Kambeng organizer"}</span>
+                    <span style={{ fontSize: 13, color: "#56625b" }}>
+                      Organized by <span style={{ color: "#15201a", fontWeight: 700 }}>{campaign.owner.full_name ?? "Kambeng organizer"}</span>
                     </span>
                     {campaign.owner.kyc_verified && (
                       <span title="Identity verified" style={{
                         display: "inline-flex", alignItems: "center", justifyContent: "center",
                         width: 16, height: 16, borderRadius: "50%",
-                        background: "rgba(27,191,136,0.15)", border: "1px solid rgba(27,191,136,0.4)",
+                        background: "rgba(31,153,96,0.15)", border: "1px solid rgba(31,153,96,0.4)",
                       }}>
                         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={GREEN} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M20 6L9 17l-5-5" />
@@ -1084,7 +1084,7 @@ export default function CampaignDetailPage() {
                 </Link>
               )}
 
-              <p style={{ color: "#8899aa", fontSize: 14, lineHeight: 1.75, marginBottom: 24 }}>
+              <p style={{ color: "#56625b", fontSize: 14, lineHeight: 1.75, marginBottom: 24 }}>
                 {campaign.description}
               </p>
 
@@ -1092,11 +1092,11 @@ export default function CampaignDetailPage() {
                 <div style={{
                   display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
                   padding: "10px 14px", borderRadius: 10, marginBottom: 14,
-                  background: "rgba(29,197,255,0.06)", border: "1px solid rgba(29,197,255,0.22)",
+                  background: "rgba(20,120,74,0.06)", border: "1px solid rgba(20,120,74,0.22)",
                 }}>
                   <span style={{
                     fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
-                    padding: "3px 9px", borderRadius: 20, color: BLUE, background: "rgba(29,197,255,0.14)",
+                    padding: "3px 9px", borderRadius: 20, color: BLUE, background: "rgba(20,120,74,0.14)",
                   }}>
                     {activePromo.promo_type === "matched_donation" ? "Matched" : "Promo"}
                   </span>
@@ -1112,15 +1112,15 @@ export default function CampaignDetailPage() {
 
               {/* Progress block */}
               <div style={{
-                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.08)",
                 borderRadius: 12, padding: "18px 20px", marginBottom: 18,
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, alignItems: "baseline" }}>
                   <div>
-                    <span style={{ fontSize: "clamp(20px,2.5vw,26px)", fontWeight: 800, color: "#f0f6ff" }}>
+                    <span style={{ fontSize: "clamp(20px,2.5vw,26px)", fontWeight: 800, color: "#15201a" }}>
                       {campaign.amount_raised.toLocaleString()}
                     </span>
-                    <span style={{ color: "#8899aa", fontSize: 13, marginLeft: 5 }}>GMD raised</span>
+                    <span style={{ color: "#56625b", fontSize: 13, marginLeft: 5 }}>GMD raised</span>
                   </div>
                   {campaign.target_amount && (
                     <span style={{ fontSize: 18, fontWeight: 700, color: BLUE }}>
@@ -1129,9 +1129,9 @@ export default function CampaignDetailPage() {
                   )}
                 </div>
                 <AppProgress percent={progress} showInfo={false} strokeColor={BLUE}
-                  trailColor="rgba(255,255,255,0.08)" />
+                  trailColor="rgba(21,32,26,0.08)" />
                 {campaign.target_amount && (
-                  <div style={{ fontSize: 12, color: "#4a5568", marginTop: 6 }}>
+                  <div style={{ fontSize: 12, color: "#6e7872", marginTop: 6 }}>
                     Goal: {campaign.target_amount.toLocaleString()} GMD
                   </div>
                 )}
@@ -1140,9 +1140,9 @@ export default function CampaignDetailPage() {
               <Link href={`/quick-pay/${campaign.slug}`} style={{ display: "block" }}>
                 <button style={{
                   width: "100%", padding: "13px 20px", borderRadius: 11, border: "none",
-                  background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                  background: `${BLUE}`,
                   color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer",
-                  boxShadow: "0 6px 24px rgba(29,197,255,0.35)",
+                  boxShadow: "0 6px 24px rgba(20,120,74,0.35)",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 }}>
                   Make a Donation <IconArrowRight />
@@ -1151,8 +1151,8 @@ export default function CampaignDetailPage() {
 
               {reviewSummary.count > 0 && (
                 <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center", marginTop: 10 }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  <span style={{ color: "#8899aa", fontSize: 13 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="#d9870b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <span style={{ color: "#56625b", fontSize: 13 }}>
                     {reviewSummary.average.toFixed(1)} · {reviewSummary.count} review{reviewSummary.count !== 1 ? "s" : ""}
                   </span>
                 </div>
@@ -1170,23 +1170,23 @@ export default function CampaignDetailPage() {
           {/* Campaign Updates — first because it builds the most trust */}
           <motion.div {...fadeUp(0.1)}>
             <div style={{
-              background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+              background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 16, overflow: "hidden",
             }}>
               {/* Header */}
               <div style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "18px 22px 16px",
-                borderBottom: updates.length > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                borderBottom: updates.length > 0 ? "1px solid rgba(21,32,26,0.06)" : "none",
               }}>
                 <div style={{
                   width: 34, height: 34, borderRadius: 9,
-                  background: "rgba(29,197,255,0.1)", border: "1px solid rgba(29,197,255,0.18)",
+                  background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.18)",
                   display: "flex", alignItems: "center", justifyContent: "center", color: BLUE, flexShrink: 0,
                 }}><IconBell /></div>
                 <div>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, color: "#f0f6ff", margin: 0, lineHeight: 1.2 }}>Campaign Updates</h3>
-                  <div style={{ fontSize: 12, color: "#4a5568", marginTop: 2 }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: "#15201a", margin: 0, lineHeight: 1.2 }}>Campaign Updates</h3>
+                  <div style={{ fontSize: 12, color: "#6e7872", marginTop: 2 }}>
                     {updatesLoading ? "Loading…" : updates.length === 0 ? "No updates yet" : `${updates.length} update${updates.length !== 1 ? "s" : ""} from the campaigner`}
                   </div>
                 </div>
@@ -1195,11 +1195,11 @@ export default function CampaignDetailPage() {
               {updatesLoading ? (
                 <div style={{ padding: "16px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
                   {[1, 2].map((i) => (
-                    <div key={i} style={{ borderRadius: 10, background: "rgba(255,255,255,0.03)", height: 80 }} />
+                    <div key={i} style={{ borderRadius: 10, background: "rgba(21,32,26,0.03)", height: 80 }} />
                   ))}
                 </div>
               ) : updates.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "32px 24px", color: "#4a5568" }}>
+                <div style={{ textAlign: "center", padding: "32px 24px", color: "#6e7872" }}>
                   <div style={{ opacity: 0.35, display: "flex", justifyContent: "center", marginBottom: 10 }}><IconBell /></div>
                   <p style={{ fontSize: 13, lineHeight: 1.6 }}>
                     The campaigner hasn&apos;t posted any updates yet.<br />Check back soon.
@@ -1231,7 +1231,7 @@ export default function CampaignDetailPage() {
           {/* Gallery */}
           <motion.div {...fadeUp(0.15)}>
             <div style={{
-              background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+              background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 16, padding: "22px 22px 26px",
             }}>
               <SectionHeader icon={<IconPicture />} title="Campaign Gallery" />
@@ -1239,17 +1239,17 @@ export default function CampaignDetailPage() {
                 <div style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   padding: "14px 18px", borderRadius: 12, marginTop: 4,
-                  background: "rgba(29,197,255,0.04)", border: "1px solid rgba(29,197,255,0.15)",
+                  background: "rgba(20,120,74,0.04)", border: "1px solid rgba(20,120,74,0.15)",
                   cursor: "pointer", transition: "background 0.15s",
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(29,197,255,0.08)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(29,197,255,0.04)"; }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(20,120,74,0.08)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(20,120,74,0.04)"; }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <IconPicture />
-                    <span style={{ color: "#1dc5ff", fontWeight: 700, fontSize: 14 }}>View Campaign Gallery</span>
+                    <span style={{ color: "#14784a", fontWeight: 700, fontSize: 14 }}>View Campaign Gallery</span>
                   </div>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1dc5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#14784a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -1260,16 +1260,16 @@ export default function CampaignDetailPage() {
           {/* Proof */}
           <motion.div {...fadeUp(0.2)}>
             <div style={{
-              background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+              background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 16, padding: "22px 22px 26px",
             }}>
               <SectionHeader icon={<IconDoc />} title="Proof of Expenditure" />
               {proofsLoading ? (
-                <p style={{ color: "#8899aa", fontSize: 14 }}>Loading...</p>
+                <p style={{ color: "#56625b", fontSize: 14 }}>Loading...</p>
               ) : proofs.length > 0 ? (
                 <ProofList proofs={proofs} />
               ) : (
-                <div style={{ textAlign: "center", padding: "28px 16px", color: "#4a5568" }}>
+                <div style={{ textAlign: "center", padding: "28px 16px", color: "#6e7872" }}>
                   <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, opacity: 0.5 }}><IconDoc /></div>
                   <p style={{ fontSize: 13 }}>No proof documents uploaded yet</p>
                 </div>
@@ -1281,41 +1281,41 @@ export default function CampaignDetailPage() {
           {goals.length > 0 && (
             <motion.div {...fadeUp(0.2)}>
               <div style={{
-                background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+                background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)",
                 borderRadius: 16, padding: "22px 22px 26px",
               }}>
-                <SectionHeader icon={<AimOutlined style={{ fontSize: 16, color: "#1dc5ff" }} />} title="Campaign Goals" />
+                <SectionHeader icon={<AimOutlined style={{ fontSize: 16, color: "#14784a" }} />} title="Campaign Goals" />
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 12 }}>
                   {goals.map((goal: CampaignGoal) => {
                     const pct = Math.min((goal.amount_raised / goal.target_amount) * 100, 100);
                     return (
                       <div key={goal.id} style={{
                         padding: 16, borderRadius: 11,
-                        background: "rgba(255,255,255,0.03)",
-                        border: "1px solid rgba(255,255,255,0.07)",
+                        background: "rgba(21,32,26,0.03)",
+                        border: "1px solid rgba(21,32,26,0.07)",
                       }}>
                         <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap", alignItems: "center" }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: "#fbbf24",
-                            background: "rgba(251,191,36,0.1)", padding: "2px 8px", borderRadius: 6 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#d9870b",
+                            background: "rgba(217,135,11,0.1)", padding: "2px 8px", borderRadius: 6 }}>
                             {goal.status}
                           </span>
                           {goal.due_date && (
-                            <span style={{ fontSize: 11, color: "#4a5568" }}>
+                            <span style={{ fontSize: 11, color: "#6e7872" }}>
                               Due {new Date(goal.due_date).toLocaleDateString()}
                             </span>
                           )}
                         </div>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: "#f0f6ff", marginBottom: 4 }}>{goal.title}</div>
-                        {goal.description && <p style={{ fontSize: 12, color: "#8899aa", marginBottom: 10 }}>{goal.description}</p>}
-                        <AppProgress percent={Math.round(pct)} showInfo={false} strokeColor={BLUE} trailColor="rgba(255,255,255,0.08)" size="small" />
-                        <div style={{ fontSize: 11, color: "#8899aa", marginTop: 5 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: "#15201a", marginBottom: 4 }}>{goal.title}</div>
+                        {goal.description && <p style={{ fontSize: 12, color: "#56625b", marginBottom: 10 }}>{goal.description}</p>}
+                        <AppProgress percent={Math.round(pct)} showInfo={false} strokeColor={BLUE} trailColor="rgba(21,32,26,0.08)" size="small" />
+                        <div style={{ fontSize: 11, color: "#56625b", marginTop: 5 }}>
                           {goal.amount_raised.toLocaleString()} / {goal.target_amount.toLocaleString()} GMD
                         </div>
                         {goal.status === "ACTIVE" && (
                           <Link href={`/quick-pay/${campaign.slug}?goalId=${goal.id}`}>
                             <button style={{
                               width: "100%", marginTop: 10, padding: "7px 12px", borderRadius: 8,
-                              border: "none", background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                              border: "none", background: `${BLUE}`,
                               color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer",
                             }}>Fund this goal</button>
                           </Link>
@@ -1331,64 +1331,64 @@ export default function CampaignDetailPage() {
           {/* Reviews */}
           <motion.div {...fadeUp(0.25)}>
             <div style={{
-              background: "#0d1120", border: "1px solid rgba(255,255,255,0.07)",
+              background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 16, padding: "22px 22px 26px",
             }}>
               <SectionHeader icon={<IconStar />} title="Donor Reviews" />
               {reviewsLoading ? (
-                <p style={{ color: "#8899aa", fontSize: 14 }}>Loading reviews...</p>
+                <p style={{ color: "#56625b", fontSize: 14 }}>Loading reviews...</p>
               ) : reviews.length > 0 ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {reviews.map((r: CampaignReview) => (
                     <div key={r.id} style={{
                       padding: 16, borderRadius: 11,
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.07)",
+                      background: "rgba(21,32,26,0.03)",
+                      border: "1px solid rgba(21,32,26,0.07)",
                     }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <div style={{ width: 30, height: 30, borderRadius: "50%",
-                            background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                            background: `${BLUE}`,
                             display: "flex", alignItems: "center", justifyContent: "center",
                             fontSize: 12, fontWeight: 700, color: "#fff" }}>
                             {(r.donor_name ?? "A")[0].toUpperCase()}
                           </div>
-                          <span style={{ fontWeight: 600, color: "#f0f6ff", fontSize: 13 }}>
+                          <span style={{ fontWeight: 600, color: "#15201a", fontSize: 13 }}>
                             {r.donor_name ?? "Anonymous"}
                           </span>
                         </div>
                         <StarRow rating={r.rating} />
                       </div>
-                      <p style={{ color: "#8899aa", fontSize: 13, lineHeight: 1.6 }}>{r.comment}</p>
-                      <p style={{ color: "#4a5568", fontSize: 11, marginTop: 6 }}>
+                      <p style={{ color: "#56625b", fontSize: 13, lineHeight: 1.6 }}>{r.comment}</p>
+                      <p style={{ color: "#6e7872", fontSize: 11, marginTop: 6 }}>
                         {new Date(r.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div style={{ textAlign: "center", padding: "24px 16px", color: "#4a5568" }}>
+                <div style={{ textAlign: "center", padding: "24px 16px", color: "#6e7872" }}>
                   <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, opacity: 0.4 }}><IconStar /></div>
                   <p style={{ fontSize: 13 }}>No reviews yet — be the first!</p>
                 </div>
               )}
 
               {isLoggedIn && slug ? (
-                <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div style={{ fontWeight: 600, color: "#f0f6ff", marginBottom: 12, fontSize: 14 }}>Leave a Review</div>
+                <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid rgba(21,32,26,0.06)" }}>
+                  <div style={{ fontWeight: 600, color: "#15201a", marginBottom: 12, fontSize: 14 }}>Leave a Review</div>
                   <ReviewForm slug={slug} />
                 </div>
               ) : (
                 <div style={{
                   marginTop: 18, padding: 16, borderRadius: 10,
-                  background: "rgba(29,197,255,0.04)", border: "1px solid rgba(29,197,255,0.14)",
+                  background: "rgba(20,120,74,0.04)", border: "1px solid rgba(20,120,74,0.14)",
                   display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10,
                 }}>
-                  <p style={{ color: "#8899aa", fontSize: 13 }}>Login to leave a review</p>
+                  <p style={{ color: "#56625b", fontSize: 13 }}>Login to leave a review</p>
                   <Link href="/auth/login">
                     <button style={{
                       padding: "7px 14px", borderRadius: 8, border: "none",
-                      background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                      background: `${BLUE}`,
                       color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer",
                     }}>Login</button>
                   </Link>
@@ -1402,31 +1402,31 @@ export default function CampaignDetailPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 88 }}>
           {/* Donate CTA */}
           <div style={{
-            background: "#0d1120", border: "1px solid rgba(255,255,255,0.08)",
+            background: "#ffffff", border: "1px solid rgba(21,32,26,0.08)",
             borderRadius: 16, padding: 22,
           }}>
-            <div style={{ fontWeight: 700, fontSize: 14, color: "#f0f6ff", marginBottom: 14 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: "#15201a", marginBottom: 14 }}>
               Support this campaign
             </div>
             <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: "clamp(20px,2.5vw,26px)", fontWeight: 800, color: "#f0f6ff" }}>
+              <div style={{ fontSize: "clamp(20px,2.5vw,26px)", fontWeight: 800, color: "#15201a" }}>
                 {campaign.amount_raised.toLocaleString()} GMD
               </div>
-              <div style={{ fontSize: 12, color: "#8899aa" }}>raised so far</div>
+              <div style={{ fontSize: 12, color: "#56625b" }}>raised so far</div>
             </div>
             <AppProgress percent={Math.round(progress)} showInfo={false}
-              strokeColor={BLUE} trailColor="rgba(255,255,255,0.08)" />
+              strokeColor={BLUE} trailColor="rgba(21,32,26,0.08)" />
             {campaign.target_amount && (
-              <div style={{ fontSize: 12, color: "#4a5568", marginTop: 6, marginBottom: 18 }}>
+              <div style={{ fontSize: 12, color: "#6e7872", marginTop: 6, marginBottom: 18 }}>
                 {Math.round(progress)}% of {campaign.target_amount.toLocaleString()} GMD goal
               </div>
             )}
             <Link href={`/quick-pay/${campaign.slug}`} style={{ display: "block" }}>
               <button style={{
                 width: "100%", padding: "13px 20px", borderRadius: 11, border: "none",
-                background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                background: `${BLUE}`,
                 color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
-                boxShadow: "0 6px 24px rgba(29,197,255,0.3)",
+                boxShadow: "0 6px 24px rgba(20,120,74,0.3)",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               }}>
                 Make a Donation <IconArrowRight />
@@ -1438,8 +1438,8 @@ export default function CampaignDetailPage() {
               onClick={() => setShowShare(true)}
               style={{
                 width: "100%", marginTop: 10, padding: "9px 14px", borderRadius: 9,
-                border: "1px solid rgba(29,197,255,0.2)",
-                background: "rgba(29,197,255,0.06)",
+                border: "1px solid rgba(20,120,74,0.2)",
+                background: "rgba(20,120,74,0.06)",
                 color: BLUE, fontSize: 13, fontWeight: 600, cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
               }}
@@ -1464,13 +1464,13 @@ export default function CampaignDetailPage() {
           {/* Follow prompt for visitors who aren't ready to donate */}
           {!isLoggedIn && slug && (
             <div style={{
-              background: "#0d1120", border: "1px solid rgba(29,197,255,0.18)",
+              background: "#ffffff", border: "1px solid rgba(20,120,74,0.18)",
               borderRadius: 16, padding: "20px 20px 22px",
             }}>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "#f0f6ff", marginBottom: 6 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "#15201a", marginBottom: 6 }}>
                 Not ready to donate?
               </div>
-              <p style={{ color: "#8899aa", fontSize: 12, lineHeight: 1.65, marginBottom: 14 }}>
+              <p style={{ color: "#56625b", fontSize: 12, lineHeight: 1.65, marginBottom: 14 }}>
                 Follow this campaign and we&apos;ll email you when it hits milestones — including proof of how the money is used.
               </p>
               <EmailCaptureForm
@@ -1484,38 +1484,38 @@ export default function CampaignDetailPage() {
 
           {/* Trust */}
           <div style={{
-            background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)",
+            background: "rgba(21,32,26,0.02)", border: "1px solid rgba(21,32,26,0.06)",
             borderRadius: 16, padding: 18,
           }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
               Trust & Safety
             </div>
             {[
-              { icon: <CheckCircleOutlined style={{ fontSize: 14, color: "#1bbf88" }} />, label: "Payments via Wave (secure)" },
-              { icon: <SafetyCertificateOutlined style={{ fontSize: 14, color: "#1dc5ff" }} />, label: "KYC-verified campaigner" },
-              { icon: <FileTextOutlined style={{ fontSize: 14, color: "#8899aa" }} />, label: `${proofs.length} proof document${proofs.length !== 1 ? "s" : ""} uploaded` },
-              { icon: <StarOutlined style={{ fontSize: 14, color: "#fbbf24" }} />, label: `${reviewSummary.count} donor review${reviewSummary.count !== 1 ? "s" : ""}` },
+              { icon: <CheckCircleOutlined style={{ fontSize: 14, color: "#1f9960" }} />, label: "Payments via Wave (secure)" },
+              { icon: <SafetyCertificateOutlined style={{ fontSize: 14, color: "#14784a" }} />, label: "KYC-verified campaigner" },
+              { icon: <FileTextOutlined style={{ fontSize: 14, color: "#56625b" }} />, label: `${proofs.length} proof document${proofs.length !== 1 ? "s" : ""} uploaded` },
+              { icon: <StarOutlined style={{ fontSize: 14, color: "#d9870b" }} />, label: `${reviewSummary.count} donor review${reviewSummary.count !== 1 ? "s" : ""}` },
             ].map(({ icon, label }) => (
               <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
                 {icon}
-                <span style={{ fontSize: 12, color: "#8899aa" }}>{label}</span>
+                <span style={{ fontSize: 12, color: "#56625b" }}>{label}</span>
               </div>
             ))}
           </div>
 
           {!isLoggedIn && (
             <div style={{
-              background: "rgba(29,197,255,0.04)",
-              border: "1px solid rgba(29,197,255,0.14)",
+              background: "rgba(20,120,74,0.04)",
+              border: "1px solid rgba(20,120,74,0.14)",
               borderRadius: 16, padding: 18, textAlign: "center",
             }}>
-              <p style={{ color: "#8899aa", fontSize: 13, marginBottom: 12, lineHeight: 1.6 }}>
+              <p style={{ color: "#56625b", fontSize: 13, marginBottom: 12, lineHeight: 1.6 }}>
                 Create an account to track donations and receive updates
               </p>
               <Link href="/auth/signup">
                 <button style={{
                   width: "100%", padding: "9px 14px", borderRadius: 9, border: "none",
-                  background: `linear-gradient(135deg, ${BLUE}, #079bd4)`,
+                  background: `${BLUE}`,
                   color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Create Free Account</button>
               </Link>

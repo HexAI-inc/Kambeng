@@ -57,7 +57,7 @@ export default function CampaignAliasesPage() {
   const copy = (text: string) => { navigator.clipboard.writeText(text); message.success("Copied"); };
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
@@ -79,7 +79,7 @@ export default function CampaignAliasesPage() {
               <div style={{ display: "flex", gap: 8, alignItems: "stretch" }}>
                 <div style={{
                   display: "flex", alignItems: "center",
-                  background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.1)",
+                  background: "#fff", border: "1px solid rgba(21,32,26,0.1)",
                   borderRadius: 8, overflow: "hidden", flex: 1,
                 }}>
                   <span style={{ padding: "10px 12px", fontSize: 12, color: "#6e7872", fontFamily: "monospace", whiteSpace: "nowrap", borderRight: "1px solid rgba(21,32,26,0.07)" }}>
@@ -126,7 +126,7 @@ export default function CampaignAliasesPage() {
           ) : !aliases || aliases.length === 0 ? (
             <div style={{
               padding: "36px 24px", textAlign: "center",
-              background: "rgba(21,32,26,0.02)", border: "1px dashed rgba(21,32,26,0.08)", borderRadius: 14,
+              background: "#fff", border: "1px dashed rgba(21,32,26,0.08)", borderRadius: 14,
             }}>
               <div style={{ fontSize: 13, color: "#6e7872" }}>No short codes yet — create your first one above.</div>
             </div>
@@ -152,7 +152,7 @@ export default function CampaignAliasesPage() {
                       onClick={() => copy(`${origin}/c/${alias.short_code}`)}
                       style={{
                         padding: "6px 14px", borderRadius: 7,
-                        border: "1px solid rgba(20,120,74,0.25)", background: "rgba(20,120,74,0.08)",
+                        border: "1px solid rgba(20,120,74,0.25)", background: "#ecf4f1",
                         color: BLUE, fontSize: 11, fontWeight: 700, cursor: "pointer",
                       }}
                     >Copy</button>
@@ -161,7 +161,7 @@ export default function CampaignAliasesPage() {
                       disabled={deleteAlias.isPending}
                       style={{
                         padding: "6px 14px", borderRadius: 7,
-                        border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.08)",
+                        border: "1px solid rgba(239,68,68,0.2)", background: "#fef0f0",
                         color: "#d42f2f", fontSize: 11, fontWeight: 700, cursor: "pointer",
                       }}
                     >Delete</button>
@@ -175,7 +175,7 @@ export default function CampaignAliasesPage() {
         {/* Warning note */}
         <motion.div {...fadeUp(0.18)} style={{
           padding: "12px 16px", borderRadius: 10,
-          background: "rgba(217,135,11,0.06)", border: "1px solid rgba(217,135,11,0.15)",
+          background: "#fdf8f0", border: "1px solid rgba(217,135,11,0.15)",
           display: "flex", gap: 10, alignItems: "flex-start",
         }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>

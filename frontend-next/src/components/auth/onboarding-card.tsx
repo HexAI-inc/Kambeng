@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { BrandMark } from "@/components/layout/brand-mark";
 
 const BLUE = "#14784a";
 
@@ -36,7 +37,7 @@ export function OnboardingCard({ fullName, email, waveNumber }: OnboardingCardPr
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#f6f4ef",
+      minHeight: "100vh",
       display: "flex", alignItems: "center", justifyContent: "center",
       padding: "24px 16px", position: "relative", overflow: "hidden",
     }}>
@@ -46,13 +47,13 @@ export function OnboardingCard({ fullName, email, waveNumber }: OnboardingCardPr
       <div style={{ width: "100%", maxWidth: 560, position: "relative", zIndex: 1 }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: `${BLUE}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900, color: "#fff" }}>K</div>
+            <BrandMark size={40} />
             <span style={{ fontSize: 20, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Kambeng</span>
           </Link>
         </div>
 
         <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.08)", borderRadius: 24, padding: 32, boxShadow: "0 24px 80px rgba(21,32,26,0.12)" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 999, background: "rgba(20,120,74,0.12)", color: BLUE, fontSize: 12, fontWeight: 700, marginBottom: 18 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 999, background: "#e3efe9", color: BLUE, fontSize: 12, fontWeight: 700, marginBottom: 18 }}>
             <span style={{ width: 8, height: 8, borderRadius: 999, background: BLUE, display: "inline-block" }} />
             Account created
           </div>
@@ -64,7 +65,7 @@ export function OnboardingCard({ fullName, email, waveNumber }: OnboardingCardPr
             Your account is linked to the email and Wave number below. We’ve already sent a verification code to your inbox so you can finish setup and start using Kambeng.
           </div>
 
-          <div style={{ background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.06)", borderRadius: 18, padding: "4px 18px", marginBottom: 22 }}>
+          <div style={{ background: "#fff", border: "1px solid rgba(21,32,26,0.06)", borderRadius: 18, padding: "4px 18px", marginBottom: 22 }}>
             {details.map((detail) => (
               <InfoRow key={detail.label} label={detail.label} value={detail.value} />
             ))}
@@ -89,7 +90,7 @@ export function OnboardingCard({ fullName, email, waveNumber }: OnboardingCardPr
               style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center",
                 width: "100%", padding: "12px 16px", borderRadius: 12,
-                border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)",
+                border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
                 color: "#c9d3df", fontSize: 14, fontWeight: 600, textDecoration: "none",
               }}
             >

@@ -141,7 +141,7 @@ function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
       <div style={{
         width: 34, height: 34, borderRadius: 9,
-        background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.18)",
+        background: "#e8f2ed", border: "1px solid rgba(20,120,74,0.18)",
         display: "flex", alignItems: "center", justifyContent: "center", color: BLUE,
       }}>{icon}</div>
       <h3 style={{ fontSize: 16, fontWeight: 700, color: "#15201a", margin: 0 }}>{title}</h3>
@@ -553,7 +553,7 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
               width: 34, height: 34, borderRadius: 9,
-              background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.18)",
+              background: "#e8f2ed", border: "1px solid rgba(20,120,74,0.18)",
               display: "flex", alignItems: "center", justifyContent: "center", color: BLUE,
             }}><IconShare /></div>
             <div>
@@ -563,13 +563,13 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
           </div>
           <button onClick={onClose} style={{
             width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)",
-            background: "rgba(21,32,26,0.04)", color: "#56625b", cursor: "pointer",
+            background: "#fff", color: "#56625b", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}><IconClose /></button>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 4, background: "rgba(21,32,26,0.04)", borderRadius: 10, padding: 4, marginBottom: 20 }}>
+        <div style={{ display: "flex", gap: 4, background: "#fff", borderRadius: 10, padding: 4, marginBottom: 20 }}>
           <button style={TAB_STYLE(tab === "links")} onClick={() => setTab("links")}>Links & QR</button>
           <button style={TAB_STYLE(tab === "social")} onClick={handleTabSocial}>Social Card</button>
         </div>
@@ -579,7 +579,7 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
           <>
             {/* QR Code */}
             <div style={{
-              background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.07)",
+              background: "#fff", border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 14, padding: 18, textAlign: "center", marginBottom: 16,
             }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: 12 }}>
@@ -616,7 +616,7 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
                 { label: "Direct donate link", url: donateUrl, key: "donate" },
               ].map(({ label, url, key }) => (
                 <div key={key} style={{
-                  background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.07)",
+                  background: "#fff", border: "1px solid rgba(21,32,26,0.07)",
                   borderRadius: 10, padding: "10px 14px",
                   display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
                 }}>
@@ -668,7 +668,7 @@ function ShareModal({ campaign, onClose }: { campaign: CampaignDiscoveryItem; on
 
             {/* Card preview */}
             <div style={{
-              background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.07)",
+              background: "#fff", border: "1px solid rgba(21,32,26,0.07)",
               borderRadius: 14, padding: 16, marginBottom: 16,
               display: "flex", alignItems: "center", justifyContent: "center",
               minHeight: 200,
@@ -810,7 +810,7 @@ function ReportModal({
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", cursor: "pointer" }}>×</button>
         </div>
 
-        {toast && <div style={{ marginBottom: 12, color: "#15201a", background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.18)", borderRadius: 10, padding: "10px 12px", fontSize: 13 }}>{toast}</div>}
+        {toast && <div style={{ marginBottom: 12, color: "#15201a", background: "#ecf4f1", border: "1px solid rgba(20,120,74,0.18)", borderRadius: 10, padding: "10px 12px", fontSize: 13 }}>{toast}</div>}
 
         <div style={{ marginBottom: 14 }}>
           <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Reason</label>
@@ -832,12 +832,12 @@ function ReportModal({
 
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#56625b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Description</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} placeholder="Tell us what looks wrong…" style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#15201a", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} placeholder="Tell us what looks wrong…" style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#15201a", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
         </div>
 
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={() => void handleSubmit()} disabled={submitReport.isPending} style={{ padding: "10px 18px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{submitReport.isPending ? "Submitting…" : "Submit report"}</button>
-          <button onClick={onClose} style={{ padding: "10px 18px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={onClose} style={{ padding: "10px 18px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
         </div>
       </motion.div>
     </div>
@@ -931,7 +931,7 @@ export default function CampaignDetailPage() {
           display: "inline-flex", alignItems: "center", gap: 8,
           padding: "7px 14px", borderRadius: 8,
           border: "1px solid rgba(21,32,26,0.1)",
-          background: "rgba(21,32,26,0.04)",
+          background: "#fff",
           color: "#56625b", fontSize: 13, cursor: "pointer", marginBottom: 28,
         }}>
           <IconArrowLeft /> Back to Campaigns
@@ -989,7 +989,7 @@ export default function CampaignDetailPage() {
                   }}>{campaign.status}</span>
                   <span style={{
                     padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,
-                    background: "rgba(20,120,74,0.1)", color: BLUE,
+                    background: "#e8f2ed", color: BLUE,
                     border: "1px solid rgba(20,120,74,0.2)",
                   }}>{campaign.mode}</span>
                 </div>
@@ -999,7 +999,7 @@ export default function CampaignDetailPage() {
                     display: "inline-flex", alignItems: "center", gap: 6,
                     padding: "7px 14px", borderRadius: 8,
                     border: "1px solid rgba(20,120,74,0.25)",
-                    background: "rgba(20,120,74,0.08)",
+                    background: "#ecf4f1",
                     color: BLUE, fontSize: 13, fontWeight: 600, cursor: "pointer",
                     transition: "background 0.2s",
                   }}
@@ -1031,7 +1031,7 @@ export default function CampaignDetailPage() {
                     display: "inline-flex", alignItems: "center", gap: 6,
                     padding: "7px 14px", borderRadius: 8,
                     border: "1px solid rgba(239,68,68,0.24)",
-                    background: "rgba(239,68,68,0.08)",
+                    background: "#fef0f0",
                     color: RED, fontSize: 13, fontWeight: 600, cursor: "pointer",
                     transition: "background 0.2s",
                   }}
@@ -1051,7 +1051,7 @@ export default function CampaignDetailPage() {
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 9,
                       padding: "6px 12px 6px 7px", borderRadius: 24, marginBottom: 14,
-                      background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.09)",
+                      background: "#fff", border: "1px solid rgba(21,32,26,0.09)",
                       transition: "border-color 0.2s",
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.35)"; }}
@@ -1073,7 +1073,7 @@ export default function CampaignDetailPage() {
                       <span title="Identity verified" style={{
                         display: "inline-flex", alignItems: "center", justifyContent: "center",
                         width: 16, height: 16, borderRadius: "50%",
-                        background: "rgba(31,153,96,0.15)", border: "1px solid rgba(31,153,96,0.4)",
+                        background: "#ddf0e7", border: "1px solid rgba(31,153,96,0.4)",
                       }}>
                         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={GREEN} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M20 6L9 17l-5-5" />
@@ -1092,11 +1092,11 @@ export default function CampaignDetailPage() {
                 <div style={{
                   display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
                   padding: "10px 14px", borderRadius: 10, marginBottom: 14,
-                  background: "rgba(20,120,74,0.06)", border: "1px solid rgba(20,120,74,0.22)",
+                  background: "#f1f7f4", border: "1px solid rgba(20,120,74,0.22)",
                 }}>
                   <span style={{
                     fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
-                    padding: "3px 9px", borderRadius: 20, color: BLUE, background: "rgba(20,120,74,0.14)",
+                    padding: "3px 9px", borderRadius: 20, color: BLUE, background: "#deece6",
                   }}>
                     {activePromo.promo_type === "matched_donation" ? "Matched" : "Promo"}
                   </span>
@@ -1112,7 +1112,7 @@ export default function CampaignDetailPage() {
 
               {/* Progress block */}
               <div style={{
-                background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.08)",
+                background: "#fff", border: "1px solid rgba(21,32,26,0.08)",
                 borderRadius: 12, padding: "18px 20px", marginBottom: 18,
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, alignItems: "baseline" }}>
@@ -1181,7 +1181,7 @@ export default function CampaignDetailPage() {
               }}>
                 <div style={{
                   width: 34, height: 34, borderRadius: 9,
-                  background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.18)",
+                  background: "#e8f2ed", border: "1px solid rgba(20,120,74,0.18)",
                   display: "flex", alignItems: "center", justifyContent: "center", color: BLUE, flexShrink: 0,
                 }}><IconBell /></div>
                 <div>
@@ -1195,7 +1195,7 @@ export default function CampaignDetailPage() {
               {updatesLoading ? (
                 <div style={{ padding: "16px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
                   {[1, 2].map((i) => (
-                    <div key={i} style={{ borderRadius: 10, background: "rgba(21,32,26,0.03)", height: 80 }} />
+                    <div key={i} style={{ borderRadius: 10, background: "#fff", height: 80 }} />
                   ))}
                 </div>
               ) : updates.length === 0 ? (
@@ -1239,7 +1239,7 @@ export default function CampaignDetailPage() {
                 <div style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   padding: "14px 18px", borderRadius: 12, marginTop: 4,
-                  background: "rgba(20,120,74,0.04)", border: "1px solid rgba(20,120,74,0.15)",
+                  background: "#f6faf8", border: "1px solid rgba(20,120,74,0.15)",
                   cursor: "pointer", transition: "background 0.15s",
                 }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(20,120,74,0.08)"; }}
@@ -1291,12 +1291,12 @@ export default function CampaignDetailPage() {
                     return (
                       <div key={goal.id} style={{
                         padding: 16, borderRadius: 11,
-                        background: "rgba(21,32,26,0.03)",
+                        background: "#fff",
                         border: "1px solid rgba(21,32,26,0.07)",
                       }}>
                         <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap", alignItems: "center" }}>
                           <span style={{ fontSize: 10, fontWeight: 700, color: "#d9870b",
-                            background: "rgba(217,135,11,0.1)", padding: "2px 8px", borderRadius: 6 }}>
+                            background: "#fbf3e7", padding: "2px 8px", borderRadius: 6 }}>
                             {goal.status}
                           </span>
                           {goal.due_date && (
@@ -1342,7 +1342,7 @@ export default function CampaignDetailPage() {
                   {reviews.map((r: CampaignReview) => (
                     <div key={r.id} style={{
                       padding: 16, borderRadius: 11,
-                      background: "rgba(21,32,26,0.03)",
+                      background: "#fff",
                       border: "1px solid rgba(21,32,26,0.07)",
                     }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
@@ -1381,7 +1381,7 @@ export default function CampaignDetailPage() {
               ) : (
                 <div style={{
                   marginTop: 18, padding: 16, borderRadius: 10,
-                  background: "rgba(20,120,74,0.04)", border: "1px solid rgba(20,120,74,0.14)",
+                  background: "#f6faf8", border: "1px solid rgba(20,120,74,0.14)",
                   display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10,
                 }}>
                   <p style={{ color: "#56625b", fontSize: 13 }}>Login to leave a review</p>
@@ -1439,7 +1439,7 @@ export default function CampaignDetailPage() {
               style={{
                 width: "100%", marginTop: 10, padding: "9px 14px", borderRadius: 9,
                 border: "1px solid rgba(20,120,74,0.2)",
-                background: "rgba(20,120,74,0.06)",
+                background: "#f1f7f4",
                 color: BLUE, fontSize: 13, fontWeight: 600, cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
               }}
@@ -1452,7 +1452,7 @@ export default function CampaignDetailPage() {
               style={{
                 width: "100%", marginTop: 10, padding: "9px 14px", borderRadius: 9,
                 border: "1px solid rgba(239,68,68,0.24)",
-                background: "rgba(239,68,68,0.08)",
+                background: "#fef0f0",
                 color: RED, fontSize: 13, fontWeight: 600, cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
               }}
@@ -1484,7 +1484,7 @@ export default function CampaignDetailPage() {
 
           {/* Trust */}
           <div style={{
-            background: "rgba(21,32,26,0.02)", border: "1px solid rgba(21,32,26,0.06)",
+            background: "#fff", border: "1px solid rgba(21,32,26,0.06)",
             borderRadius: 16, padding: 18,
           }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
@@ -1505,7 +1505,7 @@ export default function CampaignDetailPage() {
 
           {!isLoggedIn && (
             <div style={{
-              background: "rgba(20,120,74,0.04)",
+              background: "#f6faf8",
               border: "1px solid rgba(20,120,74,0.14)",
               borderRadius: 16, padding: 18, textAlign: "center",
             }}>

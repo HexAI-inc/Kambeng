@@ -81,20 +81,20 @@ export default function UserEditPage() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "10px 14px", borderRadius: 9,
-    border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+    border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
     color: "#15201a", fontSize: 14, outline: "none", boxSizing: "border-box",
     transition: "border-color 0.2s",
   };
 
   if (isLoading) return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ width: 36, height: 36, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
   if (error || !user) return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center" }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a", marginBottom: 12 }}>User not found</div>
         <button onClick={() => router.back()} style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Go back</button>
@@ -103,7 +103,7 @@ export default function UserEditPage() {
   );
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
@@ -209,7 +209,7 @@ export default function UserEditPage() {
           <button onClick={() => void handleSave()} disabled={updateUser.isPending} style={{ padding: "11px 28px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(20,120,74,0.3)", opacity: updateUser.isPending ? 0.7 : 1 }}>
             {updateUser.isPending ? "Saving…" : "Save changes"}
           </button>
-          <button onClick={() => router.back()} style={{ padding: "11px 22px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={() => router.back()} style={{ padding: "11px 22px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
         </motion.div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

@@ -15,7 +15,7 @@ export default function LogoutPage() {
   }, [router]);
 
   return (
-    <main style={{ minHeight: "100vh", background: "#f6f4ef", display: "grid", placeItems: "center" }}>
+    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
       <div style={{ textAlign: "center" }}>
         <div style={{ width: 36, height: 36, border: "2px solid #14784a", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
         <div style={{ color: "#626d66", fontSize: 14 }}>Signing out…</div>

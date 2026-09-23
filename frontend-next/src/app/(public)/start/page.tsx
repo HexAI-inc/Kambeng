@@ -15,7 +15,7 @@ const STEPS = [
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "13px 16px", borderRadius: 12,
-  border: "1px solid rgba(21,32,26,0.12)", background: "rgba(21,32,26,0.05)",
+  border: "1px solid rgba(21,32,26,0.12)", background: "#fff",
   color: "#15201a", fontSize: 14, outline: "none", boxSizing: "border-box",
 };
 

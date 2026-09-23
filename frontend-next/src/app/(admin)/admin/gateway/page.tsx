@@ -24,7 +24,7 @@ function fadeUp(delay = 0) {
 
 const inputStyle: React.CSSProperties = {
   padding: "10px 13px", borderRadius: 9, boxSizing: "border-box",
-  border: "1px solid rgba(21,32,26,0.12)", background: "rgba(21,32,26,0.05)",
+  border: "1px solid rgba(21,32,26,0.12)", background: "#fff",
   color: "#15201a", fontSize: 13, outline: "none",
 };
 
@@ -177,7 +177,7 @@ export default function AdminGatewayPage() {
   ] : [];
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
     <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
       <motion.div {...fadeUp(0)}>
         <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Gateway</h1>
@@ -187,7 +187,7 @@ export default function AdminGatewayPage() {
       </motion.div>
 
       {error && (
-        <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: RED, fontSize: 13 }}>{error}</div>
+        <div style={{ padding: "12px 16px", borderRadius: 10, background: "#fef0f0", border: "1px solid rgba(239,68,68,0.25)", color: RED, fontSize: 13 }}>{error}</div>
       )}
 
       {/* Balance */}
@@ -252,7 +252,7 @@ export default function AdminGatewayPage() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {reconResult.discrepancies.map((d) => (
-                  <div key={d.donation_id} style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8, padding: "10px 12px", borderRadius: 8, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 12 }}>
+                  <div key={d.donation_id} style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8, padding: "10px 12px", borderRadius: 8, background: "#fef4f4", border: "1px solid rgba(239,68,68,0.2)", fontSize: 12 }}>
                     <span style={{ color: "#15201a" }}>{d.client_reference} — {d.campaign_title ?? "unknown campaign"}</span>
                     <span style={{ color: RED }}>local: {d.local_status} → gateway: {d.gateway_status}</span>
                   </div>
@@ -271,7 +271,7 @@ export default function AdminGatewayPage() {
           <button
             onClick={testWebhook}
             disabled={webhookBusy}
-            style={{ padding: "9px 16px", borderRadius: 9, border: "1px solid rgba(20,120,74,0.25)", background: "rgba(20,120,74,0.08)", color: BLUE, fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: webhookBusy ? 0.6 : 1 }}
+            style={{ padding: "9px 16px", borderRadius: 9, border: "1px solid rgba(20,120,74,0.25)", background: "#ecf4f1", color: BLUE, fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: webhookBusy ? 0.6 : 1 }}
           >
             {webhookBusy ? "Sending…" : "Send test ping"}
           </button>
@@ -287,7 +287,7 @@ export default function AdminGatewayPage() {
           <button
             onClick={verifyRecipient}
             disabled={recipientBusy || !recipientMobile.trim()}
-            style={{ padding: "9px 16px", borderRadius: 9, border: "1px solid rgba(20,120,74,0.25)", background: "rgba(20,120,74,0.08)", color: BLUE, fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: recipientBusy || !recipientMobile.trim() ? 0.6 : 1 }}
+            style={{ padding: "9px 16px", borderRadius: 9, border: "1px solid rgba(20,120,74,0.25)", background: "#ecf4f1", color: BLUE, fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: recipientBusy || !recipientMobile.trim() ? 0.6 : 1 }}
           >
             {recipientBusy ? "Checking…" : "Verify"}
           </button>
@@ -318,7 +318,7 @@ export default function AdminGatewayPage() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {transactions.map((tx, i) => (
-              <div key={tx.transaction_id ?? i} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "rgba(21,32,26,0.02)", border: "1px solid rgba(21,32,26,0.06)" }}>
+              <div key={tx.transaction_id ?? i} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "#fff", border: "1px solid rgba(21,32,26,0.06)" }}>
                 <span style={{ flex: "1 1 160px", fontSize: 12, color: "#15201a", fontFamily: "monospace" }}>{tx.client_reference ?? tx.transaction_id}</span>
                 {tx.provider && <span style={{ fontSize: 11, color: "#56625b" }}>{tx.provider}</span>}
                 <span style={{ fontSize: 12, fontWeight: 700, color: GREEN }}>{tx.amount} {tx.currency ?? "GMD"}</span>

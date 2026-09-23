@@ -257,7 +257,7 @@ export default function QuickPayPage() {
 
   const inputStyle = {
     width: "100%", padding: "12px 16px", borderRadius: 10,
-    border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+    border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
     color: "#15201a", fontSize: 15, outline: "none",
   };
 
@@ -268,7 +268,7 @@ export default function QuickPayPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f6f4ef", padding: "32px clamp(16px, 4vw, 48px) 80px" }}>
+    <div style={{ minHeight: "100vh", padding: "32px clamp(16px, 4vw, 48px) 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <Link href={`/campaigns/${slug}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#56625b", fontSize: 14, marginBottom: 32 }}>
           ← Back to campaign
@@ -280,10 +280,10 @@ export default function QuickPayPage() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
             {isLoading ? (
               <div style={{ background: "#ffffff", borderRadius: 20, border: "1px solid rgba(21,32,26,0.06)", overflow: "hidden" }}>
-                <div style={{ height: 280, background: "rgba(21,32,26,0.04)" }} />
+                <div style={{ height: 280, background: "#fff" }} />
                 <div style={{ padding: 28 }}>
                   {[["30%", 14], ["70%", 24], ["90%", 14]].map(([w, h], i) => (
-                    <div key={i} style={{ height: h as number, width: w as string, background: "rgba(21,32,26,0.05)", borderRadius: 6, marginBottom: 16 }} />
+                    <div key={i} style={{ height: h as number, width: w as string, background: "#fff", borderRadius: 6, marginBottom: 16 }} />
                   ))}
                 </div>
               </div>
@@ -296,7 +296,7 @@ export default function QuickPayPage() {
                   </div>
                 )}
                 <div style={{ padding: 28 }}>
-                  <div style={{ display: "inline-block", padding: "3px 10px", borderRadius: 4, background: "rgba(20,120,74,0.1)", color: "#14784a", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
+                  <div style={{ display: "inline-block", padding: "3px 10px", borderRadius: 4, background: "#e8f2ed", color: "#14784a", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
                     {campaign.mode}
                   </div>
                   <h2 style={{ margin: "0 0 12px", fontSize: 24, fontWeight: 800, color: "#15201a", lineHeight: 1.2 }}>{campaign.title}</h2>
@@ -314,7 +314,7 @@ export default function QuickPayPage() {
                           const gPct = Math.min(100, (goal.amount_raised / goal.target_amount) * 100);
                           const active = selectedGoalId === goal.id;
                           return (
-                            <div key={goal.id} onClick={() => setSelectedGoalId(active ? null : goal.id)} style={{ padding: "14px 16px", background: "rgba(21,32,26,0.03)", borderRadius: 12, border: active ? "1px solid rgba(20,120,74,0.4)" : "1px solid rgba(21,32,26,0.06)", cursor: "pointer", transition: "all 0.2s" }}>
+                            <div key={goal.id} onClick={() => setSelectedGoalId(active ? null : goal.id)} style={{ padding: "14px 16px", background: "#fff", borderRadius: 12, border: active ? "1px solid rgba(20,120,74,0.4)" : "1px solid rgba(21,32,26,0.06)", cursor: "pointer", transition: "all 0.2s" }}>
                               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                                 <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#14784a" : "#15201a" }}>{goal.title}</span>
                                 <span style={{ fontSize: 12, color: "#6e7872" }}>{gPct.toFixed(0)}%</span>
@@ -341,7 +341,7 @@ export default function QuickPayPage() {
               </p>
 
               {/* ── Payment method tabs ── */}
-              <div style={{ display: "flex", background: "rgba(21,32,26,0.04)", borderRadius: 12, padding: 4, gap: 2, marginBottom: 24 }}>
+              <div style={{ display: "flex", background: "#fff", borderRadius: 12, padding: 4, gap: 2, marginBottom: 24 }}>
                 {METHODS.map((m) => {
                   const active = paymentMethod === m.id;
                   return (
@@ -416,7 +416,7 @@ export default function QuickPayPage() {
 
               {/* ── Error ── */}
               {error && (
-                <div style={{ padding: "11px 14px", marginBottom: 16, borderRadius: 10, background: "rgba(255,107,107,0.1)", border: "1px solid rgba(255,107,107,0.2)", color: "#d42f2f", fontSize: 13 }}>
+                <div style={{ padding: "11px 14px", marginBottom: 16, borderRadius: 10, background: "#fff0f0", border: "1px solid rgba(255,107,107,0.2)", color: "#d42f2f", fontSize: 13 }}>
                   {error}
                 </div>
               )}
@@ -540,7 +540,7 @@ export default function QuickPayPage() {
                   <motion.div key="card" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
                     <div style={{
                       display: "flex", alignItems: "center", gap: 10,
-                      background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.18)",
+                      background: "#f4f4fe", border: "1px solid rgba(99,102,241,0.18)",
                       borderRadius: 10, padding: "10px 14px", marginBottom: 14,
                     }}>
                       <LockOutlined style={{ color: "#6366f1", fontSize: 13 }} />

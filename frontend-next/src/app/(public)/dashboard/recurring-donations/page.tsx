@@ -17,7 +17,7 @@ function fadeUp(delay = 0) {
 }
 
 function FreqChip({ freq }: { freq: string }) {
-  const map: Record<string, string> = { WEEKLY: "#d9870b", MONTHLY: BLUE, QUARTERLY: "#8b3fd9", ANNUAL: GREEN };
+  const map: Record<string, string> = { WEEKLY: "#d9870b", MONTHLY: BLUE, QUARTERLY: "#b9500b", ANNUAL: GREEN };
   const color = map[freq] ?? "#56625b";
   return (
     <span style={{
@@ -50,7 +50,7 @@ export default function RecurringDonationsPage() {
   };
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
@@ -73,7 +73,7 @@ export default function RecurringDonationsPage() {
         {!isLoading && donations.length > 0 && (
           <motion.div {...fadeUp(0.06)} style={{
             display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2,
-            background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)",
+            background: "#fff", border: "1px solid rgba(21,32,26,0.07)",
             borderRadius: 14, overflow: "hidden",
           }}>
             {[
@@ -95,17 +95,17 @@ export default function RecurringDonationsPage() {
         {/* Donations list */}
         {isLoading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {[1, 2, 3].map((i) => <div key={i} style={{ height: 100, borderRadius: 12, background: "rgba(21,32,26,0.04)" }} />)}
+            {[1, 2, 3].map((i) => <div key={i} style={{ height: 100, borderRadius: 12, background: "#fff" }} />)}
           </div>
         ) : donations.length === 0 ? (
           <motion.div {...fadeUp(0.08)} style={{
             padding: "52px 28px", textAlign: "center",
-            background: "linear-gradient(135deg, rgba(20,120,74,0.03), rgba(15,94,58,0.01))",
+            background: "#f1f8f4",
             border: "1px dashed rgba(20,120,74,0.18)", borderRadius: 16,
           }}>
             <div style={{
               width: 56, height: 56, borderRadius: 14, margin: "0 auto 16px",
-              background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)",
+              background: "#ecf4f1", border: "1px solid rgba(20,120,74,0.15)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -178,7 +178,7 @@ export default function RecurringDonationsPage() {
                       disabled={isUpdating}
                       style={{
                         padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                        border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)",
+                        border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
                         color: "#56625b",
                       }}
                     >{d.is_active ? "Pause" : "Resume"}</button>
@@ -187,7 +187,7 @@ export default function RecurringDonationsPage() {
                       disabled={isCancelling}
                       style={{
                         padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                        border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.07)",
+                        border: "1px solid rgba(239,68,68,0.2)", background: "#fef2f2",
                         color: "#d42f2f",
                       }}
                     >Cancel</button>
@@ -201,7 +201,7 @@ export default function RecurringDonationsPage() {
         {/* How it works */}
         <motion.div {...fadeUp(0.18)} style={{
           padding: "20px 22px", borderRadius: 12,
-          background: "rgba(20,120,74,0.04)", border: "1px solid rgba(20,120,74,0.12)",
+          background: "#f6faf8", border: "1px solid rgba(20,120,74,0.12)",
         }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: BLUE, marginBottom: 12 }}>How recurring donations work</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -212,7 +212,7 @@ export default function RecurringDonationsPage() {
               "Pause, resume, or cancel anytime with no penalties",
             ].map((tip, i) => (
               <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <div style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(20,120,74,0.15)", border: "1px solid rgba(20,120,74,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#dcebe4", border: "1px solid rgba(20,120,74,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
                   <span style={{ fontSize: 9, fontWeight: 800, color: BLUE }}>{i + 1}</span>
                 </div>
                 <span style={{ fontSize: 13, color: "#626d66", lineHeight: 1.6 }}>{tip}</span>

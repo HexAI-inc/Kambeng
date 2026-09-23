@@ -54,7 +54,7 @@ export default function AdminUsersPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
         {toast && (
@@ -79,7 +79,7 @@ export default function AdminUsersPage() {
             placeholder="Search by name, email, or Wave…"
             style={{
               padding: "9px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)",
-              background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 13, outline: "none", width: 260,
+              background: "#fff", color: "#15201a", fontSize: 13, outline: "none", width: 260,
             }}
           />
         </motion.div>
@@ -192,8 +192,8 @@ export default function AdminUsersPage() {
 function btnStyle(variant: "default" | "green" | "red"): React.CSSProperties {
   const map = {
     default: { color: "#56625b", border: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" },
-    green:   { color: "#1f9960", border: "rgba(31,153,96,0.25)", bg: "rgba(31,153,96,0.08)" },
-    red:     { color: "#d42f2f", border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" },
+    green:   { color: "#1f9960", border: "rgba(31,153,96,0.25)", bg: "#edf7f2" },
+    red:     { color: "#d42f2f", border: "rgba(239,68,68,0.25)", bg: "#fef0f0" },
   }[variant];
   return { padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid ${map.border}`, background: map.bg, color: map.color, cursor: "pointer" };
 }

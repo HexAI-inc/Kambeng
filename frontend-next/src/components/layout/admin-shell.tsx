@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { BrandMark } from "@/components/layout/brand-mark";
 import { usePathname } from "next/navigation";
 import {
   AppstoreOutlined, FundProjectionScreenOutlined, TeamOutlined,
@@ -14,7 +15,6 @@ import {
 } from "@ant-design/icons";
 
 const BLUE = "#14784a";
-const BG = "#f6f4ef";
 const CARD = "#ffffff";
 
 type IconComp = React.ComponentType<{ style?: React.CSSProperties }>;
@@ -71,8 +71,8 @@ function isActive(pathname: string, href: string) {
 function Logo() {
   return (
     <Link href="/admin/campaigns" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-      <div style={{ width: 34, height: 34, background: "#14784a", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 15, color: "#fff", boxShadow: "0 4px 12px rgba(20,120,74,0.35)", flexShrink: 0 }}>K</div>
-      <span style={{ fontWeight: 800, fontSize: 17, color: "#15201a", letterSpacing: "-0.03em" }}>Admin</span>
+      <BrandMark size={34} />
+      <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 17, color: "#15201a", letterSpacing: "-0.03em" }}>Admin</span>
     </Link>
   );
 }
@@ -174,7 +174,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const sidebarWidth = collapsed ? 60 : 220;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: BG }}>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
 
       {/* Desktop sidebar */}
       <aside
@@ -226,6 +226,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <Logo />
         </header>
 
+        <div className="woven-strip woven-strip-thin" aria-hidden="true" />
         <main style={{ flex: 1 }}>
           {children}
         </main>
@@ -254,7 +255,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             border-radius: 12px;
             margin: 6px 10px;
             border: 1px solid rgba(21,32,26,0.07) !important;
-            background: rgba(21,32,26,0.015);
+            background: #fff;
           }
 
           /* All detail cells: small label above value */

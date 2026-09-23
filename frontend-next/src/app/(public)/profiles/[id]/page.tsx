@@ -26,7 +26,7 @@ function Avatar({ name, size = 72 }: { name: string; size?: number }) {
 
 function VerifiedBadge() {
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 20, color: GREEN, background: "rgba(31,153,96,0.1)", border: "1px solid rgba(31,153,96,0.25)" }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 20, color: GREEN, background: "#e9f5ef", border: "1px solid rgba(31,153,96,0.25)" }}>
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 6L9 17l-5-5" />
       </svg>
@@ -58,7 +58,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
 
   if (state === "loading") {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: 36, height: 36, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -67,7 +67,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
 
   if (state === "missing" || !profile) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: 24 }}>
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: 24 }}>
         <div style={{ fontSize: 20, fontWeight: 800, color: "#15201a" }}>Profile not found</div>
         <div style={{ fontSize: 14, color: "#626d66", textAlign: "center" }}>This organizer profile doesn&apos;t exist or is no longer available.</div>
         <Link href="/campaigns" style={{ marginTop: 8, padding: "10px 22px", borderRadius: 10, background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
@@ -80,7 +80,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
   const memberSince = new Date(profile.member_since).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "36px clamp(16px,4vw,48px)", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", padding: "36px clamp(16px,4vw,48px)", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at top left, rgba(20,120,74,0.1), transparent 30%)", pointerEvents: "none" }} />
 
       <div style={{ maxWidth: 960, margin: "0 auto", position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 24 }}>
@@ -131,7 +131,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
                             <Image src={campaign.cover_image_url} alt={campaign.title} fill unoptimized sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: "cover" }} />
                           ) : (
                             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #e6f4ec 0%, #cfe8da 50%, #eef6f1 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <div style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 900, color: BLUE }}>
+                              <div style={{ width: 46, height: 46, borderRadius: 12, background: "#e8f2ed", border: "1px solid rgba(20,120,74,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 900, color: BLUE }}>
                                 {campaign.title.charAt(0).toUpperCase()}
                               </div>
                             </div>

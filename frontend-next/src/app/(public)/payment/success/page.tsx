@@ -43,7 +43,7 @@ function PaymentSuccessContent() {
   const icon = isConfirmed ? "✓" : isFailed ? "✕" : null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f6f4ef", display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 16px" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 16px" }}>
       <div style={{ width: "100%", maxWidth: 460, textAlign: "center" }}>
 
         <div style={{
@@ -104,7 +104,7 @@ function PaymentSuccessContent() {
           {(isFailed || isPending) && campaignSlug && (
             <Link
               href={`/quick-pay/${campaignSlug}`}
-              style={{ display: "block", padding: "12px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+              style={{ display: "block", padding: "12px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
             >
               {isFailed ? "Try again" : "Donate again"}
             </Link>

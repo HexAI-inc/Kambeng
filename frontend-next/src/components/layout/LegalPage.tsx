@@ -20,7 +20,7 @@ export function LegalPage({ title, subtitle, lastUpdated, sections }: LegalPageP
         <div style={{ marginBottom: 48 }}>
           <div style={{
             display: "inline-block", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em",
-            textTransform: "uppercase", color: "#14784a", background: "rgba(20,120,74,0.1)",
+            textTransform: "uppercase", color: "#14784a", background: "#e8f2ed",
             border: "1px solid rgba(20,120,74,0.2)", borderRadius: 20, padding: "4px 14px", marginBottom: 16,
           }}>Legal</div>
           <h1 style={{ fontSize: "clamp(26px,4vw,38px)", fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", lineHeight: 1.15, margin: "0 0 12px" }}>

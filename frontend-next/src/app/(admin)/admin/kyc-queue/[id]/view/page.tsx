@@ -21,10 +21,10 @@ function Field({ label, value, mono, span }: { label: string; value: React.React
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    SUBMITTED: { color: BLUE,    bg: "rgba(20,120,74,0.1)", border: "rgba(20,120,74,0.2)" },
-    REVIEWING: { color: "#e8650f", bg: "rgba(232,101,15,0.1)", border: "rgba(232,101,15,0.25)" },
-    APPROVED:  { color: GREEN,   bg: "rgba(31,153,96,0.1)", border: "rgba(31,153,96,0.25)" },
-    REJECTED:  { color: RED,     bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.25)" },
+    SUBMITTED: { color: BLUE,    bg: "#e8f2ed", border: "rgba(20,120,74,0.2)" },
+    REVIEWING: { color: "#e8650f", bg: "#fdf0e7", border: "rgba(232,101,15,0.25)" },
+    APPROVED:  { color: GREEN,   bg: "#e9f5ef", border: "rgba(31,153,96,0.25)" },
+    REJECTED:  { color: RED,     bg: "#fdecec",  border: "rgba(239,68,68,0.25)" },
   };
   const s = map[status] ?? map.SUBMITTED;
   return <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 20, color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>{status}</span>;
@@ -38,7 +38,7 @@ export default function KYCViewPage() {
 
   if (isLoading) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: 36, height: 36, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -47,7 +47,7 @@ export default function KYCViewPage() {
 
   if (error || !submission) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>😕</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#15201a", marginBottom: 8 }}>KYC submission not found</div>
@@ -58,7 +58,7 @@ export default function KYCViewPage() {
   }
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
@@ -89,7 +89,7 @@ export default function KYCViewPage() {
             } />
             {submission.rejection_reason && (
               <Field label="Rejection Reason" span value={
-                <div style={{ padding: "12px 16px", borderRadius: 9, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#b42323", fontSize: 13, lineHeight: 1.6 }}>
+                <div style={{ padding: "12px 16px", borderRadius: 9, background: "#fef4f4", border: "1px solid rgba(239,68,68,0.15)", color: "#b42323", fontSize: 13, lineHeight: 1.6 }}>
                   {submission.rejection_reason}
                 </div>
               } />
@@ -99,7 +99,7 @@ export default function KYCViewPage() {
 
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={() => router.push(`/admin/kyc-queue/${submission.id}/review`)} style={{ padding: "10px 20px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Review Submission</button>
-          <button onClick={() => router.back()} style={{ padding: "10px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Back</button>
+          <button onClick={() => router.back()} style={{ padding: "10px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Back</button>
         </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

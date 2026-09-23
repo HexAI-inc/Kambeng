@@ -17,10 +17,10 @@ function fadeUp(delay = 0) {
 function StatusChip({ status }: { status: string }) {
   const s = status.toLowerCase();
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    pending:   { color: "#e8650f", bg: "rgba(232,101,15,0.1)", border: "rgba(232,101,15,0.25)" },
-    approved:  { color: GREEN,     bg: "rgba(31,153,96,0.1)", border: "rgba(31,153,96,0.25)" },
-    completed: { color: BLUE,      bg: "rgba(20,120,74,0.1)", border: "rgba(20,120,74,0.2)" },
-    rejected:  { color: RED,       bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.25)" },
+    pending:   { color: "#e8650f", bg: "#fdf0e7", border: "rgba(232,101,15,0.25)" },
+    approved:  { color: GREEN,     bg: "#e9f5ef", border: "rgba(31,153,96,0.25)" },
+    completed: { color: BLUE,      bg: "#e8f2ed", border: "rgba(20,120,74,0.2)" },
+    rejected:  { color: RED,       bg: "#fdecec",  border: "rgba(239,68,68,0.25)" },
   };
   const cfg = map[s] ?? map.pending;
   return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}` }}>{status}</span>;
@@ -39,7 +39,7 @@ export default function DonationsPage() {
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header + stats */}
@@ -49,11 +49,11 @@ export default function DonationsPage() {
               <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Donations Overview</div>
               <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>Snapshot of successful donations recorded on the platform.</div>
             </div>
-            <button onClick={() => router.push("/admin/reconciliations")} style={{ padding: "9px 16px", borderRadius: 9, border: "1px solid rgba(20,120,74,0.2)", background: "rgba(20,120,74,0.08)", color: "#14784a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+            <button onClick={() => router.push("/admin/reconciliations")} style={{ padding: "9px 16px", borderRadius: 9, border: "1px solid rgba(20,120,74,0.2)", background: "#ecf4f1", color: "#14784a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
               Open reconciliation workspace
             </button>
           </div>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 12, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 12, overflow: "hidden" }}>
             {[
               { label: "Successful", value: String(completedCount), color: GREEN },
               { label: "Failed or pending", value: String(rows.length - completedCount), color: "#56625b" },
@@ -121,7 +121,7 @@ export default function DonationsPage() {
 }
 
 function btnStyle(v: "default" | "green" | "red"): React.CSSProperties {
-  const m = { default: { c: "#56625b", b: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" }, green: { c: "#1f9960", b: "rgba(31,153,96,0.25)", bg: "rgba(31,153,96,0.08)" }, red: { c: "#d42f2f", b: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" } }[v];
+  const m = { default: { c: "#56625b", b: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" }, green: { c: "#1f9960", b: "rgba(31,153,96,0.25)", bg: "#edf7f2" }, red: { c: "#d42f2f", b: "rgba(239,68,68,0.25)", bg: "#fef0f0" } }[v];
   return { padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid ${m.b}`, background: m.bg, color: m.c, cursor: "pointer" };
 }
 function pageBtnStyle(active: boolean): React.CSSProperties {

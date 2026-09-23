@@ -18,11 +18,11 @@ function fadeUp(delay = 0) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    ACTIVE:    { color: GREEN,     bg: "rgba(31,153,96,0.12)" },
-    DRAFT:     { color: "#d9870b", bg: "rgba(217,135,11,0.10)" },
+    ACTIVE:    { color: GREEN,     bg: "#e4f3ec" },
+    DRAFT:     { color: "#d9870b", bg: "#fbf3e7" },
     PAUSED:    { color: "#56625b", bg: "rgba(21,32,26,0.06)" },
-    COMPLETED: { color: BLUE,      bg: "rgba(20,120,74,0.10)" },
-    REJECTED:  { color: "#d42f2f", bg: "rgba(239,68,68,0.10)" },
+    COMPLETED: { color: BLUE,      bg: "#e8f2ed" },
+    REJECTED:  { color: "#d42f2f", bg: "#fdecec" },
   };
   const s = map[status] ?? map.PAUSED;
   return (
@@ -38,7 +38,7 @@ function ModeChip({ mode }: { mode: string }) {
     <span style={{
       fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const,
       padding: "2px 8px", borderRadius: 20,
-      color: "#56625b", background: "rgba(21,32,26,0.05)",
+      color: "#56625b", background: "#fff",
     }}>{mode}</span>
   );
 }
@@ -57,7 +57,7 @@ export default function MyCampaignsPage() {
 
   return (
     <>
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
@@ -71,7 +71,7 @@ export default function MyCampaignsPage() {
               <button style={{
                 padding: "9px 18px", borderRadius: 9,
                 border: "1px solid rgba(21,32,26,0.1)",
-                background: "rgba(21,32,26,0.04)",
+                background: "#fff",
                 color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer",
               }}>Browse campaigns</button>
             </Link>
@@ -90,7 +90,7 @@ export default function MyCampaignsPage() {
         {isError && (
           <div style={{
             padding: "12px 16px", borderRadius: 10,
-            background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.2)",
+            background: "#fef2f2", border: "1px solid rgba(239,68,68,0.2)",
             fontSize: 13, color: "#b42323",
           }}>
             Unable to load your campaigns. Try refreshing.
@@ -101,7 +101,7 @@ export default function MyCampaignsPage() {
         {!isLoading && campaigns && campaigns.length > 0 && (
           <motion.div {...fadeUp(0.06)} className="mc-summary" style={{
             display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2,
-            background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)",
+            background: "#fff", border: "1px solid rgba(21,32,26,0.07)",
             borderRadius: 14, overflow: "hidden",
           }}>
             {[
@@ -124,7 +124,7 @@ export default function MyCampaignsPage() {
         {isLoading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {[1, 2, 3].map((i) => (
-              <div key={i} style={{ height: 130, borderRadius: 14, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.06)" }} />
+              <div key={i} style={{ height: 130, borderRadius: 14, background: "#fff", border: "1px solid rgba(21,32,26,0.06)" }} />
             ))}
           </div>
         ) : campaigns && campaigns.length > 0 ? (
@@ -221,12 +221,12 @@ export default function MyCampaignsPage() {
         ) : (
           <motion.div {...fadeUp(0.08)} style={{
             padding: "52px 28px", textAlign: "center",
-            background: "linear-gradient(135deg, rgba(20,120,74,0.03), rgba(15,94,58,0.01))",
+            background: "#f1f8f4",
             border: "1px dashed rgba(20,120,74,0.18)", borderRadius: 16,
           }}>
             <div style={{
               width: 56, height: 56, borderRadius: 14, margin: "0 auto 16px",
-              background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)",
+              background: "#ecf4f1", border: "1px solid rgba(20,120,74,0.15)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -250,7 +250,7 @@ export default function MyCampaignsPage() {
                 <button style={{
                   padding: "11px 24px", borderRadius: 10,
                   border: "1px solid rgba(21,32,26,0.1)",
-                  background: "rgba(21,32,26,0.04)",
+                  background: "#fff",
                   color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer",
                 }}>Browse campaigns</button>
               </Link>

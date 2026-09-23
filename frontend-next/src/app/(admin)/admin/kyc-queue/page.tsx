@@ -20,10 +20,10 @@ function fadeUp(delay = 0) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    SUBMITTED: { color: BLUE, bg: "rgba(20,120,74,0.1)", border: "rgba(20,120,74,0.2)" },
-    REVIEWING: { color: "#e8650f", bg: "rgba(232,101,15,0.1)", border: "rgba(232,101,15,0.25)" },
-    APPROVED:  { color: GREEN, bg: "rgba(31,153,96,0.1)", border: "rgba(31,153,96,0.25)" },
-    REJECTED:  { color: RED, bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)" },
+    SUBMITTED: { color: BLUE, bg: "#e8f2ed", border: "rgba(20,120,74,0.2)" },
+    REVIEWING: { color: "#e8650f", bg: "#fdf0e7", border: "rgba(232,101,15,0.25)" },
+    APPROVED:  { color: GREEN, bg: "#e9f5ef", border: "rgba(31,153,96,0.25)" },
+    REJECTED:  { color: RED, bg: "#fdecec", border: "rgba(239,68,68,0.25)" },
   };
   const s = map[status] ?? map.SUBMITTED;
   return (
@@ -77,7 +77,7 @@ export default function KYCQueuePage() {
   const pending = rows.filter((r) => r.status === "SUBMITTED" || r.status === "REVIEWING").length;
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1000, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
@@ -116,7 +116,7 @@ export default function KYCQueuePage() {
               rows={4}
               style={{
                 width: "100%", padding: "11px 14px", borderRadius: 9,
-                border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)",
+                border: "1px solid rgba(239,68,68,0.2)", background: "#fef8f8",
                 color: "#15201a", fontSize: 13, resize: "vertical", outline: "none",
                 boxSizing: "border-box",
               }}
@@ -131,7 +131,7 @@ export default function KYCQueuePage() {
               </button>
               <button
                 onClick={() => { setRejectingId(null); setRejectionReason(""); }}
-                style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+                style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
               >
                 Cancel
               </button>
@@ -209,9 +209,9 @@ export default function KYCQueuePage() {
 function btnStyle(variant: "default" | "blue" | "green" | "red"): React.CSSProperties {
   const map = {
     default: { color: "#56625b", border: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" },
-    blue:    { color: "#14784a", border: "rgba(20,120,74,0.25)", bg: "rgba(20,120,74,0.08)" },
-    green:   { color: "#1f9960", border: "rgba(31,153,96,0.25)", bg: "rgba(31,153,96,0.08)" },
-    red:     { color: "#d42f2f", border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" },
+    blue:    { color: "#14784a", border: "rgba(20,120,74,0.25)", bg: "#ecf4f1" },
+    green:   { color: "#1f9960", border: "rgba(31,153,96,0.25)", bg: "#edf7f2" },
+    red:     { color: "#d42f2f", border: "rgba(239,68,68,0.25)", bg: "#fef0f0" },
   }[variant];
   return { padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid ${map.border}`, background: map.bg, color: map.color, cursor: "pointer" };
 }

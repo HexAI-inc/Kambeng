@@ -176,7 +176,7 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
   });
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 1160, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
         <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
@@ -189,7 +189,7 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
               padding: "9px 16px",
               borderRadius: 9,
               border: "1px solid rgba(21,32,26,0.1)",
-              background: "rgba(21,32,26,0.04)",
+              background: "#fff",
               color: "#56625b",
               fontSize: 13,
               fontWeight: 600,
@@ -212,7 +212,7 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
                   ["Shared logic", "Admins and users use the same form and the same backend create endpoint."],
                   ["Campaign ready", "Choose a target or ongoing mode and set a target amount only when needed."],
                 ].map(([title, text]) => (
-                  <div key={title} style={{ padding: 14, borderRadius: 12, background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.05)" }}>
+                  <div key={title} style={{ padding: 14, borderRadius: 12, background: "#fff", border: "1px solid rgba(21,32,26,0.05)" }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>{title}</div>
                     <div style={{ fontSize: 12, color: "#626d66", lineHeight: 1.6 }}>{text}</div>
                   </div>
@@ -222,7 +222,7 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
 
             <AppCard
               title="Next steps"
-              style={{ background: "linear-gradient(135deg, rgba(20,120,74,0.05), rgba(31,153,96,0.04))", borderColor: "rgba(20,120,74,0.14)", color: "#15201a" }}
+              style={{ background: "#f1f8f4", borderColor: "rgba(20,120,74,0.14)", color: "#15201a" }}
             >
               <div style={{ fontSize: 13, color: "#626d66", lineHeight: 1.7 }}>
                 After saving, you can add images, manage goals, or jump to the public campaign page depending on where you started.
@@ -243,7 +243,7 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
                         {...field}
                         value={field.value ?? ""}
                         placeholder="E.g. Village Clinic Upgrade"
-                        style={{ background: "rgba(21,32,26,0.04)", borderColor: fieldState.error ? "rgba(239,68,68,0.35)" : "rgba(21,32,26,0.1)", color: "#15201a", borderRadius: 10, padding: "10px 12px" }}
+                        style={{ background: "#fff", borderColor: fieldState.error ? "rgba(239,68,68,0.35)" : "rgba(21,32,26,0.1)", color: "#15201a", borderRadius: 10, padding: "10px 12px" }}
                       />
                       {fieldState.error && <div style={{ marginTop: 6, color: "#b42323", fontSize: 12 }}>{fieldState.error.message}</div>}
                     </div>
@@ -261,7 +261,7 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
                         value={field.value ?? ""}
                         rows={6}
                         placeholder="Describe what the campaign is for, who it helps, and what the funds will support."
-                        style={{ background: "rgba(21,32,26,0.04)", borderColor: fieldState.error ? "rgba(239,68,68,0.35)" : "rgba(21,32,26,0.1)", color: "#15201a", borderRadius: 10, padding: 12 }}
+                        style={{ background: "#fff", borderColor: fieldState.error ? "rgba(239,68,68,0.35)" : "rgba(21,32,26,0.1)", color: "#15201a", borderRadius: 10, padding: 12 }}
                       />
                       {fieldState.error && <div style={{ marginTop: 6, color: "#b42323", fontSize: 12 }}>{fieldState.error.message}</div>}
                     </div>
@@ -308,7 +308,7 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
                         }}
                         onBlur={field.onBlur}
                         placeholder="5000"
-                        style={{ background: "rgba(21,32,26,0.04)", borderColor: fieldState.error ? "rgba(239,68,68,0.35)" : "rgba(21,32,26,0.1)", color: "#15201a", borderRadius: 10, padding: "10px 12px" }}
+                        style={{ background: "#fff", borderColor: fieldState.error ? "rgba(239,68,68,0.35)" : "rgba(21,32,26,0.1)", color: "#15201a", borderRadius: 10, padding: "10px 12px" }}
                       />
                       {fieldState.error && <div style={{ marginTop: 6, color: "#b42323", fontSize: 12 }}>{fieldState.error.message}</div>}
                     </div>
@@ -316,7 +316,7 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
                 />
 
                 {(submitError || createCampaign.isError) && (
-                  <div style={{ marginBottom: 14, padding: "12px 14px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.22)", color: "#b42323", fontSize: 13 }}>
+                  <div style={{ marginBottom: 14, padding: "12px 14px", borderRadius: 10, background: "#fef0f0", border: "1px solid rgba(239,68,68,0.22)", color: "#b42323", fontSize: 13 }}>
                     {submitError ?? "We could not create the campaign. Please try again."}
                   </div>
                 )}
@@ -325,7 +325,7 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
                   <AppButton htmlType="submit" type="primary" loading={createCampaign.isPending} style={{ background: `${BLUE}`, border: "none", color: "#fff", fontWeight: 700 }}>
                     {copy.submitLabel}
                   </AppButton>
-                  <AppButton htmlType="button" onClick={() => form.reset()} disabled={createCampaign.isPending} style={{ background: "rgba(21,32,26,0.04)", borderColor: "rgba(21,32,26,0.1)", color: "#56625b", fontWeight: 600 }}>
+                  <AppButton htmlType="button" onClick={() => form.reset()} disabled={createCampaign.isPending} style={{ background: "#fff", borderColor: "rgba(21,32,26,0.1)", color: "#56625b", fontWeight: 600 }}>
                     Reset
                   </AppButton>
                 </div>

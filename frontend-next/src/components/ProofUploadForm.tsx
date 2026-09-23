@@ -55,7 +55,7 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
 
   const fieldStyle: React.CSSProperties = {
     width: "100%", padding: "11px 14px", borderRadius: 10,
-    border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+    border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
     color: "#15201a", fontSize: 14, outline: "none", boxSizing: "border-box",
     fontFamily: "inherit", transition: "border-color 0.2s",
   };
@@ -108,7 +108,7 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
 
   if (success) {
     return (
-      <div style={{ padding: "16px 18px", borderRadius: 12, background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.2)", color: GREEN, fontSize: 14, fontWeight: 600, textAlign: "center" }}>
+      <div style={{ padding: "16px 18px", borderRadius: 12, background: "#edf7f2", border: "1px solid rgba(31,153,96,0.2)", color: GREEN, fontSize: 14, fontWeight: 600, textAlign: "center" }}>
         Proof uploaded successfully!{" "}
         <button onClick={() => setSuccess(false)} style={{ background: "none", border: "none", color: BLUE, cursor: "pointer", fontWeight: 700, fontSize: 14, padding: 0, marginLeft: 4 }}>
           Upload another
@@ -120,7 +120,7 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
   return (
     <form onSubmit={(e) => void handleSubmit(e)} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {error && (
-        <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#b42323" }}>
+        <div style={{ padding: "10px 14px", borderRadius: 8, background: "#fef0f0", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#b42323" }}>
           {error}
         </div>
       )}
@@ -135,7 +135,7 @@ export function ProofUploadForm({ slug, onSuccess }: ProofUploadFormProps) {
           style={{
             display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
             border: `2px dashed ${selectedFile ? "rgba(20,120,74,0.4)" : "rgba(21,32,26,0.12)"}`,
-            borderRadius: 10, background: "rgba(21,32,26,0.03)",
+            borderRadius: 10, background: "#fff",
             cursor: "pointer", transition: "border-color 0.2s",
           }}
         >

@@ -20,9 +20,9 @@ function fade(delay = 0) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string; border: string; label: string }> = {
-    SUCCEEDED: { color: GREEN,     bg: "rgba(31,153,96,0.1)", border: "rgba(31,153,96,0.25)", label: "Completed" },
-    PENDING:   { color: "#e8650f", bg: "rgba(232,101,15,0.1)", border: "rgba(232,101,15,0.25)", label: "Pending" },
-    FAILED:    { color: RED,       bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.25)",  label: "Failed" },
+    SUCCEEDED: { color: GREEN,     bg: "#e9f5ef", border: "rgba(31,153,96,0.25)", label: "Completed" },
+    PENDING:   { color: "#e8650f", bg: "#fdf0e7", border: "rgba(232,101,15,0.25)", label: "Pending" },
+    FAILED:    { color: RED,       bg: "#fdecec",  border: "rgba(239,68,68,0.25)",  label: "Failed" },
   };
   const s = map[status] ?? map.PENDING;
   return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, border: `1px solid ${s.border}`, whiteSpace: "nowrap" }}>{s.label}</span>;
@@ -39,7 +39,7 @@ export default function MyDonationsPage() {
     .reduce((sum, d) => sum + d.amount, 0);
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         <motion.div {...fade(0)}>
@@ -49,7 +49,7 @@ export default function MyDonationsPage() {
 
         {/* Summary strip */}
         <motion.div {...fade(0.04)}>
-          <div className="giving-kpis" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 12, overflow: "hidden" }}>
+          <div className="giving-kpis" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 12, overflow: "hidden" }}>
             {[
               { label: "Total given", value: `${totalGiven.toLocaleString()} GMD`, color: GREEN },
               { label: "Donations", value: String((donations ?? []).length), color: "#15201a" },
@@ -121,7 +121,7 @@ export default function MyDonationsPage() {
                 <button
                   onClick={() => toggleSubscription.mutate({ slug: subscription.campaign_slug, subscribe: false })}
                   disabled={toggleSubscription.isPending}
-                  style={{ padding: "5px 12px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", cursor: "pointer", whiteSpace: "nowrap" }}
+                  style={{ padding: "5px 12px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", cursor: "pointer", whiteSpace: "nowrap" }}
                 >
                   Unfollow
                 </button>

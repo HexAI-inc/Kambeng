@@ -16,9 +16,9 @@ function fadeUp(delay = 0) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    SUCCEEDED: { color: GREEN, bg: "rgba(31,153,96,0.12)" },
-    FAILED:    { color: "#d42f2f", bg: "rgba(239,68,68,0.12)" },
-    PENDING:   { color: "#e8650f", bg: "rgba(232,101,15,0.12)" },
+    SUCCEEDED: { color: GREEN, bg: "#e4f3ec" },
+    FAILED:    { color: "#d42f2f", bg: "#fde9e9" },
+    PENDING:   { color: "#e8650f", bg: "#fcede2" },
   };
   const s = map[status] ?? map.PENDING;
   return <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, textTransform: "uppercase", letterSpacing: "0.07em" }}>{status}</span>;
@@ -43,14 +43,14 @@ export default function CampaignReportDetailPage() {
 
   if (!campaignId) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", color: "#d42f2f" }}>Invalid campaign ID</div>
       </div>
     );
   }
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1000, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
@@ -61,14 +61,14 @@ export default function CampaignReportDetailPage() {
         </motion.div>
 
         {isError && (
-          <div style={{ padding: "14px 18px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#b42323", fontSize: 13 }}>
+          <div style={{ padding: "14px 18px", borderRadius: 10, background: "#fef0f0", border: "1px solid rgba(239,68,68,0.2)", color: "#b42323", fontSize: 13 }}>
             Unable to load campaign report. This campaign may not exist or your session lacks access.
           </div>
         )}
 
         {/* KPIs */}
         <motion.div {...fadeUp(0.06)}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
               { label: "Transactions",    value: isLoading ? "—" : String(summary?.transaction_count ?? 0),                color: "#15201a" },
               { label: "Total Donations", value: isLoading ? "—" : `${(summary?.total_donations ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,    color: GREEN },
@@ -100,7 +100,7 @@ export default function CampaignReportDetailPage() {
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
                 <div style={{ fontSize: 12, color: "#6e7872" }}>#{t.id}</div>
-                <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, color: BLUE, background: "rgba(20,120,74,0.1)", textTransform: "uppercase" }}>{String(t.transaction_type)}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, color: BLUE, background: "#e8f2ed", textTransform: "uppercase" }}>{String(t.transaction_type)}</span>
                 <StatusChip status={String(t.status)} />
                 <div style={{ fontSize: 13, color: "#15201a" }}>{t.gross_amount}</div>
                 <div style={{ fontSize: 13, color: GREEN }}>{t.net_amount}</div>

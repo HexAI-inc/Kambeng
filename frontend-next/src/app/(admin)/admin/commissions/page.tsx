@@ -15,9 +15,9 @@ function fadeUp(delay = 0) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    PENDING:   { color: "#e8650f", bg: "rgba(232,101,15,0.1)", border: "rgba(232,101,15,0.25)" },
-    SUCCEEDED: { color: GREEN,     bg: "rgba(31,153,96,0.1)", border: "rgba(31,153,96,0.25)" },
-    FAILED:    { color: "#d42f2f", bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.25)" },
+    PENDING:   { color: "#e8650f", bg: "#fdf0e7", border: "rgba(232,101,15,0.25)" },
+    SUCCEEDED: { color: GREEN,     bg: "#e9f5ef", border: "rgba(31,153,96,0.25)" },
+    FAILED:    { color: "#d42f2f", bg: "#fdecec",  border: "rgba(239,68,68,0.25)" },
   };
   const s = map[status] ?? map.PENDING;
   return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>{status}</span>;
@@ -60,7 +60,7 @@ export default function AdminCommissionsPage() {
   const available = summary?.available_commissions ?? 0;
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
@@ -75,7 +75,7 @@ export default function AdminCommissionsPage() {
 
         {/* KPI strip */}
         <motion.div {...fadeUp(0.06)}>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
               { label: "Total earned", value: `${(summary?.total_commissions ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: "#15201a" },
               { label: "Available", value: `${available.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: GREEN },
@@ -105,7 +105,7 @@ export default function AdminCommissionsPage() {
               )}
             </div>
             {!payoutAccount?.wave_number && (
-              <div style={{ fontSize: 12, color: "#e8650f", padding: "6px 12px", borderRadius: 8, background: "rgba(232,101,15,0.08)", border: "1px solid rgba(232,101,15,0.2)" }}>
+              <div style={{ fontSize: 12, color: "#e8650f", padding: "6px 12px", borderRadius: 8, background: "#fdf3ec", border: "1px solid rgba(232,101,15,0.2)" }}>
                 Set ADMIN_COMMISSION_WAVE_NUMBER in .env or update your profile
               </div>
             )}
@@ -148,7 +148,7 @@ export default function AdminCommissionsPage() {
                 <input
                   type="number" min="1" step="1" value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)}
                   placeholder={`Max: ${Math.floor(available).toLocaleString()}`}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#15201a", fontSize: 13, outline: "none", boxSizing: "border-box" }}
                 />
               </div>
               <div>
@@ -156,7 +156,7 @@ export default function AdminCommissionsPage() {
                 <input
                   value={withdrawReason} onChange={(e) => setWithdrawReason(e.target.value)}
                   placeholder="Why are you withdrawing?"
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#15201a", fontSize: 13, outline: "none", boxSizing: "border-box" }}
                 />
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function AdminCommissionsPage() {
               <button onClick={() => void handleWithdraw()} disabled={withdrawMutation.isPending} style={{ padding: "9px 22px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 {withdrawMutation.isPending ? "Processing…" : "Confirm Withdrawal"}
               </button>
-              <button onClick={() => setShowWithdraw(false)} style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => setShowWithdraw(false)} style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
             </div>
           </motion.div>
         )}
@@ -196,7 +196,7 @@ export default function AdminCommissionsPage() {
                 <div data-label="Status"><StatusChip status={s.status} /></div>
                 <div data-label="Date" style={{ fontSize: 12, color: "#6e7872" }}>{new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
                 <div data-label="Actions">
-                  <button onClick={() => router.push(`/admin/campaigns/${s.campaign_id}/view`)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", cursor: "pointer" }}>View</button>
+                  <button onClick={() => router.push(`/admin/campaigns/${s.campaign_id}/view`)} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", cursor: "pointer" }}>View</button>
                 </div>
               </div>
             ))}

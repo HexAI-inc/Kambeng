@@ -53,7 +53,7 @@ export default function EmailCaptureForm({
 
   if (status === "done") {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 18px", borderRadius: 12, background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.3)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 18px", borderRadius: 12, background: "#edf7f2", border: "1px solid rgba(31,153,96,0.3)" }}>
         <span style={{ color: GREEN, fontWeight: 900, fontSize: 16 }}>✓</span>
         <span style={{ color: GREEN, fontSize: 14, fontWeight: 600 }}>{successMessage}</span>
       </div>
@@ -71,7 +71,7 @@ export default function EmailCaptureForm({
           placeholder={placeholder}
           style={{
             flex: "1 1 220px", minWidth: 0, padding: "13px 16px", borderRadius: 12,
-            border: "1px solid rgba(21,32,26,0.12)", background: "rgba(21,32,26,0.05)",
+            border: "1px solid rgba(21,32,26,0.12)", background: "#fff",
             color: "#15201a", fontSize: 14, outline: "none",
           }}
         />

@@ -168,7 +168,7 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: Upda
             style={{
               width: 30, height: 30, borderRadius: 8, flexShrink: 0,
               border: "1px solid rgba(239,68,68,0.2)",
-              background: "rgba(239,68,68,0.05)",
+              background: "#fef6f6",
               color: "#c02626", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
@@ -195,7 +195,7 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: Upda
               onClick={() => setConfirmDelete(false)}
               style={{
                 padding: "4px 8px", borderRadius: 7,
-                border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)",
+                border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
                 color: "#626d66", fontSize: 11, fontWeight: 600, cursor: "pointer",
               }}
             >Cancel</button>
@@ -224,7 +224,7 @@ export function UpdateFeedPost({ update, onImageOpen, onDelete, onReport }: Upda
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 5,
             marginTop: 10, padding: "4px 10px", borderRadius: 20,
-            background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.2)",
+            background: "#edf7f2", border: "1px solid rgba(31,153,96,0.2)",
             fontSize: 12, fontWeight: 700, color: "#1f9960",
           }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

@@ -52,7 +52,7 @@ function CampaignSkeleton() {
       overflow: "hidden",
       border: "1px solid rgba(21,32,26,0.06)",
     }}>
-      <div style={{ height: 200, background: "rgba(21,32,26,0.04)" }} />
+      <div style={{ height: 200, background: "#fff" }} />
       <div style={{ padding: 20 }}>
         <div style={{ height: 12, width: "40%", background: "rgba(21,32,26,0.06)", borderRadius: 6, marginBottom: 12 }} />
         <div style={{ height: 18, width: "80%", background: "rgba(21,32,26,0.06)", borderRadius: 6, marginBottom: 8 }} />
@@ -115,7 +115,7 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
           }}>
             <div style={{
               width: 56, height: 56, borderRadius: 14,
-              background: "rgba(20,120,74,0.1)",
+              background: "#e8f2ed",
               border: "1px solid rgba(20,120,74,0.15)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 24, fontWeight: 900, color: "#14784a",
@@ -162,7 +162,7 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{
             fontSize: 11, fontWeight: 600, color: "#14784a",
-            background: "rgba(20,120,74,0.1)",
+            background: "#e8f2ed",
             padding: "2px 8px", borderRadius: 4,
             textTransform: "uppercase", letterSpacing: "0.05em",
           }}>
@@ -270,7 +270,7 @@ export default function CampaignDiscoveryPage() {
   }, [activeFilter, data, query]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f6f4ef" }}>
+    <div style={{ minHeight: "100vh" }}>
       {/* Hero header */}
       <div className="campaigns-hero" style={{
         padding: "60px clamp(16px, 4vw, 48px) 0",
@@ -287,7 +287,7 @@ export default function CampaignDiscoveryPage() {
             padding: "6px 14px",
             borderRadius: 20,
             border: "1px solid rgba(20,120,74,0.2)",
-            background: "rgba(20,120,74,0.06)",
+            background: "#f1f7f4",
             marginBottom: 20,
           }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#14784a", display: "inline-block" }} />
@@ -328,7 +328,7 @@ export default function CampaignDiscoveryPage() {
                 padding: "13px 16px 13px 46px",
                 borderRadius: 12,
                 border: "1px solid rgba(21,32,26,0.1)",
-                background: "rgba(21,32,26,0.05)",
+                background: "#fff",
                 color: "#15201a",
                 fontSize: 15,
                 outline: "none",
@@ -426,7 +426,7 @@ export default function CampaignDiscoveryPage() {
                 padding: "10px 24px",
                 borderRadius: 10,
                 border: "1px solid rgba(20,120,74,0.3)",
-                background: "rgba(20,120,74,0.08)",
+                background: "#ecf4f1",
                 color: "#14784a",
                 fontSize: 14,
                 fontWeight: 600,

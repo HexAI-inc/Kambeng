@@ -54,7 +54,7 @@ export default function CampaignGalleryPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f6f4ef", paddingBottom: 60 }}>
+    <div style={{ minHeight: "100vh", paddingBottom: 60 }}>
       {/* Header bar */}
       <div style={{
         borderBottom: "1px solid rgba(21,32,26,0.07)",
@@ -91,7 +91,7 @@ export default function CampaignGalleryPage() {
               {Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}
-                  style={{ aspectRatio: "4/3", borderRadius: 12, background: "rgba(21,32,26,0.04)",
+                  style={{ aspectRatio: "4/3", borderRadius: 12, background: "#fff",
                     animation: "pulse 1.5s ease-in-out infinite", animationDelay: `${i * 0.07}s` }}
                 />
               ))}
@@ -131,7 +131,7 @@ export default function CampaignGalleryPage() {
                       position: "relative", aspectRatio: "4/3", borderRadius: 12,
                       overflow: "hidden", cursor: "zoom-in",
                       border: "1px solid rgba(21,32,26,0.07)",
-                      background: "rgba(21,32,26,0.03)",
+                      background: "#fff",
                       transition: "transform 0.2s, box-shadow 0.2s",
                     }}
                     onMouseEnter={(e) => {
@@ -154,7 +154,7 @@ export default function CampaignGalleryPage() {
                     {/* Hover overlay */}
                     <div style={{
                       position: "absolute", inset: 0,
-                      background: "rgba(20,120,74,0.0)",
+                      background: "#ffffff",
                       transition: "background 0.2s",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}

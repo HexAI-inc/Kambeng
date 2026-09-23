@@ -21,11 +21,11 @@ function fadeUp(delay = 0) {
 
 function CampaignStatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    ACTIVE:    { color: GREEN,     bg: "rgba(31,153,96,0.12)" },
-    DRAFT:     { color: "#d9870b", bg: "rgba(217,135,11,0.10)" },
+    ACTIVE:    { color: GREEN,     bg: "#e4f3ec" },
+    DRAFT:     { color: "#d9870b", bg: "#fbf3e7" },
     PAUSED:    { color: "#56625b", bg: "rgba(21,32,26,0.06)" },
-    COMPLETED: { color: BLUE,      bg: "rgba(20,120,74,0.10)" },
-    REJECTED:  { color: "#d42f2f", bg: "rgba(239,68,68,0.10)" },
+    COMPLETED: { color: BLUE,      bg: "#e8f2ed" },
+    REJECTED:  { color: "#d42f2f", bg: "#fdecec" },
   };
   const s = map[status] ?? map.PAUSED;
   return (
@@ -45,11 +45,11 @@ function Shimmer({ w = "100%", h = 16, r = 6 }: { w?: string | number; h?: numbe
 function KYCStatusChip({ status }: { status: string }) {
   const normalized = status.toUpperCase();
   const map: Record<string, { label: string; color: string; bg: string }> = {
-    APPROVED: { label: "Approved", color: GREEN, bg: "rgba(31,153,96,0.12)" },
-    SUBMITTED: { label: "Submitted", color: BLUE, bg: "rgba(20,120,74,0.12)" },
-    REVIEWING: { label: "In review", color: BLUE, bg: "rgba(20,120,74,0.12)" },
-    REJECTED: { label: "Rejected", color: "#d42f2f", bg: "rgba(239,68,68,0.12)" },
-    NOT_SUBMITTED: { label: "Not submitted", color: "#e8650f", bg: "rgba(232,101,15,0.12)" },
+    APPROVED: { label: "Approved", color: GREEN, bg: "#e4f3ec" },
+    SUBMITTED: { label: "Submitted", color: BLUE, bg: "#e3efe9" },
+    REVIEWING: { label: "In review", color: BLUE, bg: "#e3efe9" },
+    REJECTED: { label: "Rejected", color: "#d42f2f", bg: "#fde9e9" },
+    NOT_SUBMITTED: { label: "Not submitted", color: "#e8650f", bg: "#fcede2" },
   };
   const chip = map[normalized] ?? map.NOT_SUBMITTED;
   return (
@@ -95,7 +95,7 @@ export default function DashboardPage() {
     : n.toLocaleString();
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ minHeight: "100vh", overflowX: "hidden" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px clamp(16px, 4vw, 48px)", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* ── Welcome row ── */}
@@ -107,7 +107,7 @@ export default function DashboardPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <span style={{
                 fontSize: 10, fontWeight: 700, color: BLUE, letterSpacing: "0.1em",
-                background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.2)",
+                background: "#e8f2ed", border: "1px solid rgba(20,120,74,0.2)",
                 padding: "2px 8px", borderRadius: 20, textTransform: "uppercase" as const,
               }}>{role}</span>
               {!meLoading && (
@@ -120,7 +120,7 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <Link href="/campaigns">
-              <button style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+              <button style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                 Browse
               </button>
             </Link>
@@ -132,7 +132,7 @@ export default function DashboardPage() {
               </Link>
             ) : (
               <Link href="/dashboard/kyc">
-                <button style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(20,120,74,0.18)", background: "rgba(20,120,74,0.06)", color: "#15201a", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                <button style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(20,120,74,0.18)", background: "#f1f7f4", color: "#15201a", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                   Complete KYC to create
                 </button>
               </Link>
@@ -146,11 +146,11 @@ export default function DashboardPage() {
           <div style={{
             gridColumn: "span 1",
             padding: "22px 24px",
-            background: "linear-gradient(135deg, rgba(31,153,96,0.12), rgba(31,153,96,0.04))",
+            background: "#e6f4ec",
             border: "1px solid rgba(31,153,96,0.2)",
             borderRadius: 16, position: "relative", overflow: "hidden",
           }}>
-            <div style={{ position: "absolute", right: -20, top: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(31,153,96,0.08)" }} />
+            <div style={{ position: "absolute", right: -20, top: -20, width: 100, height: 100, borderRadius: "50%", background: "#e9f5ef" }} />
             <div style={{ fontSize: 11, color: GREEN, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 10 }}>Total raised</div>
             {campaignsLoading
               ? <Shimmer h={28} w="60%" />
@@ -233,13 +233,13 @@ export default function DashboardPage() {
               /* Empty state — action-oriented, not sad */
               <div style={{
                 padding: "36px 28px",
-                background: "linear-gradient(135deg, rgba(20,120,74,0.04), rgba(15,94,58,0.02))",
+                background: "#f1f8f4",
                 border: "1px dashed rgba(20,120,74,0.2)",
                 borderRadius: 16, textAlign: "center",
               }}>
                 <div style={{
                   width: 56, height: 56, borderRadius: 14,
-                  background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)",
+                  background: "#ecf4f1", border: "1px solid rgba(20,120,74,0.15)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   margin: "0 auto 16px",
                 }}>
@@ -266,7 +266,7 @@ export default function DashboardPage() {
                   <Link href="/dashboard/kyc">
                     <button style={{
                       padding: "11px 24px", borderRadius: 10, border: "1px solid rgba(20,120,74,0.18)",
-                      background: "rgba(20,120,74,0.06)",
+                      background: "#f1f7f4",
                       color: "#15201a", fontSize: 13, fontWeight: 700, cursor: "pointer",
                     }}>
                       Complete KYC first
@@ -398,7 +398,7 @@ export default function DashboardPage() {
               {[
                 { label: "Manage campaigns", href: "/dashboard/my-campaigns", color: BLUE },
                 { label: "Upload KYC docs", href: "/dashboard/kyc", color: GREEN },
-                { label: "Edit my profile",  href: "/dashboard/profile",      color: "#8b3fd9" },
+                { label: "Edit my profile",  href: "/dashboard/profile",      color: "#14784a" },
                 { label: "Browse campaigns", href: "/campaigns", color: "#626d66" },
               ].map(({ label, href, color }, i, arr) => (
                 <Link key={label} href={href} style={{ textDecoration: "none" }}>
@@ -426,7 +426,7 @@ export default function DashboardPage() {
             {!meLoading && !emailVerified && (
               <div style={{
                 padding: "14px 16px",
-                background: "rgba(232,101,15,0.07)",
+                background: "#fdf4ee",
                 border: "1px solid rgba(232,101,15,0.2)",
                 borderRadius: 12,
                 display: "flex", gap: 10, alignItems: "flex-start",

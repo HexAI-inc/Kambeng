@@ -20,9 +20,9 @@ const DOC_LABELS: Record<string, string> = {
 };
 
 const VIS_META: Record<ProofVisibility, { label: string; color: string; bg: string }> = {
-  PUBLIC:     { label: "Public",      color: "#1f9960", bg: "rgba(31,153,96,0.12)" },
-  DONOR_ONLY: { label: "Donors Only", color: "#d9870b", bg: "rgba(217,135,11,0.10)" },
-  ADMIN_ONLY: { label: "Admin Only",  color: "#d42f2f", bg: "rgba(239,68,68,0.10)"  },
+  PUBLIC:     { label: "Public",      color: "#1f9960", bg: "#e4f3ec" },
+  DONOR_ONLY: { label: "Donors Only", color: "#d9870b", bg: "#fbf3e7" },
+  ADMIN_ONLY: { label: "Admin Only",  color: "#d42f2f", bg: "#fdecec"  },
 };
 
 export function ProofList({ proofs, onDelete }: ProofListProps) {
@@ -34,7 +34,7 @@ export function ProofList({ proofs, onDelete }: ProofListProps) {
     return (
       <div style={{
         padding: "32px 20px", textAlign: "center",
-        background: "rgba(21,32,26,0.02)", border: "1px dashed rgba(21,32,26,0.08)",
+        background: "#fff", border: "1px dashed rgba(21,32,26,0.08)",
         borderRadius: 12,
       }}>
         <div style={{ fontSize: 13, color: "#6e7872" }}>No proof documents uploaded yet</div>
@@ -116,7 +116,7 @@ export function ProofList({ proofs, onDelete }: ProofListProps) {
                   disabled={loadingId === proof.id}
                   style={{
                     padding: "6px 14px", borderRadius: 7, border: `1px solid rgba(20,120,74,0.25)`,
-                    background: "rgba(20,120,74,0.07)", color: BLUE,
+                    background: "#eff6f2", color: BLUE,
                     fontSize: 12, fontWeight: 700, cursor: loadingId === proof.id ? "wait" : "pointer",
                     opacity: loadingId === proof.id ? 0.6 : 1, transition: "opacity 0.15s",
                   }}
@@ -134,7 +134,7 @@ export function ProofList({ proofs, onDelete }: ProofListProps) {
                       title="Delete proof"
                       style={{
                         width: 28, height: 28, borderRadius: 6, border: "1px solid rgba(239,68,68,0.2)",
-                        background: "rgba(239,68,68,0.07)", color: "#d42f2f",
+                        background: "#fef2f2", color: "#d42f2f",
                         cursor: deletingId === proof.id ? "wait" : "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         opacity: deletingId === proof.id ? 0.5 : 1, transition: "opacity 0.15s, background 0.15s",

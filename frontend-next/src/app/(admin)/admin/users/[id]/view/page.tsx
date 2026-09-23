@@ -15,7 +15,7 @@ function getKycTone(status?: string | null) {
     return {
       label: "Approved",
       color: GREEN,
-      bg: "rgba(31,153,96,0.1)",
+      bg: "#e9f5ef",
       border: "rgba(31,153,96,0.25)",
       note: "This user can receive withdrawals and use the full campaign flow.",
     };
@@ -25,7 +25,7 @@ function getKycTone(status?: string | null) {
     return {
       label: normalized === "SUBMITTED" ? "Submitted" : "In review",
       color: BLUE,
-      bg: "rgba(20,120,74,0.1)",
+      bg: "#e8f2ed",
       border: "rgba(20,120,74,0.25)",
       note: "The user has uploaded KYC documents and is waiting for admin review.",
     };
@@ -35,7 +35,7 @@ function getKycTone(status?: string | null) {
     return {
       label: "Rejected",
       color: RED,
-      bg: "rgba(239,68,68,0.1)",
+      bg: "#fdecec",
       border: "rgba(239,68,68,0.25)",
       note: "The user needs to resubmit documents before they can be approved.",
     };
@@ -44,7 +44,7 @@ function getKycTone(status?: string | null) {
   return {
     label: "Not submitted",
     color: "#e8650f",
-    bg: "rgba(232,101,15,0.1)",
+    bg: "#fdf0e7",
     border: "rgba(232,101,15,0.25)",
     note: "No KYC submission exists yet for this user.",
   };
@@ -71,7 +71,7 @@ export default function UserViewPage() {
 
   if (isLoading) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: 36, height: 36, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -80,7 +80,7 @@ export default function UserViewPage() {
 
   if (error || !user) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>😕</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#15201a", marginBottom: 8 }}>User not found</div>
@@ -94,7 +94,7 @@ export default function UserViewPage() {
   const kycTone = getKycTone(user.kyc_status);
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
@@ -148,7 +148,7 @@ export default function UserViewPage() {
         {/* Actions */}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button onClick={() => router.push(`/admin/users/${user.id}/edit`)} style={{ padding: "10px 20px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Edit User</button>
-          <button onClick={() => router.back()} style={{ padding: "10px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Back</button>
+          <button onClick={() => router.back()} style={{ padding: "10px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Back</button>
         </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

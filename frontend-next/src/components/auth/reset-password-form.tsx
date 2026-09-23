@@ -7,6 +7,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { BrandMark } from "@/components/layout/brand-mark";
 
 const BLUE = "#14784a";
 
@@ -26,7 +27,7 @@ function FieldError({ msg }: { msg?: string }) {
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "11px 14px", borderRadius: 10,
-  border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+  border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
   color: "#15201a", fontSize: 14, outline: "none", boxSizing: "border-box",
   transition: "border-color 0.2s",
 };
@@ -54,12 +55,12 @@ export function ResetPasswordFormCard({ token }: { token: string }) {
   });
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f6f4ef", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(20,120,74,0.08) 0%, transparent 70%)", left: "-20%", top: "-20%", pointerEvents: "none" }} />
       <div style={{ width: "100%", maxWidth: 440, position: "relative", zIndex: 1 }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: `${BLUE}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900, color: "#fff" }}>K</div>
+            <BrandMark size={40} />
             <span style={{ fontSize: 20, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Kambeng</span>
           </Link>
         </div>
@@ -102,12 +103,12 @@ export function ResetPasswordFormCard({ token }: { token: string }) {
               <FieldError msg={form.formState.errors.confirmPassword?.message} />
             </div>
 
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(20,120,74,0.06)", border: "1px solid rgba(20,120,74,0.15)", fontSize: 12, color: "#626d66" }}>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "#f1f7f4", border: "1px solid rgba(20,120,74,0.15)", fontSize: 12, color: "#626d66" }}>
               Your password will be updated immediately. You&apos;ll need to log in again.
             </div>
 
             {submitError && (
-              <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#b42323" }}>{submitError}</div>
+              <div style={{ padding: "10px 14px", borderRadius: 8, background: "#fef0f0", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#b42323" }}>{submitError}</div>
             )}
 
             <button type="submit" disabled={form.formState.isSubmitting} style={{ width: "100%", padding: "13px", borderRadius: 10, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(20,120,74,0.35)", opacity: form.formState.isSubmitting ? 0.7 : 1 }}>

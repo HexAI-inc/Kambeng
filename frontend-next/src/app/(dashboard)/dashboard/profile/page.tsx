@@ -17,11 +17,11 @@ function fade(delay = 0) {
 function KYCChip({ status }: { status?: string | null }) {
   const s = (status ?? "NOT_SUBMITTED").toUpperCase();
   const map: Record<string, { color: string; bg: string; border: string; label: string }> = {
-    APPROVED:      { color: GREEN,     bg: "rgba(31,153,96,0.1)",  border: "rgba(31,153,96,0.25)", label: "Verified" },
-    SUBMITTED:     { color: BLUE,      bg: "rgba(20,120,74,0.1)",  border: "rgba(20,120,74,0.2)",  label: "Under review" },
-    REVIEWING:     { color: BLUE,      bg: "rgba(20,120,74,0.1)",  border: "rgba(20,120,74,0.2)",  label: "Under review" },
-    REJECTED:      { color: RED,       bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)", label: "Rejected" },
-    NOT_SUBMITTED: { color: "#e8650f", bg: "rgba(232,101,15,0.1)",  border: "rgba(232,101,15,0.25)", label: "Not submitted" },
+    APPROVED:      { color: GREEN,     bg: "#e9f5ef",  border: "rgba(31,153,96,0.25)", label: "Verified" },
+    SUBMITTED:     { color: BLUE,      bg: "#e8f2ed",  border: "rgba(20,120,74,0.2)",  label: "Under review" },
+    REVIEWING:     { color: BLUE,      bg: "#e8f2ed",  border: "rgba(20,120,74,0.2)",  label: "Under review" },
+    REJECTED:      { color: RED,       bg: "#fdecec",   border: "rgba(239,68,68,0.25)", label: "Rejected" },
+    NOT_SUBMITTED: { color: "#e8650f", bg: "#fdf0e7",  border: "rgba(232,101,15,0.25)", label: "Not submitted" },
   };
   const t = map[s] ?? map.NOT_SUBMITTED;
   return <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 20, color: t.color, background: t.bg, border: `1px solid ${t.border}` }}>{t.label}</span>;
@@ -96,7 +96,7 @@ export default function ProfilePage() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "10px 14px", borderRadius: 9,
-    border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+    border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
     color: "#15201a", fontSize: 14, outline: "none", boxSizing: "border-box",
     transition: "border-color 0.2s",
   };
@@ -104,7 +104,7 @@ export default function ProfilePage() {
   const onBlur  = (e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.1)"; };
 
   if (isLoading) return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ width: 36, height: 36, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
@@ -113,7 +113,7 @@ export default function ProfilePage() {
   if (!me) return null;
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
@@ -136,7 +136,7 @@ export default function ProfilePage() {
                 <KYCChip status={me.kyc_status} />
                 <span style={{ fontSize: 11, color: "#6e7872" }}>Member since {new Date(me.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                 {me.role === "ADMIN" && (
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", padding: "3px 10px", borderRadius: 20, color: "#e8650f", background: "rgba(232,101,15,0.1)", border: "1px solid rgba(232,101,15,0.25)" }}>Admin</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", padding: "3px 10px", borderRadius: 20, color: "#e8650f", background: "#fdf0e7", border: "1px solid rgba(232,101,15,0.25)" }}>Admin</span>
                 )}
               </div>
             </div>
@@ -245,7 +245,7 @@ export default function ProfilePage() {
               ].map(({ label, value }) => (
                 <div key={label}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>{label}</div>
-                  <div style={{ fontSize: 13, color: "#56625b", padding: "9px 12px", borderRadius: 8, background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.06)" }}>{value}</div>
+                  <div style={{ fontSize: 13, color: "#56625b", padding: "9px 12px", borderRadius: 8, background: "#fff", border: "1px solid rgba(21,32,26,0.06)" }}>{value}</div>
                 </div>
               ))}
             </div>

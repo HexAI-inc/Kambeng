@@ -27,10 +27,10 @@ function fadeUp(delay = 0) {
 
 function GoalStatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    ACTIVE:    { color: GREEN,     bg: "rgba(31,153,96,0.12)" },
-    DRAFT:     { color: "#d9870b", bg: "rgba(217,135,11,0.10)" },
+    ACTIVE:    { color: GREEN,     bg: "#e4f3ec" },
+    DRAFT:     { color: "#d9870b", bg: "#fbf3e7" },
     PAUSED:    { color: "#56625b", bg: "rgba(21,32,26,0.06)" },
-    COMPLETED: { color: BLUE,      bg: "rgba(20,120,74,0.10)" },
+    COMPLETED: { color: BLUE,      bg: "#e8f2ed" },
   };
   const s = map[status] ?? map.PAUSED;
   return (
@@ -111,7 +111,7 @@ export default function CampaignGoalsPage() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "10px 12px", borderRadius: 8,
-    border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+    border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
     color: "#15201a", fontSize: 13, outline: "none", boxSizing: "border-box",
   };
 
@@ -120,7 +120,7 @@ export default function CampaignGoalsPage() {
   };
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
@@ -208,7 +208,7 @@ export default function CampaignGoalsPage() {
           ) : !goals || goals.length === 0 ? (
             <div style={{
               padding: "36px 24px", textAlign: "center",
-              background: "rgba(21,32,26,0.02)", border: "1px dashed rgba(21,32,26,0.08)", borderRadius: 14,
+              background: "#fff", border: "1px dashed rgba(21,32,26,0.08)", borderRadius: 14,
             }}>
               <div style={{ fontSize: 13, color: "#6e7872" }}>No goals yet — create your first one above.</div>
             </div>
@@ -276,7 +276,7 @@ export default function CampaignGoalsPage() {
                         </div>
                         <button onClick={() => startEdit(g)} style={{
                           padding: "7px 14px", borderRadius: 8, flexShrink: 0,
-                          border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)",
+                          border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
                           color: "#56625b", fontSize: 12, fontWeight: 600, cursor: "pointer",
                         }}>Edit</button>
                       </div>

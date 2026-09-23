@@ -7,7 +7,7 @@ export default function AuditLogsPage() {
   const { data: logs } = useAdminAuditLogs(true);
 
   return (
-    <div style={{ padding: "28px clamp(16px,4vw,48px)", minHeight: "100vh", background: "#f6f4ef" }}>
+    <div style={{ padding: "28px clamp(16px,4vw,48px)", minHeight: "100vh" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <h1 style={{ fontSize: 22, fontWeight: 900, color: "#15201a" }}>Audit Logs</h1>
         <div style={{ marginTop: 12 }}>

@@ -15,10 +15,10 @@ function fade(delay = 0) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    SUBMITTED: { color: BLUE,      bg: "rgba(20,120,74,0.1)",  border: "rgba(20,120,74,0.2)" },
-    REVIEWING: { color: "#e8650f", bg: "rgba(232,101,15,0.1)",  border: "rgba(232,101,15,0.25)" },
-    APPROVED:  { color: GREEN,     bg: "rgba(31,153,96,0.1)",  border: "rgba(31,153,96,0.25)" },
-    REJECTED:  { color: RED,       bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)" },
+    SUBMITTED: { color: BLUE,      bg: "#e8f2ed",  border: "rgba(20,120,74,0.2)" },
+    REVIEWING: { color: "#e8650f", bg: "#fdf0e7",  border: "rgba(232,101,15,0.25)" },
+    APPROVED:  { color: GREEN,     bg: "#e9f5ef",  border: "rgba(31,153,96,0.25)" },
+    REJECTED:  { color: RED,       bg: "#fdecec",   border: "rgba(239,68,68,0.25)" },
   };
   const s = map[status] ?? map.SUBMITTED;
   return (
@@ -78,7 +78,7 @@ export default function KYCReviewPage() {
 
   if (isLoading) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: 36, height: 36, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -87,7 +87,7 @@ export default function KYCReviewPage() {
 
   if (error || !submission) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a", marginBottom: 12 }}>Submission not found</div>
           <button onClick={() => router.back()} style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Go back</button>
@@ -99,7 +99,7 @@ export default function KYCReviewPage() {
   const docUrl = submission.document_file_url;
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
@@ -121,7 +121,7 @@ export default function KYCReviewPage() {
             <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, overflow: "hidden" }}>
               <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(21,32,26,0.06)", display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a" }}>{docLabel(submission.document_type)}</div>
-                <span style={{ fontSize: 11, color: "#6e7872", background: "rgba(21,32,26,0.05)", padding: "2px 8px", borderRadius: 5, fontWeight: 600 }}>
+                <span style={{ fontSize: 11, color: "#6e7872", background: "#fff", padding: "2px 8px", borderRadius: 5, fontWeight: 600 }}>
                   {isPdf(docUrl) ? "PDF" : "IMAGE"}
                 </span>
               </div>
@@ -177,7 +177,7 @@ export default function KYCReviewPage() {
             {/* Rejection reason (if already rejected) */}
             {submission.rejection_reason && (
               <motion.div {...fade(0.1)}>
-                <div style={{ padding: "14px 16px", borderRadius: 12, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
+                <div style={{ padding: "14px 16px", borderRadius: 12, background: "#fef4f4", border: "1px solid rgba(239,68,68,0.15)" }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: RED, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Rejection reason</div>
                   <div style={{ fontSize: 13, color: "#b42323", lineHeight: 1.6 }}>{submission.rejection_reason}</div>
                 </div>
@@ -203,7 +203,7 @@ export default function KYCReviewPage() {
                       </button>
                       <button
                         onClick={() => setShowRejectForm(true)}
-                        style={{ padding: "12px", borderRadius: 10, border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)", color: RED, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                        style={{ padding: "12px", borderRadius: 10, border: "1px solid rgba(239,68,68,0.3)", background: "#fef0f0", color: RED, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
                       >
                         ✕ Reject
                       </button>
@@ -212,14 +212,14 @@ export default function KYCReviewPage() {
 
                   {showApproveConfirm && (
                     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-                      <div style={{ padding: "12px 14px", borderRadius: 9, background: "rgba(31,153,96,0.06)", border: "1px solid rgba(31,153,96,0.2)", marginBottom: 14, fontSize: 13, color: "#626d66", lineHeight: 1.5 }}>
+                      <div style={{ padding: "12px 14px", borderRadius: 9, background: "#f2f9f5", border: "1px solid rgba(31,153,96,0.2)", marginBottom: 14, fontSize: 13, color: "#626d66", lineHeight: 1.5 }}>
                         This marks the user&apos;s KYC as <strong style={{ color: GREEN }}>APPROVED</strong> and sends them a confirmation email.
                       </div>
                       <div style={{ display: "flex", gap: 8 }}>
                         <button onClick={() => void handleApprove()} disabled={approve.isPending} style={{ flex: 1, padding: "10px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${GREEN}, #18834f)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                           {approve.isPending ? "Approving…" : "Confirm"}
                         </button>
-                        <button onClick={() => setShowApproveConfirm(false)} style={{ padding: "10px 16px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                        <button onClick={() => setShowApproveConfirm(false)} style={{ padding: "10px 16px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
                       </div>
                     </motion.div>
                   )}
@@ -231,13 +231,13 @@ export default function KYCReviewPage() {
                         onChange={(e) => setRejectionReason(e.target.value)}
                         placeholder="Explain why (sent to user in email)…"
                         rows={4}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 9, border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)", color: "#15201a", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: 10 }}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 9, border: "1px solid rgba(239,68,68,0.2)", background: "#fef8f8", color: "#15201a", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: 10 }}
                       />
                       <div style={{ display: "flex", gap: 8 }}>
                         <button onClick={() => void handleReject()} disabled={reject.isPending || rejectionReason.trim().length < 10} style={{ flex: 1, padding: "10px", borderRadius: 9, border: "none", background: "rgba(239,68,68,0.85)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: rejectionReason.trim().length < 10 ? 0.5 : 1 }}>
                           {reject.isPending ? "Rejecting…" : "Confirm"}
                         </button>
-                        <button onClick={() => { setShowRejectForm(false); setRejectionReason(""); }} style={{ padding: "10px 16px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                        <button onClick={() => { setShowRejectForm(false); setRejectionReason(""); }} style={{ padding: "10px 16px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
                       </div>
                     </motion.div>
                   )}
@@ -246,7 +246,7 @@ export default function KYCReviewPage() {
             )}
 
             {!canDecide && (
-              <div style={{ padding: "14px 16px", borderRadius: 12, background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.07)", fontSize: 13, color: "#6e7872" }}>
+              <div style={{ padding: "14px 16px", borderRadius: 12, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", fontSize: 13, color: "#6e7872" }}>
                 This submission has already been processed ({submission.status}).
               </div>
             )}

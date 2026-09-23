@@ -24,7 +24,7 @@ const BLUE = "#14784a";
 const GREEN = "#1f9960";
 const ORANGE = "#e8650f";
 const RED = "#d42f2f";
-const PURPLE = "#8b3fd9";
+const PURPLE = "#b9500b";
 
 function fadeUp(delay = 0) {
   return {
@@ -181,7 +181,7 @@ export default function AdminOverviewPage() {
   const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
 
         {/* Header */}

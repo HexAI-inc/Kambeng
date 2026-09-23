@@ -15,11 +15,11 @@ const ORANGE = "#e8650f";
 type ResolutionAction = "content_removed" | "content_reinstated" | "user_warned" | "user_suspended" | "campaign_suspended";
 
 const RESOLUTION_ACTIONS: Record<ResolutionAction, { label: string; description: string; color: string; bg: string; border: string }> = {
-  content_removed:    { label: "Remove Content",    description: "Delete the reported update or review",       color: RED,    bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)" },
-  content_reinstated: { label: "Reinstate Content", description: "Dismiss — content is valid, keep it live",   color: GREEN,  bg: "rgba(31,153,96,0.1)",  border: "rgba(31,153,96,0.25)" },
-  user_warned:        { label: "Warn User",          description: "Log a formal warning on the content owner",  color: ORANGE, bg: "rgba(232,101,15,0.1)",  border: "rgba(232,101,15,0.25)" },
-  user_suspended:     { label: "Suspend User",       description: "Disable the content owner's account",        color: RED,    bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)" },
-  campaign_suspended: { label: "Suspend Campaign",   description: "Suspend the associated campaign",            color: RED,    bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)" },
+  content_removed:    { label: "Remove Content",    description: "Delete the reported update or review",       color: RED,    bg: "#fdecec",   border: "rgba(239,68,68,0.25)" },
+  content_reinstated: { label: "Reinstate Content", description: "Dismiss — content is valid, keep it live",   color: GREEN,  bg: "#e9f5ef",  border: "rgba(31,153,96,0.25)" },
+  user_warned:        { label: "Warn User",          description: "Log a formal warning on the content owner",  color: ORANGE, bg: "#fdf0e7",  border: "rgba(232,101,15,0.25)" },
+  user_suspended:     { label: "Suspend User",       description: "Disable the content owner's account",        color: RED,    bg: "#fdecec",   border: "rgba(239,68,68,0.25)" },
+  campaign_suspended: { label: "Suspend Campaign",   description: "Suspend the associated campaign",            color: RED,    bg: "#fdecec",   border: "rgba(239,68,68,0.25)" },
 };
 
 const STATUS_TABS = [
@@ -127,7 +127,7 @@ export default function AdminModerationPage() {
   };
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
@@ -138,7 +138,7 @@ export default function AdminModerationPage() {
           <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Moderation</div>
           <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>Global search and content moderation queue</div>
           <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-            <Link href="#moderation-queue" style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(20,120,74,0.25)", background: "rgba(20,120,74,0.08)", color: BLUE, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+            <Link href="#moderation-queue" style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(20,120,74,0.25)", background: "#ecf4f1", color: BLUE, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
               Open moderation queue{openCount > 0 ? ` (${openCount})` : ""}
             </Link>
           </div>
@@ -150,11 +150,11 @@ export default function AdminModerationPage() {
             <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
               <input value={searchQ} onChange={(e) => setSearchQ(e.target.value)}
                 placeholder="Search campaigns, users, donations, reviews, KYC…"
-                style={{ flex: 1, padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 13, outline: "none" }}
+                style={{ flex: 1, padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#15201a", fontSize: 13, outline: "none" }}
               />
               {searchQ && (
                 <button onClick={() => { setSearchQ(""); setDebouncedQ(""); }}
-                  style={{ padding: "10px 16px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, cursor: "pointer" }}>Clear</button>
+                  style={{ padding: "10px 16px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, cursor: "pointer" }}>Clear</button>
               )}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -195,14 +195,14 @@ export default function AdminModerationPage() {
                     onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(21,32,26,0.02)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
                   >
-                    <div data-label="Model"><span style={{ fontSize: 10, fontWeight: 700, color: BLUE, background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)", borderRadius: 6, padding: "3px 8px", textTransform: "capitalize" }}>{item.model}</span></div>
+                    <div data-label="Model"><span style={{ fontSize: 10, fontWeight: 700, color: BLUE, background: "#ecf4f1", border: "1px solid rgba(20,120,74,0.15)", borderRadius: 6, padding: "3px 8px", textTransform: "capitalize" }}>{item.model}</span></div>
                     <div data-label="Title" style={{ fontSize: 13, color: "#15201a", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
                     <div data-label="Subtitle" style={{ fontSize: 12, color: "#6e7872", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.subtitle}</div>
                     <div data-label="Status" style={{ fontSize: 12, color: "#56625b" }}>{item.status}</div>
                     <div data-label="Date" style={{ fontSize: 11, color: "#6e7872" }}>{new Date(item.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
                     <div data-label="Action">
                       <button onClick={() => { const url = MODEL_URL_MAP[item.model]?.(item.entity_id) ?? `/admin/${item.model}/${item.entity_id}`; window.open(url, "_blank"); }}
-                        style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(20,120,74,0.25)", background: "rgba(20,120,74,0.08)", color: BLUE, cursor: "pointer" }}>Open</button>
+                        style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(20,120,74,0.25)", background: "#ecf4f1", color: BLUE, cursor: "pointer" }}>Open</button>
                     </div>
                   </div>
                 ))}
@@ -241,7 +241,7 @@ export default function AdminModerationPage() {
 
             {/* Resolution panel */}
             {resolvingId && resolvingReport && (
-              <div style={{ background: "rgba(21,32,26,0.02)", border: "1px solid rgba(21,32,26,0.1)", borderRadius: 14, padding: 20, marginBottom: 18 }}>
+              <div style={{ background: "#fff", border: "1px solid rgba(21,32,26,0.1)", borderRadius: 14, padding: 20, marginBottom: 18 }}>
                 {/* Report context header */}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                   <EntityBadge type={resolvingReport.reported_entity_type} />
@@ -260,7 +260,7 @@ export default function AdminModerationPage() {
                 <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
                   {resolvingReport.campaign_id && (
                     <button onClick={() => window.open(`/admin/campaigns/${resolvingReport.campaign_id}/view`, "_blank")}
-                      style={{ padding: "4px 12px", borderRadius: 7, border: "1px solid rgba(20,120,74,0.2)", background: "rgba(20,120,74,0.06)", color: BLUE, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                      style={{ padding: "4px 12px", borderRadius: 7, border: "1px solid rgba(20,120,74,0.2)", background: "#f1f7f4", color: BLUE, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
                       View Campaign →
                     </button>
                   )}
@@ -293,7 +293,7 @@ export default function AdminModerationPage() {
 
                 <textarea value={resolutionNote} onChange={(e) => setResolutionNote(e.target.value)}
                   placeholder="Document your reasoning (optional)…" rows={3}
-                  style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#15201a", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: 14 }}
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#15201a", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: 14 }}
                 />
                 <div style={{ display: "flex", gap: 10 }}>
                   <button onClick={() => void handleResolve()} disabled={!selectedAction || resolveReport.isPending}
@@ -301,7 +301,7 @@ export default function AdminModerationPage() {
                     {resolveReport.isPending ? "Resolving…" : "Confirm Resolution"}
                   </button>
                   <button onClick={() => { setResolvingId(null); setSelectedAction(null); setResolutionNote(""); }}
-                    style={{ padding: "10px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                    style={{ padding: "10px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
                 </div>
               </div>
             )}
@@ -351,25 +351,25 @@ export default function AdminModerationPage() {
                               <button onClick={() => void handleDismiss(r.id)} disabled={resolveReport.isPending}
                                 style={{ padding: "5px 10px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "none", background: "#6e7872", color: "#fff", cursor: "pointer" }}>Confirm dismiss</button>
                               <button onClick={() => setDismissConfirmId(null)}
-                                style={{ padding: "5px 8px", borderRadius: 7, fontSize: 11, fontWeight: 600, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.03)", color: "#626d66", cursor: "pointer" }}>Cancel</button>
+                                style={{ padding: "5px 8px", borderRadius: 7, fontSize: 11, fontWeight: 600, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#626d66", cursor: "pointer" }}>Cancel</button>
                             </div>
                           ) : (
                             <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                               <button
                                 onClick={() => { setResolvingId(r.id); setSelectedAction(null); setResolutionNote(""); setDismissConfirmId(null); }}
-                                style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(20,120,74,0.25)", background: "rgba(20,120,74,0.08)", color: BLUE, cursor: "pointer" }}>Review</button>
+                                style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(20,120,74,0.25)", background: "#ecf4f1", color: BLUE, cursor: "pointer" }}>Review</button>
                               <button onClick={() => setDismissConfirmId(r.id)}
-                                style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.03)", color: "#626d66", cursor: "pointer" }}>Dismiss</button>
+                                style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#626d66", cursor: "pointer" }}>Dismiss</button>
                               {r.campaign_id && (
                                 <button onClick={() => window.open(`/admin/campaigns/${r.campaign_id}/view`, "_blank")}
-                                  style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(21,32,26,0.08)", background: "rgba(21,32,26,0.03)", color: "#56625b", cursor: "pointer" }}>View</button>
+                                  style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(21,32,26,0.08)", background: "#fff", color: "#56625b", cursor: "pointer" }}>View</button>
                               )}
                             </div>
                           )
                         ) : (
                           r.campaign_id ? (
                             <button onClick={() => window.open(`/admin/campaigns/${r.campaign_id}/view`, "_blank")}
-                              style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(21,32,26,0.08)", background: "rgba(21,32,26,0.03)", color: "#56625b", cursor: "pointer" }}>View</button>
+                              style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(21,32,26,0.08)", background: "#fff", color: "#56625b", cursor: "pointer" }}>View</button>
                           ) : (
                             <span style={{ fontSize: 11, color: "#6e7872" }}>—</span>
                           )

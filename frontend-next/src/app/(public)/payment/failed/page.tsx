@@ -13,12 +13,12 @@ function PaymentFailedContent() {
   const slug = searchParams?.get("slug");
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f6f4ef", display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 16px" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 16px" }}>
       <div style={{ width: "100%", maxWidth: 460, textAlign: "center" }}>
 
         <div style={{
           width: 72, height: 72, borderRadius: "50%", margin: "0 auto 24px",
-          background: "rgba(239,68,68,0.1)", border: `2px solid ${RED}`,
+          background: "#fdecec", border: `2px solid ${RED}`,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 32, color: RED,
         }}>
@@ -45,7 +45,7 @@ function PaymentFailedContent() {
           {slug && (
             <Link
               href={`/campaigns/${slug}`}
-              style={{ display: "block", padding: "12px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+              style={{ display: "block", padding: "12px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 14, fontWeight: 600, textDecoration: "none" }}
             >
               Back to campaign
             </Link>

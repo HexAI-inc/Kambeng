@@ -23,8 +23,8 @@ function fadeUp(delay = 0) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    ACTIVE:    { color: GREEN, bg: "rgba(31,153,96,0.12)", border: "rgba(31,153,96,0.25)" },
-    SUSPENDED: { color: "#e8650f", bg: "rgba(232,101,15,0.12)", border: "rgba(232,101,15,0.25)" },
+    ACTIVE:    { color: GREEN, bg: "#e4f3ec", border: "rgba(31,153,96,0.25)" },
+    SUSPENDED: { color: "#e8650f", bg: "#fcede2", border: "rgba(232,101,15,0.25)" },
     CLOSED:    { color: "#56625b", bg: "rgba(21,32,26,0.06)", border: "rgba(21,32,26,0.1)" },
   };
   const s = map[status] ?? map.CLOSED;
@@ -70,7 +70,7 @@ export default function AdminCampaignsPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
         {/* Toast */}
@@ -97,7 +97,7 @@ export default function AdminCampaignsPage() {
             placeholder="Search by title or slug…"
             style={{
               padding: "9px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)",
-              background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 13,
+              background: "#fff", color: "#15201a", fontSize: 13,
               outline: "none", width: 240,
             }}
           />
@@ -187,9 +187,9 @@ export default function AdminCampaignsPage() {
 function btnStyle(variant: "default" | "green" | "orange" | "red"): React.CSSProperties {
   const map = {
     default: { color: "#56625b", border: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" },
-    green:   { color: "#1f9960", border: "rgba(31,153,96,0.25)", bg: "rgba(31,153,96,0.08)" },
-    orange:  { color: "#e8650f", border: "rgba(232,101,15,0.25)", bg: "rgba(232,101,15,0.08)" },
-    red:     { color: "#d42f2f", border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" },
+    green:   { color: "#1f9960", border: "rgba(31,153,96,0.25)", bg: "#edf7f2" },
+    orange:  { color: "#e8650f", border: "rgba(232,101,15,0.25)", bg: "#fdf3ec" },
+    red:     { color: "#d42f2f", border: "rgba(239,68,68,0.25)", bg: "#fef0f0" },
   }[variant];
   return {
     padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700,

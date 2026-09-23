@@ -183,7 +183,7 @@ export default function CampaignUpdatesPage() {
   }
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
@@ -204,7 +204,7 @@ export default function CampaignUpdatesPage() {
               <Link href={`/campaigns/${campaignSlug}`}>
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
-                  border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)",
+                  border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
                   color: "#56625b", fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Public page ↗</button>
               </Link>
@@ -221,7 +221,7 @@ export default function CampaignUpdatesPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: 9,
-                background: "rgba(20,120,74,0.1)", border: "1px solid rgba(20,120,74,0.18)",
+                background: "#e8f2ed", border: "1px solid rgba(20,120,74,0.18)",
                 display: "flex", alignItems: "center", justifyContent: "center", color: BLUE, flexShrink: 0,
               }}>
                 <IconBell />
@@ -237,7 +237,7 @@ export default function CampaignUpdatesPage() {
               placeholder="Update title (optional)"
               style={{
                 width: "100%", padding: "10px 14px", borderRadius: 9,
-                border: "1px solid rgba(21,32,26,0.09)", background: "rgba(21,32,26,0.04)",
+                border: "1px solid rgba(21,32,26,0.09)", background: "#fff",
                 color: "#15201a", fontSize: 13, outline: "none", boxSizing: "border-box",
               }}
             />
@@ -250,7 +250,7 @@ export default function CampaignUpdatesPage() {
               rows={5}
               style={{
                 width: "100%", padding: "10px 14px", borderRadius: 9,
-                border: "1px solid rgba(21,32,26,0.09)", background: "rgba(21,32,26,0.04)",
+                border: "1px solid rgba(21,32,26,0.09)", background: "#fff",
                 color: "#15201a", fontSize: 13, resize: "vertical", outline: "none",
                 boxSizing: "border-box", lineHeight: 1.65,
               }}
@@ -279,7 +279,7 @@ export default function CampaignUpdatesPage() {
                 step="1"
                 style={{
                   width: "100%", padding: "10px 14px", borderRadius: 9,
-                  border: "1px solid rgba(21,32,26,0.09)", background: "rgba(21,32,26,0.04)",
+                  border: "1px solid rgba(21,32,26,0.09)", background: "#fff",
                   color: "#15201a", fontSize: 13, outline: "none", boxSizing: "border-box",
                 }}
               />
@@ -325,7 +325,7 @@ export default function CampaignUpdatesPage() {
                     display: "inline-flex", alignItems: "center", gap: 6,
                     padding: "8px 14px", borderRadius: 8,
                     border: "1px solid rgba(21,32,26,0.09)",
-                    background: "rgba(21,32,26,0.03)",
+                    background: "#fff",
                     color: attachments.length >= MAX_ATTACHMENTS ? "#6e7872" : "#56625b",
                     fontSize: 12, fontWeight: 600, cursor: attachments.length >= MAX_ATTACHMENTS ? "not-allowed" : "pointer",
                   }}
@@ -364,7 +364,7 @@ export default function CampaignUpdatesPage() {
           ) : updates.length === 0 ? (
             <div style={{
               padding: "48px 24px", textAlign: "center",
-              background: "rgba(21,32,26,0.02)", border: "1px dashed rgba(21,32,26,0.08)",
+              background: "#fff", border: "1px dashed rgba(21,32,26,0.08)",
               borderRadius: 14,
             }}>
               <div style={{ color: BLUE, marginBottom: 10, opacity: 0.5 }}><IconBell /></div>

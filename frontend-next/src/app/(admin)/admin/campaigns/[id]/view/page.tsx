@@ -21,8 +21,8 @@ function Field({ label, value, mono }: { label: string; value: React.ReactNode; 
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    ACTIVE:    { color: GREEN, bg: "rgba(31,153,96,0.12)", border: "rgba(31,153,96,0.25)" },
-    SUSPENDED: { color: "#e8650f", bg: "rgba(232,101,15,0.12)", border: "rgba(232,101,15,0.25)" },
+    ACTIVE:    { color: GREEN, bg: "#e4f3ec", border: "rgba(31,153,96,0.25)" },
+    SUSPENDED: { color: "#e8650f", bg: "#fcede2", border: "rgba(232,101,15,0.25)" },
     CLOSED:    { color: "#56625b", bg: "rgba(21,32,26,0.06)", border: "rgba(21,32,26,0.1)" },
   };
   const s = map[status] ?? map.CLOSED;
@@ -52,7 +52,7 @@ export default function CampaignViewPage() {
 
   if (isLoading) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: 36, height: 36, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -61,7 +61,7 @@ export default function CampaignViewPage() {
 
   if (error || !campaign) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>😕</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#15201a", marginBottom: 8 }}>Campaign not found</div>
@@ -74,7 +74,7 @@ export default function CampaignViewPage() {
   const progress = campaign.target_amount ? Math.min((campaign.amount_raised / campaign.target_amount) * 100, 100) : 0;
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
         {toast && (
           <div style={{ position: "fixed", top: 24, right: 24, zIndex: 999, padding: "12px 20px", borderRadius: 10, background: toast.ok ? "rgba(31,153,96,0.15)" : "rgba(239,68,68,0.15)", border: `1px solid ${toast.ok ? "rgba(31,153,96,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.ok ? GREEN : "#d42f2f", fontSize: 13, fontWeight: 600, boxShadow: "0 8px 32px rgba(21,32,26,0.12)" }}>{toast.msg}</div>
@@ -142,9 +142,9 @@ export default function CampaignViewPage() {
 function actionBtn(v: "default" | "green" | "orange" | "red"): React.CSSProperties {
   const m = {
     default: { c: "#56625b", b: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" },
-    green:   { c: "#1f9960", b: "rgba(31,153,96,0.25)", bg: "rgba(31,153,96,0.08)" },
-    orange:  { c: "#e8650f", b: "rgba(232,101,15,0.25)", bg: "rgba(232,101,15,0.08)" },
-    red:     { c: "#d42f2f", b: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" },
+    green:   { c: "#1f9960", b: "rgba(31,153,96,0.25)", bg: "#edf7f2" },
+    orange:  { c: "#e8650f", b: "rgba(232,101,15,0.25)", bg: "#fdf3ec" },
+    red:     { c: "#d42f2f", b: "rgba(239,68,68,0.25)", bg: "#fef0f0" },
   }[v];
   return { padding: "10px 20px", borderRadius: 9, border: `1px solid ${m.b}`, background: m.bg, color: m.c, fontSize: 13, fontWeight: 700, cursor: "pointer" };
 }

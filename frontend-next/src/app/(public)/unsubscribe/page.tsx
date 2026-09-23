@@ -33,7 +33,7 @@ function UnsubscribeContent() {
               ? "This unsubscribe link is invalid or has already been used."
               : "Removing you from the list."}
         </p>
-        <Link href="/" style={{ display: "inline-block", padding: "13px 28px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.15)", background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 14, fontWeight: 600, textDecoration: "none" }}>
+        <Link href="/" style={{ display: "inline-block", padding: "13px 28px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.15)", background: "#fff", color: "#15201a", fontSize: 14, fontWeight: 600, textDecoration: "none" }}>
           Back to Kambeng
         </Link>
       </div>

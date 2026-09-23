@@ -79,7 +79,7 @@ function statusOf(promo: Promotion): { label: string; color: string } {
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 13px", borderRadius: 9, boxSizing: "border-box",
-  border: "1px solid rgba(21,32,26,0.12)", background: "rgba(21,32,26,0.05)",
+  border: "1px solid rgba(21,32,26,0.12)", background: "#fff",
   color: "#15201a", fontSize: 13, outline: "none",
 };
 
@@ -198,7 +198,7 @@ export default function AdminPromotionsPage() {
   const canCreate = form.slug.trim().length >= 3 && form.name.trim().length >= 3 && (SELF_LIMITING.has(form.promo_type) || form.ends_at);
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
     <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
       <motion.div {...fadeUp(0)} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
@@ -216,7 +216,7 @@ export default function AdminPromotionsPage() {
       </motion.div>
 
       {error && (
-        <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: RED, fontSize: 13 }}>{error}</div>
+        <div style={{ padding: "12px 16px", borderRadius: 10, background: "#fef0f0", border: "1px solid rgba(239,68,68,0.25)", color: RED, fontSize: 13 }}>{error}</div>
       )}
 
       {showCreate && (
@@ -359,7 +359,7 @@ export default function AdminPromotionsPage() {
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                         {applications.map((app) => (
-                          <div key={app.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(21,32,26,0.02)", border: "1px solid rgba(21,32,26,0.05)" }}>
+                          <div key={app.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 12, padding: "8px 12px", borderRadius: 8, background: "#fff", border: "1px solid rgba(21,32,26,0.05)" }}>
                             <span style={{ color: "#36443c" }}>
                               {app.campaign_title ?? `Campaign #${app.campaign_id ?? "—"}`}
                               {app.reversed && <span style={{ color: RED, marginLeft: 8 }}>(reversed)</span>}

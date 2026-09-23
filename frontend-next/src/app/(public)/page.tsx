@@ -193,8 +193,8 @@ export default function PublicHomePage() {
                   <span style={{ width: 1, height: 14, background: "rgba(21,32,26,0.1)", flexShrink: 0 }} />
                   {[
                     { label: "Wave", color: BLUE, bg: `${BLUE}14`, border: `${BLUE}40` },
-                    { label: "APS", color: ORANGE_INK, bg: "rgba(232,101,15,0.1)", border: "rgba(232,101,15,0.3)" },
-                    { label: "Visa / MC", color: "#4f46e5", bg: "rgba(99,102,241,0.15)", border: "rgba(99,102,241,0.35)" },
+                    { label: "APS", color: ORANGE_INK, bg: "#fdf0e7", border: "rgba(232,101,15,0.3)" },
+                    { label: "Visa / MC", color: "#4f46e5", bg: "#e8e8fd", border: "rgba(99,102,241,0.35)" },
                   ].map(({ label, color, bg, border }) => (
                     <span key={label} style={{ fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 6, color, background: bg, border: `1px solid ${border}`, letterSpacing: "0.05em" }}>{label}</span>
                   ))}
@@ -262,7 +262,7 @@ export default function PublicHomePage() {
               {/* Featured campaign */}
               {isLoading ? (
                 <div style={{ background: "#ffffff", borderRadius: 20, overflow: "hidden", border: "1px solid rgba(21,32,26,0.06)" }}>
-                  <div style={{ height: 200, background: "rgba(21,32,26,0.04)", animation: "shimmer 1.5s infinite" }} />
+                  <div style={{ height: 200, background: "#fff", animation: "shimmer 1.5s infinite" }} />
                   <div style={{ padding: 20 }}>
                     {[80, 60, 100].map((w) => <div key={w} style={{ height: 13, width: `${w}%`, background: "rgba(21,32,26,0.05)", borderRadius: 6, marginBottom: 10 }} />)}
                   </div>
@@ -359,9 +359,9 @@ export default function PublicHomePage() {
                 icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke={ORANGE} strokeWidth="1.8"/><circle cx="6" cy="12" r="3" stroke={ORANGE} strokeWidth="1.8"/><circle cx="18" cy="19" r="3" stroke={ORANGE} strokeWidth="1.8"/><path d="M8.6 10.6l6.8-4.2M8.6 13.4l6.8 4.2" stroke={ORANGE} strokeWidth="1.6" strokeLinecap="round"/></svg>,
               },
               {
-                n: "04", title: "Prove & Withdraw", color: "#8b3fd9",
+                n: "04", title: "Prove & Withdraw", color: "#b9500b",
                 desc: "Upload receipts showing how funds were spent. Donors see proof. You withdraw.",
-                icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#8b3fd9" strokeWidth="1.8"/><path d="M7 9h6M7 13h4" stroke="#8b3fd9" strokeWidth="1.6" strokeLinecap="round"/><path d="M16 13l2 2 2-2" stroke="#8b3fd9" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#b9500b" strokeWidth="1.8"/><path d="M7 9h6M7 13h4" stroke="#b9500b" strokeWidth="1.6" strokeLinecap="round"/><path d="M16 13l2 2 2-2" stroke="#b9500b" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
               },
             ].map(({ n, title, color, desc, icon }, i) => (
               <motion.div key={n} {...fadeUp(0.1 * i)} style={{
@@ -403,7 +403,7 @@ export default function PublicHomePage() {
             </div>
           </div>
 
-          <div className="trust-grid" style={{ display: "grid", gap: 2, background: "rgba(21,32,26,0.04)", borderRadius: 20, overflow: "hidden", border: "1px solid rgba(21,32,26,0.06)" }}>
+          <div className="trust-grid" style={{ display: "grid", gap: 2, background: "#fff", borderRadius: 20, overflow: "hidden", border: "1px solid rgba(21,32,26,0.06)" }}>
             {[
               {
                 icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2" stroke={GREEN} strokeWidth="1.8"/><circle cx="8.5" cy="11.5" r="2" stroke={GREEN} strokeWidth="1.6"/><path d="M5 19c0-2 1.5-3 3.5-3s3.5 1 3.5 3" stroke={GREEN} strokeWidth="1.6" strokeLinecap="round"/><path d="M14 10h4M14 13.5h2.5" stroke={GREEN} strokeWidth="1.6" strokeLinecap="round"/></svg>,
@@ -427,8 +427,8 @@ export default function PublicHomePage() {
                 stat: "3", statLabel: "payment rails",
               },
               {
-                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2Z" stroke="#8b3fd9" strokeWidth="1.7" strokeLinejoin="round"/></svg>,
-                accent: "#8b3fd9", glow: "rgba(168,85,247,0.1)", border: "rgba(168,85,247,0.2)",
+                icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2Z" stroke="#b9500b" strokeWidth="1.7" strokeLinejoin="round"/></svg>,
+                accent: "#b9500b", glow: "rgba(232,101,15,0.1)", border: "rgba(232,101,15,0.2)",
                 badge: "Always Visible", title: "Public Donor Reviews",
                 desc: "Donors leave public ratings and feedback on every campaign. A campaigner's track record is permanent — good or bad.",
                 stat: "Always", statLabel: "visible",
@@ -545,7 +545,7 @@ export default function PublicHomePage() {
             <div className="campaigns-grid" style={{ display: "grid", gap: 16 }}>
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} style={{ background: "#ffffff", borderRadius: 16, border: "1px solid rgba(21,32,26,0.06)", overflow: "hidden" }}>
-                  <div style={{ height: 160, background: "rgba(21,32,26,0.04)", animation: "shimmer 1.5s infinite" }} />
+                  <div style={{ height: 160, background: "#fff", animation: "shimmer 1.5s infinite" }} />
                   <div style={{ padding: 16 }}>
                     {[70, 50, 90].map((w) => <div key={w} style={{ height: 12, width: `${w}%`, background: "rgba(21,32,26,0.05)", borderRadius: 4, marginBottom: 8 }} />)}
                   </div>

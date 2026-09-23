@@ -182,7 +182,7 @@ export function RecurringDonationForm({
                 {/* Summary */}
                 <div
                   style={{
-                    background: "rgba(20,120,74,0.05)",
+                    background: "#f3f8f6",
                     padding: 12,
                     borderRadius: 4,
                     border: "1px solid rgba(20,120,74,0.2)",

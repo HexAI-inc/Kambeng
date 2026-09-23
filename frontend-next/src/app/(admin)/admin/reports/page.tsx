@@ -24,16 +24,16 @@ function fadeUp(delay = 0) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    SUCCEEDED: { color: GREEN,     bg: "rgba(31,153,96,0.12)" },
-    FAILED:    { color: "#d42f2f", bg: "rgba(239,68,68,0.12)" },
-    PENDING:   { color: "#e8650f", bg: "rgba(232,101,15,0.12)" },
+    SUCCEEDED: { color: GREEN,     bg: "#e4f3ec" },
+    FAILED:    { color: "#d42f2f", bg: "#fde9e9" },
+    PENDING:   { color: "#e8650f", bg: "#fcede2" },
   };
   const s = map[status] ?? map.PENDING;
   return <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, textTransform: "uppercase", letterSpacing: "0.07em" }}>{status}</span>;
 }
 
 function TypeChip({ type }: { type: string }) {
-  return <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, color: BLUE, background: "rgba(20,120,74,0.1)", textTransform: "uppercase", letterSpacing: "0.07em" }}>{type}</span>;
+  return <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, color: BLUE, background: "#e8f2ed", textTransform: "uppercase", letterSpacing: "0.07em" }}>{type}</span>;
 }
 
 const PAGE_SIZE = 8;
@@ -85,10 +85,10 @@ export default function AdminReportsPage() {
   const campaignOptions = useMemo(() => [{ id: "ALL", label: "All campaigns" }, ...((campaigns ?? []).map((c) => ({ id: String(c.id), label: c.title })))], [campaigns]);
   const campaignNameById = useMemo(() => Object.fromEntries((campaigns ?? []).map((c) => [String(c.id), c.title])), [campaigns]);
 
-  const selectStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 12, outline: "none", cursor: "pointer" };
+  const selectStyle: React.CSSProperties = { padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#15201a", fontSize: 12, outline: "none", cursor: "pointer" };
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 22 }}>
 
         {/* Header */}
@@ -99,7 +99,7 @@ export default function AdminReportsPage() {
 
         {/* KPI grid */}
         <motion.div {...fadeUp(0.06)}>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden", marginBottom: 2 }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden", marginBottom: 2 }}>
             {[
               { label: "Transactions",      value: String(summary?.transaction_count ?? 0),                              color: "#15201a" },
               { label: "Total Donations",   value: `${(summary?.total_donations ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,                  color: GREEN },
@@ -112,7 +112,7 @@ export default function AdminReportsPage() {
               </div>
             ))}
           </div>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
               { label: "Users",          value: String(systemStats?.total_users ?? 0),          color: "#15201a" },
               { label: "Active Campaigns",value: String(systemStats?.active_campaigns ?? 0),    color: GREEN },
@@ -148,7 +148,7 @@ export default function AdminReportsPage() {
               options={campaignOptions.map((c) => ({ value: c.id, label: c.label }))}
               style={{ minWidth: 200 }}
             />
-            <button onClick={() => updateParams({ status: null, type: null, campaign: null })} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 12, cursor: "pointer" }}>Reset</button>
+            <button onClick={() => updateParams({ status: null, type: null, campaign: null })} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 12, cursor: "pointer" }}>Reset</button>
             <span style={{ fontSize: 12, color: "#6e7872" }}>{filteredTx.length} transaction{filteredTx.length !== 1 ? "s" : ""}</span>
             {campaignFilter !== "ALL" && (
               <Link href={`/admin/reports/campaign/${campaignFilter}`} style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: `${BLUE}`, color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>

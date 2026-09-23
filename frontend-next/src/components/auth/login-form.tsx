@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { loginWithCredentials } from "@/lib/api";
+import { BrandMark } from "@/components/layout/brand-mark";
 
 const BLUE = "#14784a";
 const GREEN = "#1f9960";
@@ -52,14 +53,14 @@ export function LoginFormCard({ nextTarget, errorMessage, successMessage }: Logi
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "11px 14px", borderRadius: 10,
-    border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.05)",
+    border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
     color: "#15201a", fontSize: 16, outline: "none", boxSizing: "border-box",
     transition: "border-color 0.2s",
   };
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#f6f4ef",
+      minHeight: "100vh",
       display: "flex", alignItems: "center", justifyContent: "center",
       padding: "24px 16px", position: "relative", overflow: "hidden",
     }}>
@@ -71,12 +72,7 @@ export function LoginFormCard({ nextTarget, errorMessage, successMessage }: Logi
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 10,
-              background: `${BLUE}`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 18, fontWeight: 900, color: "#fff",
-            }}>K</div>
+            <BrandMark size={40} />
             <span style={{ fontSize: 20, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Kambeng</span>
           </Link>
         </div>
@@ -93,12 +89,12 @@ export function LoginFormCard({ nextTarget, errorMessage, successMessage }: Logi
           </div>
 
           {successMessage && (
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.2)", fontSize: 13, color: GREEN, marginBottom: 16 }}>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "#edf7f2", border: "1px solid rgba(31,153,96,0.2)", fontSize: 13, color: GREEN, marginBottom: 16 }}>
               {successMessage}
             </div>
           )}
           {(errorMessage || submitError) && (
-            <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#b42323", marginBottom: 16 }}>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "#fef0f0", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "#b42323", marginBottom: 16 }}>
               {errorMessage ?? submitError}
             </div>
           )}

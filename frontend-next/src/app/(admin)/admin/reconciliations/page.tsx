@@ -18,10 +18,10 @@ function fadeUp(delay = 0) {
 function StatusChip({ status }: { status: string }) {
   const s = status.toLowerCase();
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    pending:   { color: "#e8650f", bg: "rgba(232,101,15,0.1)", border: "rgba(232,101,15,0.25)" },
-    approved:  { color: GREEN,     bg: "rgba(31,153,96,0.1)", border: "rgba(31,153,96,0.25)" },
-    completed: { color: BLUE,      bg: "rgba(20,120,74,0.1)", border: "rgba(20,120,74,0.2)" },
-    rejected:  { color: RED,       bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.25)" },
+    pending:   { color: "#e8650f", bg: "#fdf0e7", border: "rgba(232,101,15,0.25)" },
+    approved:  { color: GREEN,     bg: "#e9f5ef", border: "rgba(31,153,96,0.25)" },
+    completed: { color: BLUE,      bg: "#e8f2ed", border: "rgba(20,120,74,0.2)" },
+    rejected:  { color: RED,       bg: "#fdecec",  border: "rgba(239,68,68,0.25)" },
   };
   const cfg = map[s] ?? map.pending;
   return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}` }}>{status}</span>;
@@ -84,7 +84,7 @@ export default function ReconciliationsPage() {
   };
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
@@ -98,7 +98,7 @@ export default function ReconciliationsPage() {
               <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>Review incoming payments and clear legitimate donations</div>
             </div>
           </div>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 12, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 12, overflow: "hidden" }}>
             {[
               { label: "Pending review", value: String(pendingCount), color: pendingCount > 0 ? "#e8650f" : "#56625b" },
               { label: "Reviewed", value: String(rows.length - pendingCount), color: GREEN },
@@ -117,12 +117,12 @@ export default function ReconciliationsPage() {
             <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>Reject Donation</div>
             <div style={{ fontSize: 13, color: "#626d66", marginBottom: 14 }}>Ref: <span style={{ color: "#56625b", fontFamily: "monospace" }}>{rejectingRef}</span></div>
             <textarea value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Explain why this donation is being rejected…" rows={3}
-              style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)", color: "#15201a", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
+              style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "1px solid rgba(239,68,68,0.2)", background: "#fef8f8", color: "#15201a", fontSize: 13, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
             <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
               <button onClick={() => void handleRejectSubmit()} disabled={rejectDonation.isPending} style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: "rgba(239,68,68,0.85)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 {rejectDonation.isPending ? "Rejecting…" : "Confirm Rejection"}
               </button>
-              <button onClick={() => { setRejectingRef(null); setRejectionReason(""); }} style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => { setRejectingRef(null); setRejectionReason(""); }} style={{ padding: "9px 20px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
             </div>
           </motion.div>
         )}
@@ -187,7 +187,7 @@ export default function ReconciliationsPage() {
 }
 
 function btnStyle(v: "default" | "green" | "red"): React.CSSProperties {
-  const m = { default: { c: "#56625b", b: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" }, green: { c: "#1f9960", b: "rgba(31,153,96,0.25)", bg: "rgba(31,153,96,0.08)" }, red: { c: "#d42f2f", b: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" } }[v];
+  const m = { default: { c: "#56625b", b: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" }, green: { c: "#1f9960", b: "rgba(31,153,96,0.25)", bg: "#edf7f2" }, red: { c: "#d42f2f", b: "rgba(239,68,68,0.25)", bg: "#fef0f0" } }[v];
   return { padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: `1px solid ${m.b}`, background: m.bg, color: m.c, cursor: "pointer" };
 }
 function pageBtnStyle(active: boolean): React.CSSProperties {

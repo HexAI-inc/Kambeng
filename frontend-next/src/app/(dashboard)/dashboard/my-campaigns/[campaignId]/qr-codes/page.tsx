@@ -75,7 +75,7 @@ function QRCard({ title, description, tag, tagColor, qrData, isLoading, onDownlo
             }}>Download</button>
             <button onClick={onCopy} style={{
               flex: 1, padding: "9px", borderRadius: 8,
-              border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)",
+              border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
               color: "#56625b", fontSize: 12, fontWeight: 600, cursor: "pointer",
             }}>Copy link</button>
           </div>
@@ -90,13 +90,13 @@ function LinkRow({ label, url, onCopy }: { label: string; url: string; onCopy: (
     <div style={{
       display: "flex", alignItems: "center", gap: 10,
       padding: "10px 14px", borderRadius: 8,
-      background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.06)",
+      background: "#fff", border: "1px solid rgba(21,32,26,0.06)",
     }}>
       <span style={{ fontSize: 11, color: "#6e7872", fontWeight: 600, flexShrink: 0, minWidth: 100 }}>{label}</span>
       <span style={{ fontSize: 12, color: "#36443c", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "monospace" }}>{url}</span>
       <button onClick={onCopy} style={{
         padding: "4px 12px", borderRadius: 6, border: "none", flexShrink: 0,
-        background: "rgba(20,120,74,0.1)", color: BLUE,
+        background: "#e8f2ed", color: BLUE,
         fontSize: 11, fontWeight: 700, cursor: "pointer",
       }}>Copy</button>
     </div>
@@ -132,12 +132,12 @@ export default function CampaignQRCodesPage() {
   const tips = [
     { icon: <MobileOutlined style={{ fontSize: 20, color: BLUE }} />, title: "Social Media", desc: "Post QR codes on Instagram Stories or Facebook to make it easy for followers to donate." },
     { icon: <PrinterOutlined style={{ fontSize: 20, color: GREEN }} />, title: "Print & Physical", desc: "Print QR codes on posters and flyers for in-person fundraising events." },
-    { icon: <BarChartOutlined style={{ fontSize: 20, color: "#8b3fd9" }} />, title: "Track Channels", desc: "Different QR codes let you see which channel drives the most donations." },
+    { icon: <BarChartOutlined style={{ fontSize: 20, color: "#b9500b" }} />, title: "Track Channels", desc: "Different QR codes let you see which channel drives the most donations." },
     { icon: <LinkOutlined style={{ fontSize: 20, color: "#d9870b" }} />, title: "Short Links", desc: "Use aliases for memorable short links that are easier to share and type." },
   ];
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
 
         {/* Header */}
@@ -166,7 +166,7 @@ export default function CampaignQRCodesPage() {
             onCopy={() => copy(`${origin}/quick-pay/${campaignId}`)}
           />
           <QRCard
-            title="Short Link" tag="Alias" tagColor="#8b3fd9"
+            title="Short Link" tag="Alias" tagColor="#b9500b"
             description="Uses your campaign alias for a shorter, memorable URL."
             qrData={typeof shortCodeQR.data === "string" ? shortCodeQR.data : undefined}
             isLoading={shortCodeQR.isLoading}
@@ -194,7 +194,7 @@ export default function CampaignQRCodesPage() {
             {tips.map(({ icon, title, desc }) => (
               <div key={title} style={{
                 padding: "16px", borderRadius: 12,
-                background: "rgba(21,32,26,0.02)", border: "1px solid rgba(21,32,26,0.06)",
+                background: "#fff", border: "1px solid rgba(21,32,26,0.06)",
               }}>
                 <div style={{ marginBottom: 8 }}>{icon}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a", marginBottom: 4 }}>{title}</div>

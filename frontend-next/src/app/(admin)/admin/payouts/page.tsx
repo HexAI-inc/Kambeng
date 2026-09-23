@@ -32,10 +32,10 @@ const actionBtnBase: React.CSSProperties = {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string; border: string }> = {
-    PENDING:   { color: "#e8650f", bg: "rgba(232,101,15,0.1)",  border: "rgba(232,101,15,0.25)" },
-    SUCCEEDED: { color: GREEN,     bg: "rgba(31,153,96,0.1)",  border: "rgba(31,153,96,0.25)" },
-    FAILED:    { color: "#d42f2f", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)" },
-    REVERSED:  { color: "#8b3fd9", bg: "rgba(168,85,247,0.1)",  border: "rgba(168,85,247,0.25)" },
+    PENDING:   { color: "#e8650f", bg: "#fdf0e7",  border: "rgba(232,101,15,0.25)" },
+    SUCCEEDED: { color: GREEN,     bg: "#e9f5ef",  border: "rgba(31,153,96,0.25)" },
+    FAILED:    { color: "#d42f2f", bg: "#fdecec",   border: "rgba(239,68,68,0.25)" },
+    REVERSED:  { color: "#b9500b", bg: "#fdf0e7",  border: "rgba(232,101,15,0.25)" },
   };
   const s = map[status] ?? map.PENDING;
   return <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 20, color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>{status}</span>;
@@ -121,7 +121,7 @@ export default function PayoutsPage() {
   const pending    = rows.filter((p) => p.status === "PENDING").length;
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
@@ -136,7 +136,7 @@ export default function PayoutsPage() {
         </motion.div>
 
         <motion.div {...fadeUp(0.06)}>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 12, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 12, overflow: "hidden" }}>
             {[
               { label: "Total paid out (gross)", value: `${totalGross.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: "#15201a" },
               { label: "Net received",           value: `${totalNet.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`,   color: GREEN },
@@ -178,7 +178,7 @@ export default function PayoutsPage() {
                           onClick={() => void verifyPayout(p)}
                           disabled={busyId === p.payout_id}
                           title="Check the real status with the payment gateway"
-                          style={{ ...actionBtnBase, border: "1px solid rgba(20,120,74,0.25)", background: "rgba(20,120,74,0.08)", color: BLUE, opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                          style={{ ...actionBtnBase, border: "1px solid rgba(20,120,74,0.25)", background: "#ecf4f1", color: BLUE, opacity: busyId === p.payout_id ? 0.6 : 1 }}
                         >
                           {busyId === p.payout_id ? "…" : "Verify with HPG"}
                         </button>
@@ -186,7 +186,7 @@ export default function PayoutsPage() {
                           onClick={() => void markPaid(p)}
                           disabled={busyId === p.payout_id}
                           title="Manually mark as succeeded (audited)"
-                          style={{ ...actionBtnBase, border: "1px solid rgba(31,153,96,0.25)", background: "rgba(31,153,96,0.08)", color: GREEN, opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                          style={{ ...actionBtnBase, border: "1px solid rgba(31,153,96,0.25)", background: "#edf7f2", color: GREEN, opacity: busyId === p.payout_id ? 0.6 : 1 }}
                         >
                           Mark paid
                         </button>
@@ -197,7 +197,7 @@ export default function PayoutsPage() {
                           onClick={() => void verifyPayout(p)}
                           disabled={busyId === p.payout_id}
                           title="Re-check the gateway status"
-                          style={{ ...actionBtnBase, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                          style={{ ...actionBtnBase, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", opacity: busyId === p.payout_id ? 0.6 : 1 }}
                         >
                           {busyId === p.payout_id ? "…" : "Re-verify"}
                         </button>
@@ -206,7 +206,7 @@ export default function PayoutsPage() {
                             onClick={() => void reversePayout(p)}
                             disabled={busyId === p.payout_id}
                             title="Reverse via HPG (Wave rail, 3-day window)"
-                            style={{ ...actionBtnBase, border: "1px solid rgba(168,85,247,0.25)", background: "rgba(168,85,247,0.08)", color: "#8b3fd9", opacity: busyId === p.payout_id ? 0.6 : 1 }}
+                            style={{ ...actionBtnBase, border: "1px solid rgba(232,101,15,0.25)", background: "#fdf3ec", color: "#b9500b", opacity: busyId === p.payout_id ? 0.6 : 1 }}
                           >
                             Reverse
                           </button>

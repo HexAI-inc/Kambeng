@@ -124,7 +124,7 @@ export default function CampaignImagesPage() {
   if (!campaignId) return <div style={{ color: "#15201a", padding: 32 }}>Invalid campaign ID</div>;
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
@@ -146,28 +146,28 @@ export default function CampaignImagesPage() {
               <Link href={`/campaigns/${campaignSlug}`}>
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
-                  border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)",
+                  border: "1px solid rgba(21,32,26,0.1)", background: "#fff",
                   color: "#56625b", fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Public page ↗</button>
               </Link>
               <Link href={`/dashboard/my-campaigns/${campaignId}/updates`}>
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
-                  border: `1px solid rgba(20,120,74,0.25)`, background: "rgba(20,120,74,0.08)",
+                  border: `1px solid rgba(20,120,74,0.25)`, background: "#ecf4f1",
                   color: BLUE, fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Updates</button>
               </Link>
               <Link href={`/dashboard/my-campaigns/${campaignId}/withdrawals`}>
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
-                  border: "1px solid rgba(31,153,96,0.25)", background: "rgba(31,153,96,0.08)",
+                  border: "1px solid rgba(31,153,96,0.25)", background: "#edf7f2",
                   color: GREEN, fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>Withdraw funds</button>
               </Link>
               <Link href="/dashboard/kyc">
                 <button style={{
                   padding: "9px 16px", borderRadius: 9,
-                  border: "1px solid rgba(31,153,96,0.3)", background: "rgba(31,153,96,0.07)",
+                  border: "1px solid rgba(31,153,96,0.3)", background: "#eff8f4",
                   color: GREEN, fontSize: 12, fontWeight: 600, cursor: "pointer",
                 }}>KYC docs</button>
               </Link>
@@ -176,7 +176,7 @@ export default function CampaignImagesPage() {
         </motion.div>
 
         {/* Tabs */}
-        <motion.div {...fadeUp(0.05)} style={{ display: "flex", gap: 2, background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 10, padding: 3, width: "fit-content" }}>
+        <motion.div {...fadeUp(0.05)} style={{ display: "flex", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 10, padding: 3, width: "fit-content" }}>
           {(["images", "proof", "cover"] as const).map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
               padding: "8px 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
@@ -210,7 +210,7 @@ export default function CampaignImagesPage() {
                 <input ref={fileInputRef} type="file" multiple accept="image/png,image/jpeg,image/webp" onChange={(e) => void handleFiles(e.target.files)} style={{ display: "none" }} />
                 <div style={{
                   width: 52, height: 52, borderRadius: 12,
-                  background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)",
+                  background: "#ecf4f1", border: "1px solid rgba(20,120,74,0.15)",
                   display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
                 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -231,7 +231,7 @@ export default function CampaignImagesPage() {
                   {uploading.map((name) => (
                     <div key={name} style={{
                       display: "flex", alignItems: "center", gap: 10, padding: "8px 14px",
-                      background: "rgba(20,120,74,0.06)", border: "1px solid rgba(20,120,74,0.15)",
+                      background: "#f1f7f4", border: "1px solid rgba(20,120,74,0.15)",
                       borderRadius: 8,
                     }}>
                       <div style={{ width: 14, height: 14, borderRadius: "50%", border: `2px solid ${BLUE}`, borderTopColor: "transparent", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />
@@ -246,7 +246,7 @@ export default function CampaignImagesPage() {
             <motion.div {...fadeUp(0.12)}>
               {imagesLoading ? (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
-                  {[1,2,3,4].map((i) => <div key={i} style={{ aspectRatio: "1", borderRadius: 10, background: "rgba(21,32,26,0.05)" }} />)}
+                  {[1,2,3,4].map((i) => <div key={i} style={{ aspectRatio: "1", borderRadius: 10, background: "#fff" }} />)}
                 </div>
               ) : images && images.length > 0 ? (
                 <>
@@ -309,7 +309,7 @@ export default function CampaignImagesPage() {
               ) : (
                 <div style={{
                   padding: "40px 24px", textAlign: "center",
-                  background: "rgba(21,32,26,0.02)", border: "1px dashed rgba(21,32,26,0.08)",
+                  background: "#fff", border: "1px dashed rgba(21,32,26,0.08)",
                   borderRadius: 14,
                 }}>
                   <div style={{ fontSize: 13, color: "#6e7872" }}>No images yet — upload your first one above</div>
@@ -420,7 +420,7 @@ export default function CampaignImagesPage() {
                   />
                   <div style={{
                     width: 52, height: 52, borderRadius: 12,
-                    background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)",
+                    background: "#ecf4f1", border: "1px solid rgba(20,120,74,0.15)",
                     display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px",
                   }}>
                     {coverUploading ? (

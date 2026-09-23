@@ -190,7 +190,7 @@ export default function FraudReportNotificationEmailsPage() {
   const pageRows = filteredRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at top left, rgba(20,120,74,0.13), transparent 28%), radial-gradient(circle at 85% 10%, rgba(31,153,96,0.11), transparent 22%), linear-gradient(180deg, rgba(21,32,26,0.02), transparent 28%)", pointerEvents: "none" }} />
 
       <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 20 }}>
@@ -232,7 +232,7 @@ export default function FraudReportNotificationEmailsPage() {
                 padding: "9px 14px",
                 borderRadius: 9,
                 border: "1px solid rgba(21,32,26,0.1)",
-                background: "rgba(21,32,26,0.05)",
+                background: "#fff",
                 color: "#15201a",
                 fontSize: 13,
                 outline: "none",
@@ -271,7 +271,7 @@ export default function FraudReportNotificationEmailsPage() {
                     padding: "11px 14px",
                     borderRadius: 10,
                     border: "1px solid rgba(21,32,26,0.1)",
-                    background: "rgba(21,32,26,0.04)",
+                    background: "#fff",
                     color: "#15201a",
                     fontSize: 14,
                     outline: "none",
@@ -320,7 +320,7 @@ export default function FraudReportNotificationEmailsPage() {
                     padding: "11px 14px",
                     borderRadius: 10,
                     border: "1px solid rgba(21,32,26,0.1)",
-                    background: "rgba(21,32,26,0.04)",
+                    background: "#fff",
                     color: "#15201a",
                     fontSize: 14,
                     outline: "none",
@@ -350,7 +350,7 @@ export default function FraudReportNotificationEmailsPage() {
                       padding: "11px 16px",
                       borderRadius: 10,
                       border: "1px solid rgba(21,32,26,0.1)",
-                      background: "rgba(21,32,26,0.04)",
+                      background: "#fff",
                       color: "#56625b",
                       fontSize: 13,
                       fontWeight: 700,
@@ -470,9 +470,9 @@ export default function FraudReportNotificationEmailsPage() {
 function actionBtnStyle(variant: "default" | "green" | "amber" | "red"): React.CSSProperties {
   const map = {
     default: { color: "#56625b", border: "rgba(21,32,26,0.1)", bg: "rgba(21,32,26,0.04)" },
-    green: { color: "#1f9960", border: "rgba(31,153,96,0.25)", bg: "rgba(31,153,96,0.08)" },
-    amber: { color: "#e8650f", border: "rgba(232,101,15,0.25)", bg: "rgba(232,101,15,0.08)" },
-    red: { color: "#d42f2f", border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.08)" },
+    green: { color: "#1f9960", border: "rgba(31,153,96,0.25)", bg: "#edf7f2" },
+    amber: { color: "#e8650f", border: "rgba(232,101,15,0.25)", bg: "#fdf3ec" },
+    red: { color: "#d42f2f", border: "rgba(239,68,68,0.25)", bg: "#fef0f0" },
   }[variant];
 
   return {

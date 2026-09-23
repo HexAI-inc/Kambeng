@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BrandMark } from "@/components/layout/brand-mark";
 import { usePathname } from "next/navigation";
 import { useSessionProfile } from "@/hooks/use-frontend-data";
 
@@ -120,13 +121,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         {/* Logo */}
         <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 10,
-            background: "#14784a",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontWeight: 900, fontSize: 16, color: "#fff",
-            boxShadow: "0 4px 12px rgba(20,120,74,0.4)",
-          }}>K</div>
+          <BrandMark size={34} />
           <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "#15201a", letterSpacing: "-0.03em" }}>
             Kambeng
           </span>
@@ -176,7 +171,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               display: "flex", alignItems: "center", gap: 6,
               padding: "7px 12px", borderRadius: 8,
               border: "1px solid rgba(21,32,26,0.1)",
-              background: "rgba(21,32,26,0.04)",
+              background: "#fff",
               color: "#626d66", fontSize: 12, fontWeight: 600, cursor: "pointer",
             }}>
               <IcLogout c="#626d66" />
@@ -191,7 +186,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <button style={{
               width: 38, height: 38, borderRadius: 9,
               border: "1px solid rgba(21,32,26,0.1)",
-              background: "rgba(21,32,26,0.04)",
+              background: "#fff",
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer",
             }}>
@@ -200,6 +195,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
       </header>
+      <div className="woven-strip woven-strip-thin" aria-hidden="true" />
 
       {/* ── Page content ───────────────────────────────────────── */}
       <main className="dash-main" style={{ overflowX: "hidden" }}>

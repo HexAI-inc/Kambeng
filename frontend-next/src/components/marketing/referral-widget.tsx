@@ -45,7 +45,7 @@ export default function ReferralWidget() {
         <div style={{ display: "flex", gap: 8 }}>
           <div style={{
             flex: 1, minWidth: 0, padding: "9px 12px", borderRadius: 9,
-            background: "rgba(21,32,26,0.04)", border: "1px solid rgba(21,32,26,0.08)",
+            background: "#fff", border: "1px solid rgba(21,32,26,0.08)",
             fontSize: 11, color: "#36443c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
             {info.share_link}

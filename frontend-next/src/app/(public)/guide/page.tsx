@@ -85,7 +85,7 @@ export default function GuidePage() {
               ))}
             </div>
 
-            <div style={{ marginTop: 32, textAlign: "center", padding: "32px clamp(20px, 4vw, 40px)", borderRadius: 20, background: "linear-gradient(135deg, rgba(20,120,74,0.1) 0%, rgba(15,94,58,0.06) 100%)", border: "1px solid rgba(20,120,74,0.18)" }}>
+            <div style={{ marginTop: 32, textAlign: "center", padding: "32px clamp(20px, 4vw, 40px)", borderRadius: 20, background: "#e6f4ec", border: "1px solid rgba(20,120,74,0.18)" }}>
               <div style={{ fontSize: 20, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em", marginBottom: 8 }}>
                 Ready to put this into practice?
               </div>
@@ -96,7 +96,7 @@ export default function GuidePage() {
                 <Link href="/start" style={{ display: "inline-block", padding: "14px 28px", borderRadius: 12, background: `${BLUE}`, color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", boxShadow: "0 6px 24px rgba(20,120,74,0.3)" }}>
                   Start your campaign →
                 </Link>
-                <button onClick={() => window.print()} style={{ padding: "14px 28px", borderRadius: 12, border: "1px solid rgba(21,32,26,0.15)", background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+                <button onClick={() => window.print()} style={{ padding: "14px 28px", borderRadius: 12, border: "1px solid rgba(21,32,26,0.15)", background: "#fff", color: "#15201a", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                   Save as PDF
                 </button>
               </div>

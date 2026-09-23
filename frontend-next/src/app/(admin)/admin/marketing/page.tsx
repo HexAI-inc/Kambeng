@@ -74,7 +74,7 @@ function Chip({ label, color }: { label: string; color: string }) {
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "11px 14px", borderRadius: 10, boxSizing: "border-box",
-  border: "1px solid rgba(21,32,26,0.12)", background: "rgba(21,32,26,0.05)",
+  border: "1px solid rgba(21,32,26,0.12)", background: "#fff",
   color: "#15201a", fontSize: 13, outline: "none",
 };
 
@@ -165,7 +165,7 @@ export default function AdminMarketingPage() {
   ] : [];
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
     <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
       <motion.div {...fadeUp(0)}>
         <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Marketing</h1>
@@ -175,7 +175,7 @@ export default function AdminMarketingPage() {
       </motion.div>
 
       {error && (
-        <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: RED, fontSize: 13 }}>{error}</div>
+        <div style={{ padding: "12px 16px", borderRadius: 10, background: "#fef0f0", border: "1px solid rgba(239,68,68,0.25)", color: RED, fontSize: 13 }}>{error}</div>
       )}
 
       {/* Stat cards */}
@@ -249,7 +249,7 @@ export default function AdminMarketingPage() {
           <button
             onClick={() => sendBroadcast(true)}
             disabled={sending || !canSend || !testRecipient.trim()}
-            style={{ padding: "11px 18px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.15)", background: "rgba(21,32,26,0.05)", color: "#15201a", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: sending || !canSend || !testRecipient.trim() ? 0.5 : 1 }}
+            style={{ padding: "11px 18px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.15)", background: "#fff", color: "#15201a", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: sending || !canSend || !testRecipient.trim() ? 0.5 : 1 }}
           >
             Send test
           </button>
@@ -301,7 +301,7 @@ export default function AdminMarketingPage() {
               <div key={row.id} className="mkt-sub-row" style={{
                 display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10,
                 padding: "12px 14px", borderRadius: 10,
-                background: "rgba(21,32,26,0.02)", border: "1px solid rgba(21,32,26,0.06)",
+                background: "#fff", border: "1px solid rgba(21,32,26,0.06)",
               }}>
                 <div style={{ flex: "1 1 220px", minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "#15201a", overflow: "hidden", textOverflow: "ellipsis" }}>{row.email}</div>
@@ -327,12 +327,12 @@ export default function AdminMarketingPage() {
         {totalPages > 1 && (
           <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
             <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}
-              style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 12, cursor: "pointer", opacity: page <= 1 ? 0.4 : 1 }}>
+              style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 12, cursor: "pointer", opacity: page <= 1 ? 0.4 : 1 }}>
               ← Prev
             </button>
             <span style={{ fontSize: 12, color: "#56625b", alignSelf: "center" }}>{page} / {totalPages}</span>
             <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
-              style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 12, cursor: "pointer", opacity: page >= totalPages ? 0.4 : 1 }}>
+              style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 12, cursor: "pointer", opacity: page >= totalPages ? 0.4 : 1 }}>
               Next →
             </button>
           </div>

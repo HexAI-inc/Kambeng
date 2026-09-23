@@ -14,7 +14,7 @@ function Field({ label, value, mono }: { label: string; value: string | number |
   return (
     <div>
       <div style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>{label}</div>
-      <div style={{ padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.06)", background: "rgba(21,32,26,0.03)", color: "#56625b", fontSize: 13, fontFamily: mono ? "monospace" : undefined }}>{value ?? "—"}</div>
+      <div style={{ padding: "10px 14px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.06)", background: "#fff", color: "#56625b", fontSize: 13, fontFamily: mono ? "monospace" : undefined }}>{value ?? "—"}</div>
     </div>
   );
 }
@@ -23,8 +23,8 @@ const STATUSES = ["ACTIVE", "SUSPENDED", "CLOSED"] as const;
 type CampaignStatus = typeof STATUSES[number];
 
 const STATUS_COLORS: Record<CampaignStatus, { color: string; bg: string; border: string }> = {
-  ACTIVE:    { color: GREEN,      bg: "rgba(31,153,96,0.12)",  border: "rgba(31,153,96,0.4)" },
-  SUSPENDED: { color: "#e8650f", bg: "rgba(232,101,15,0.12)", border: "rgba(232,101,15,0.4)" },
+  ACTIVE:    { color: GREEN,      bg: "#e4f3ec",  border: "rgba(31,153,96,0.4)" },
+  SUSPENDED: { color: "#e8650f", bg: "#fcede2", border: "rgba(232,101,15,0.4)" },
   CLOSED:    { color: "#56625b", bg: "rgba(21,32,26,0.08)", border: "rgba(21,32,26,0.2)" },
 };
 
@@ -57,7 +57,7 @@ export default function CampaignEditPage() {
 
   if (isLoading) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: 36, height: 36, border: `2px solid ${BLUE}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -66,7 +66,7 @@ export default function CampaignEditPage() {
 
   if (error || !campaign) {
     return (
-      <div style={{ background: "#f6f4ef", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>😕</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#15201a", marginBottom: 8 }}>Campaign not found</div>
@@ -77,7 +77,7 @@ export default function CampaignEditPage() {
   }
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {toast && (
@@ -132,7 +132,7 @@ export default function CampaignEditPage() {
           >
             {updateMutation.isPending ? "Saving…" : "Save Changes"}
           </button>
-          <button onClick={() => router.back()} style={{ padding: "11px 22px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={() => router.back()} style={{ padding: "11px 22px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
         </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

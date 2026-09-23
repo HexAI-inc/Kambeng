@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { BrandMark } from "@/components/layout/brand-mark";
 import { usePathname } from "next/navigation";
 import { MenuOutlined, CloseOutlined } from "@ant-design/icons";
 import { useSessionProfile } from "@/hooks/use-frontend-data";
@@ -16,21 +17,7 @@ function isItemActive(pathname: string, href: string) {
 function Logo() {
   return (
     <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <svg width="36" height="36" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, filter: "drop-shadow(0 3px 6px rgba(20,120,74,0.25))" }}>
-        <defs>
-          <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#1a8a55"/>
-            <stop offset="100%" stopColor="#0f5e3a"/>
-          </linearGradient>
-        </defs>
-        <rect x="0" y="0" width="240" height="240" rx="54" fill="url(#logoBg)"/>
-        <g stroke="#FBF7F0" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" fill="none">
-          <path d="M84,64 L84,176"/>
-          <path d="M84,122 L162,64"/>
-          <path d="M84,122 L162,176"/>
-        </g>
-        <circle cx="192" cy="124" r="14" fill="#f08a2c"/>
-      </svg>
+      <BrandMark />
       <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 20, color: "#15201a", letterSpacing: "-0.03em" }}>
         Kambeng
       </span>
@@ -224,7 +211,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link href="/auth/logout" onClick={() => setMobileMenuOpenAt(null)}>
                 <div style={{
                   padding: "16px 20px", borderRadius: 12, fontSize: 16, fontWeight: 500,
-                  color: "#d42f2f", background: "rgba(255,107,107,0.08)",
+                  color: "#d42f2f", background: "#fff3f3",
                   border: "1px solid rgba(255,107,107,0.2)", textAlign: "center",
                 }}>Logout</div>
               </Link>
@@ -272,9 +259,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {/* Payment method logos */}
                 <div style={{ display: "flex", gap: 8, marginTop: 16, alignItems: "center" }}>
                   {[
-                    { label: "Wave", color: "#14784a", bg: "rgba(20,120,74,0.1)", border: "rgba(20,120,74,0.2)" },
-                    { label: "APS", color: "#c97a06", bg: "rgba(201,122,6,0.1)", border: "rgba(201,122,6,0.2)" },
-                    { label: "Visa", color: "#4f46e5", bg: "rgba(99,102,241,0.1)", border: "rgba(99,102,241,0.2)" },
+                    { label: "Wave", color: "#14784a", bg: "#e8f2ed", border: "rgba(20,120,74,0.2)" },
+                    { label: "APS", color: "#c97a06", bg: "#faf2e6", border: "rgba(201,122,6,0.2)" },
+                    { label: "Visa", color: "#4f46e5", bg: "#eff0fe", border: "rgba(99,102,241,0.2)" },
                   ].map(({ label, color, bg, border }) => (
                     <span key={label} style={{ fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 6, color, background: bg, border: `1px solid ${border}`, letterSpacing: "0.05em" }}>{label}</span>
                   ))}

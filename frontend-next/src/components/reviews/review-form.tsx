@@ -22,7 +22,7 @@ const fieldStyle: React.CSSProperties = {
   padding: "11px 14px",
   borderRadius: 10,
   border: "1px solid rgba(21,32,26,0.1)",
-  background: "rgba(21,32,26,0.05)",
+  background: "#fff",
   color: "#15201a",
   fontSize: 14,
   outline: "none",
@@ -68,7 +68,7 @@ export function ReviewForm({ slug, onSuccess }: ReviewFormProps) {
 
   if (submitted) {
     return (
-      <div style={{ padding: "16px 18px", borderRadius: 12, background: "rgba(31,153,96,0.08)", border: "1px solid rgba(31,153,96,0.2)", color: "#1f9960", fontSize: 14, fontWeight: 600, textAlign: "center" }}>
+      <div style={{ padding: "16px 18px", borderRadius: 12, background: "#edf7f2", border: "1px solid rgba(31,153,96,0.2)", color: "#1f9960", fontSize: 14, fontWeight: 600, textAlign: "center" }}>
         Thanks for your review!
       </div>
     );

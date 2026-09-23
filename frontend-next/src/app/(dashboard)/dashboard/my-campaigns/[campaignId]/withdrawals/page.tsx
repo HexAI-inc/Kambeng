@@ -27,11 +27,11 @@ function fmt(value: number) {
 
 function StatusChip({ status }: { status: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    ACTIVE: { color: GREEN, bg: "rgba(31,153,96,0.12)" },
-    DRAFT: { color: "#d9870b", bg: "rgba(217,135,11,0.10)" },
+    ACTIVE: { color: GREEN, bg: "#e4f3ec" },
+    DRAFT: { color: "#d9870b", bg: "#fbf3e7" },
     PAUSED: { color: "#56625b", bg: "rgba(21,32,26,0.06)" },
-    COMPLETED: { color: BLUE, bg: "rgba(20,120,74,0.10)" },
-    REJECTED: { color: "#d42f2f", bg: "rgba(239,68,68,0.10)" },
+    COMPLETED: { color: BLUE, bg: "#e8f2ed" },
+    REJECTED: { color: "#d42f2f", bg: "#fdecec" },
   };
   const chip = map[status] ?? map.PAUSED;
 
@@ -130,7 +130,7 @@ export default function CampaignWithdrawalsPage() {
   };
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 980, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
         <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
@@ -148,7 +148,7 @@ export default function CampaignWithdrawalsPage() {
           <Link href={summary ? `/dashboard/my-campaigns/${summary.campaign_id}/images` : "/dashboard/my-campaigns"}>
             <button style={{
               padding: "9px 16px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)",
-              background: "rgba(21,32,26,0.04)", color: "#56625b", fontSize: 12, fontWeight: 600, cursor: "pointer",
+              background: "#fff", color: "#56625b", fontSize: 12, fontWeight: 600, cursor: "pointer",
             }}>
               Back to campaign
             </button>
@@ -156,15 +156,15 @@ export default function CampaignWithdrawalsPage() {
         </motion.div>
 
         {sessionLoading || summaryLoading ? (
-          <div style={{ height: 220, borderRadius: 16, background: "rgba(21,32,26,0.04)" }} />
+          <div style={{ height: 220, borderRadius: 16, background: "#fff" }} />
         ) : summaryError || !summary ? (
-          <div style={{ padding: 28, borderRadius: 16, border: "1px dashed rgba(20,120,74,0.2)", background: "rgba(20,120,74,0.03)", color: "#626d66" }}>
+          <div style={{ padding: 28, borderRadius: 16, border: "1px dashed rgba(20,120,74,0.2)", background: "#f8fbfa", color: "#626d66" }}>
             Campaign not found. Return to your campaigns list and try again.
           </div>
         ) : (
           <>
             {!kycApproved && (
-              <motion.div {...fadeUp(0.04)} style={{ padding: "14px 18px", borderRadius: 12, background: "rgba(232,101,15,0.08)", border: "1px solid rgba(232,101,15,0.25)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+              <motion.div {...fadeUp(0.04)} style={{ padding: "14px 18px", borderRadius: 12, background: "#fdf3ec", border: "1px solid rgba(232,101,15,0.25)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                 <div style={{ fontSize: 13, color: "#e8650f", fontWeight: 600 }}>Identity verification is required before you can withdraw.</div>
                 <Link href="/dashboard/kyc" style={{ fontSize: 12, fontWeight: 700, color: "#e8650f", textDecoration: "underline" }}>Complete KYC →</Link>
               </motion.div>
@@ -217,7 +217,7 @@ export default function CampaignWithdrawalsPage() {
                         style={{
                           position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
                           padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(20,120,74,0.3)",
-                          background: "rgba(20,120,74,0.1)", color: BLUE, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                          background: "#e8f2ed", color: BLUE, fontSize: 11, fontWeight: 700, cursor: "pointer",
                         }}
                       >
                         Max
@@ -227,7 +227,7 @@ export default function CampaignWithdrawalsPage() {
                 </div>
 
                 {previewValid && (
-                  <div style={{ padding: "14px 16px", borderRadius: 12, background: "rgba(21,32,26,0.03)", border: "1px solid rgba(21,32,26,0.08)", display: "grid", gap: 7, fontSize: 13 }}>
+                  <div style={{ padding: "14px 16px", borderRadius: 12, background: "#fff", border: "1px solid rgba(21,32,26,0.08)", display: "grid", gap: 7, fontSize: 13 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "#56625b" }}>
                       <span>Withdrawal</span><span>{parsedAmount.toLocaleString()} GMD</span>
                     </div>

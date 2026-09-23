@@ -28,7 +28,7 @@ function fadeUp(delay = 0) {
 function StatusBanner({ status, reason }: { status: string; reason?: string }) {
   const map: Record<string, { color: string; bg: string; border: string; icon: React.ReactNode; title: string; sub: string }> = {
     APPROVED: {
-      color: GREEN, bg: "rgba(31,153,96,0.08)", border: "rgba(31,153,96,0.2)",
+      color: GREEN, bg: "#edf7f2", border: "rgba(31,153,96,0.2)",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <path d="M6.5 13.5L9.5 16.5L17.5 8.5" stroke={GREEN} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -39,7 +39,7 @@ function StatusBanner({ status, reason }: { status: string; reason?: string }) {
       sub: "Your identity has been verified. You can now receive withdrawals.",
     },
     SUBMITTED: {
-      color: BLUE, bg: "rgba(20,120,74,0.07)", border: "rgba(20,120,74,0.2)",
+      color: BLUE, bg: "#eff6f2", border: "rgba(20,120,74,0.2)",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="10" stroke={BLUE} strokeWidth="1.8"/>
@@ -50,7 +50,7 @@ function StatusBanner({ status, reason }: { status: string; reason?: string }) {
       sub: "Your documents are being reviewed by our team. This usually takes 1–2 business days.",
     },
     REVIEWING: {
-      color: BLUE, bg: "rgba(20,120,74,0.07)", border: "rgba(20,120,74,0.2)",
+      color: BLUE, bg: "#eff6f2", border: "rgba(20,120,74,0.2)",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="10" stroke={BLUE} strokeWidth="1.8"/>
@@ -61,7 +61,7 @@ function StatusBanner({ status, reason }: { status: string; reason?: string }) {
       sub: "Your documents are being reviewed by our team.",
     },
     REJECTED: {
-      color: "#d42f2f", bg: "rgba(239,68,68,0.07)", border: "rgba(239,68,68,0.2)",
+      color: "#d42f2f", bg: "#fef2f2", border: "rgba(239,68,68,0.2)",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="10" stroke="#d42f2f" strokeWidth="1.8"/>
@@ -115,7 +115,7 @@ function UploadBox({ docType, label, icon, file, onChange }: {
         <>
           <div style={{
             width: 40, height: 40, borderRadius: 10, margin: "0 auto 10px",
-            background: "rgba(31,153,96,0.15)", border: "1px solid rgba(31,153,96,0.3)",
+            background: "#ddf0e7", border: "1px solid rgba(31,153,96,0.3)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -129,7 +129,7 @@ function UploadBox({ docType, label, icon, file, onChange }: {
             onClick={(e) => { e.stopPropagation(); onChange(null); }}
             style={{
               marginTop: 10, padding: "4px 12px", borderRadius: 6, border: "none",
-              background: "rgba(239,68,68,0.15)", color: "#b42323",
+              background: "#fde3e3", color: "#b42323",
               fontSize: 11, fontWeight: 600, cursor: "pointer",
             }}
           >Remove</button>
@@ -201,7 +201,7 @@ export default function KYCPage() {
   };
 
   return (
-    <div style={{ background: "#f6f4ef", minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
+    <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Header */}
@@ -314,7 +314,7 @@ export default function KYCPage() {
                   style={{
                     fontSize: 12, fontWeight: 600, color: BLUE,
                     padding: "5px 12px", borderRadius: 7,
-                    background: "rgba(20,120,74,0.08)", border: "1px solid rgba(20,120,74,0.15)",
+                    background: "#ecf4f1", border: "1px solid rgba(20,120,74,0.15)",
                     textDecoration: "none", cursor: "pointer",
                   }}
                   >

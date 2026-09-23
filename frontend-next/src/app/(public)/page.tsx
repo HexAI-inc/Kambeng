@@ -7,6 +7,7 @@ import { motion, useInView } from "framer-motion";
 import { LockOutlined } from "@ant-design/icons";
 import { useHomeFeed, useSessionProfile } from "@/hooks/use-frontend-data";
 import EmailCaptureForm from "@/components/marketing/email-capture-form";
+import TestimonialsShowcase from "@/components/marketing/testimonials-showcase";
 import { fmtCompact, fmtGMDShort } from "@/lib/fmt";
 
 const BLUE = "#14784a";
@@ -462,46 +463,7 @@ export default function PublicHomePage() {
               Real Causes. Real Gambians.
             </h2>
           </div>
-          <div className="testimonials-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
-            {[
-              { id:"t1", quote:"I sent money through Wave in under a minute, and I could actually see photos of the borehole being built. That's the part that got me — most fundraisers, you never know what happened with your money.", name:"Amadou Tijani Jallow", photo:"/testimonials/Amadou_Tijani_jallow.jpeg", role:"donor" as const, location:"Serrekunda", rating:5 },
-              { id:"t2", quote:"My brother is in the UK and wanted to support a campaign here but didn't have Wave. He used his card and it just worked. Donating felt as easy as it should be.", name:"Burry Jobe", photo:"/testimonials/Burry_Jobe.jpeg", role:"donor" as const, location:"Bakau", rating:5 },
-              { id:"t3", quote:"What convinced me to donate was seeing the campaigner was KYC verified. In a small country like ours, that reassurance matters more than people think.", name:"Jariatou Camara", photo:"/testimonials/Jariatou_Camara.jpeg", role:"donor" as const, location:"Banjul", rating:5 },
-              { id:"t4", quote:"We raised more for the school's library in three weeks on Kambeng than we did in three months asking around. Posting receipts each week kept donors coming back.", name:"Momodou Salieu Jallow", photo:"/testimonials/Momodou_Salieu_Jallow.jpeg", role:"campaigner" as const, location:"Brikama", rating:5 },
-              { id:"t5", quote:"I was nervous putting my ID up for verification, but it's what made donors trust the campaign. We hit our goal for the borehole faster than I expected.", name:"Omar Keita", photo:"/testimonials/Omar_Keita.jpeg", role:"campaigner" as const, location:"Farafenni", rating:4 },
-              { id:"t6", quote:"Being able to show exactly what we spent — cement, labor, transport — meant nobody asked 'where did the money go?' It was all right there.", name:"Penda Sowe", photo:"/testimonials/Penda_Sowe.jpeg", role:"campaigner" as const, location:"Gunjur", rating:5 },
-            ].map((t) => (
-              <div key={t.id} style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.09)", borderRadius: 16, padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
-                {/* Stars */}
-                <div style={{ color: ORANGE, fontSize: 13, letterSpacing: 2 }}>
-                  {"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}
-                </div>
-                {/* Quote */}
-                <p style={{ color: "#36443c", fontSize: 15, lineHeight: 1.65, margin: 0, flexGrow: 1 }}>
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                {/* Footer */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                  <img
-                    src={t.photo}
-                    alt={t.name}
-                    width={38}
-                    height={38}
-                    style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid rgba(20,120,74,0.2)" }}
-                  />
-                  <div>
-                    <div style={{ color: "#15201a", fontSize: 13, fontWeight: 600 }}>{t.name}</div>
-                    <div style={{ color: "#626d66", fontSize: 12 }}>
-                      {t.role === "donor" ? "Donor" : "Campaign organizer"} · {t.location}
-                    </div>
-                  </div>
-                  <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: BLUE, background: "rgba(20,120,74,0.1)", padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>
-                    {t.role === "donor" ? "Verified donor" : "KYC verified"}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <TestimonialsShowcase />
         </div>
       </section>
 
@@ -700,12 +662,10 @@ export default function PublicHomePage() {
         .pay-grid { grid-template-columns: repeat(3, 1fr); }
         .steps-grid { grid-template-columns: repeat(4, 1fr); }
         .campaigns-grid { grid-template-columns: repeat(3, 1fr); }
-        .testimonials-grid { grid-template-columns: repeat(3, 1fr); }
         @media (max-width: 1024px) {
           .steps-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .steps-connector { display: none !important; }
           .campaigns-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .testimonials-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
         @media (max-width: 900px) {
           .pay-grid { grid-template-columns: 1fr !important; }
@@ -723,7 +683,6 @@ export default function PublicHomePage() {
           .trust-desc { display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; margin-bottom: 12px !important; }
           .steps-grid { grid-template-columns: 1fr !important; }
           .campaigns-grid { grid-template-columns: 1fr !important; }
-          .testimonials-grid { grid-template-columns: 1fr !important; }
           .cta-buttons { flex-direction: column !important; }
           .cta-btn-link { width: 100% !important; display: block !important; }
           .cta-section { padding: 0 clamp(16px, 5vw, 72px) 48px !important; }

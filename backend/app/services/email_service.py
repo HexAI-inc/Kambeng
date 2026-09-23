@@ -21,12 +21,18 @@ jinja_env = Environment(
 def render_template(template_name: str, **context: object) -> str:
     base_context = {
         "app_name": "Kambeng",
-        "brand_color": "#1dc5ff",
-        "brand_dark": "#079bd4",
-        "brand_bg": "#0a0f1a",
-        "brand_surface": "#0d1120",
-        "brand_text": "#f0f6ff",
-        "brand_muted": "#8899aa",
+        "brand_color": "#14784a",
+        "brand_dark": "#0f5e3a",
+        "brand_color_soft": "#e6f4ec",
+        "brand_accent": "#e8650f",
+        "brand_accent_ink": "#b9500b",
+        "brand_accent_soft": "#fdf0e6",
+        "brand_bg": "#f6f4ef",
+        "brand_surface": "#ffffff",
+        "brand_soft": "#faf9f5",
+        "brand_text": "#15201a",
+        "brand_body": "#36443c",
+        "brand_muted": "#626d66",
         "frontend_url": settings.FRONTEND_URL.rstrip("/"),
     }
 

@@ -10,12 +10,12 @@
   <div class="card" style="margin-bottom:12px;">
     <div style="display:flex; justify-content:space-between; gap:16px; align-items:center;">
       <div>
-        <div style="font-size:14px; color:#8899aa;">Name</div>
+        <div style="font-size:14px; color:#626d66;">Name</div>
         <div style="font-weight:800; font-size:16px; margin-top:6px;">{{ s.full_name }}</div>
       </div>
       <div>
-        <div style="font-size:14px; color:#8899aa;">Waiting</div>
-        <div style="font-weight:800; font-size:16px; margin-top:6px; color:{% if s.days_pending >= 3 %}#ff6b6b{% else %}{{ brand_color }}{% endif %};">{{ s.days_pending }} day{{ 's' if s.days_pending != 1 else '' }}</div>
+        <div style="font-size:14px; color:#626d66;">Waiting</div>
+        <div style="font-weight:800; font-size:16px; margin-top:6px; color:{% if s.days_pending >= 3 %}#d42f2f{% else %}{{ brand_color }}{% endif %};">{{ s.days_pending }} day{{ 's' if s.days_pending != 1 else '' }}</div>
       </div>
     </div>
 

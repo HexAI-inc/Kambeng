@@ -4,39 +4,42 @@
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="supported-color-schemes" content="dark" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <title>{{ app_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
     <style>
       html, body { margin: 0; padding: 0; width: 100%; background: {{ brand_bg }}; }
       body { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
       table { border-spacing: 0; border-collapse: collapse; }
       img { border: 0; outline: none; text-decoration: none; }
-      a { color: {{ brand_color }}; text-decoration: none; }
+      a { color: {{ brand_color }}; text-decoration: underline; text-underline-offset: 2px; }
       .preheader { display: none !important; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0; overflow: hidden; mso-hide: all; }
-      .wrapper { width: 100%; background: radial-gradient(circle at top, rgba(29,197,255,0.12) 0%, rgba(10,15,26,0) 45%), {{ brand_bg }}; }
+      .wrapper { width: 100%; background: {{ brand_bg }}; }
       .container { width: 100%; max-width: 600px; }
-      .shell { background: {{ brand_surface }}; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; overflow: hidden; }
-      .header { padding: 28px 32px 16px; }
-      .brand-row { display: flex; align-items: center; gap: 12px; }
-      .brand-mark { width: 40px; height: 40px; border-radius: 12px; display: block; }
-      .brand-name { font-family: Arial, sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.03em; color: {{ brand_text }}; }
-      .hero { padding: 8px 32px 0; }
-      .eyebrow { font-family: Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: {{ brand_color }}; margin-bottom: 10px; }
-      h1 { margin: 0; font-family: Arial, sans-serif; font-size: 30px; line-height: 1.2; color: {{ brand_text }}; letter-spacing: -0.04em; }
-      p { margin: 0; font-family: Arial, sans-serif; font-size: 15px; line-height: 1.7; color: #c5d0df; }
+      .shell { background: {{ brand_surface }}; border: 1px solid #e4e1d8; border-radius: 20px; overflow: hidden; }
+      .header { padding: 24px 32px 8px; }
+      .brand-mark { width: 40px; height: 40px; display: block; }
+      .brand-name { font-family: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif; font-size: 21px; font-weight: 800; letter-spacing: -0.03em; color: {{ brand_text }}; }
+      .hero { padding: 16px 32px 0; }
+      .eyebrow { display: inline-block; font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: {{ brand_accent_ink }}; background: {{ brand_accent_soft }}; border-radius: 999px; padding: 5px 12px; margin-bottom: 14px; }
+      h1 { margin: 0; font-family: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif; font-size: 30px; line-height: 1.15; font-weight: 800; color: {{ brand_text }}; letter-spacing: -0.03em; }
+      p { margin: 0; font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; line-height: 1.7; color: {{ brand_body }}; }
+      strong { color: {{ brand_text }}; }
       .content { padding: 24px 32px 8px; }
-      .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 20px; }
-      .button { display: inline-block; padding: 14px 22px; border-radius: 12px; background: linear-gradient(135deg, {{ brand_color }}, {{ brand_dark }}); color: #fff !important; font-family: Arial, sans-serif; font-size: 14px; font-weight: 700; box-shadow: 0 10px 30px rgba(29,197,255,0.28); }
-      .button-wrap { padding-top: 10px; }
+      .card { background: {{ brand_soft }}; border: 1px solid #e6e3da; border-radius: 16px; padding: 20px; }
+      .button { display: inline-block; padding: 14px 24px; border-radius: 12px; background: {{ brand_color }}; color: #ffffff !important; font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; text-decoration: none; }
+      .button-wrap { padding-top: 12px; }
       .muted { color: {{ brand_muted }}; }
-      .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 24px 0; }
+      .divider { height: 1px; background: #e8e5dd; margin: 24px 0 20px; font-size: 0; line-height: 0; }
       .footer { padding: 0 32px 28px; }
-      .footer-text { font-family: Arial, sans-serif; font-size: 12px; line-height: 1.7; color: #7f8ea3; }
-      .code { display: inline-block; min-width: 120px; padding: 14px 18px; border-radius: 14px; background: rgba(29,197,255,0.12); border: 1px solid rgba(29,197,255,0.25); color: {{ brand_text }}; font-family: Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.3em; text-align: center; }
-      .detail { padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
-      .detail-label { font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4; color: #7f8ea3; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px; }
-      .detail-value { font-family: Arial, sans-serif; font-size: 15px; line-height: 1.6; color: {{ brand_text }}; font-weight: 700; }
+      .footer-text { font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; font-size: 13px; line-height: 1.7; color: {{ brand_muted }}; }
+      .signoff { font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; line-height: 1.6; color: {{ brand_muted }}; padding-top: 18px; }
+      .code { display: inline-block; min-width: 120px; padding: 14px 18px; border-radius: 14px; background: {{ brand_color_soft }}; border: 1px solid #bcdcc9; color: {{ brand_dark }}; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 28px; font-weight: 800; letter-spacing: 0.3em; text-align: center; }
+      .detail { padding: 14px 16px; border-radius: 12px; background: {{ brand_surface }}; border: 1px solid #e6e3da; }
+      .detail-label { font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; line-height: 1.4; color: {{ brand_muted }}; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 6px; }
+      .detail-value { font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; line-height: 1.6; color: {{ brand_text }}; font-weight: 700; }
+      .woven td { height: 6px; font-size: 0; line-height: 0; }
       @media screen and (max-width: 640px) {
         .header, .hero, .content, .footer { padding-left: 20px !important; padding-right: 20px !important; }
         h1 { font-size: 26px !important; }
@@ -45,17 +48,36 @@
   </head>
   <body>
     <span class="preheader">{% block preheader %}{% endblock %}</span>
-    <table role="presentation" width="100%" class="wrapper" cellpadding="0" cellspacing="0">
+    {%- macro woven() -%}
+    <table role="presentation" width="100%" class="woven" cellpadding="0" cellspacing="0" style="table-layout: fixed;">
+      <tr>
+        {%- for _ in range(8) %}
+        <td width="4%" style="background: {{ brand_color }};">&nbsp;</td>
+        <td width="0.55%" style="background: {{ brand_surface }};">&nbsp;</td>
+        <td width="1.5%" style="background: {{ brand_accent }};">&nbsp;</td>
+        <td width="0.55%" style="background: {{ brand_surface }};">&nbsp;</td>
+        <td width="4%" style="background: {{ brand_dark }};">&nbsp;</td>
+        <td width="0.55%" style="background: {{ brand_surface }};">&nbsp;</td>
+        <td width="0.8%" style="background: #f2b33d;">&nbsp;</td>
+        <td width="0.55%" style="background: {{ brand_surface }};">&nbsp;</td>
+        {%- endfor %}
+      </tr>
+    </table>
+    {%- endmacro %}
+    <table role="presentation" width="100%" class="wrapper" cellpadding="0" cellspacing="0" style="background: {{ brand_bg }};">
       <tr>
         <td align="center" style="padding: 32px 16px;">
           <table role="presentation" width="100%" class="container" cellpadding="0" cellspacing="0">
             <tr>
-              <td class="shell">
+              <td class="shell" style="background: {{ brand_surface }}; border-radius: 20px;">
+                {{ woven() }}
                 <div class="header">
-                  <div class="brand-row">
-                    <img src="{{ frontend_url }}/icon-192.png" width="40" height="40" alt="{{ app_name }}" class="brand-mark" />
-                    <div class="brand-name">{{ app_name }}</div>
-                  </div>
+                  <table role="presentation" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="padding-right: 12px;"><img src="{{ frontend_url }}/email-mark.png" width="40" height="40" alt="" class="brand-mark" /></td>
+                      <td class="brand-name">{{ app_name }}</td>
+                    </tr>
+                  </table>
                 </div>
                 <div class="hero">
                   <div class="eyebrow">{% block eyebrow %}Kambeng{% endblock %}</div>
@@ -69,7 +91,9 @@
                 <div class="footer">
                   <div class="divider"></div>
                   <p class="footer-text">{% block footer %}If you didn’t request this email, you can safely ignore it. Need help? Reply to this message and our team will assist you.{% endblock %}</p>
+                  <p class="signoff">{{ app_name }} · Fund what matters in The Gambia · <a href="{{ frontend_url }}" style="color: {{ brand_muted }};">kambeng.hexai.gm</a></p>
                 </div>
+                {{ woven() }}
               </td>
             </tr>
           </table>

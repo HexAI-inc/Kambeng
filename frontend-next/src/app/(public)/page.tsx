@@ -175,6 +175,7 @@ export default function PublicHomePage() {
       }}>
         {/* Background */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 48% 62% at 26% 52%, rgba(246,244,239,0.96) 0%, rgba(246,244,239,0.85) 50%, rgba(246,244,239,0) 100%)" }} />
           <div style={{ position: "absolute", width: 900, height: 900, background: "radial-gradient(circle, rgba(20,120,74,0.08) 0%, transparent 60%)", left: "-25%", top: "-25%" }} />
           <div style={{ position: "absolute", width: 500, height: 500, background: "radial-gradient(circle, rgba(232,101,15,0.08) 0%, transparent 70%)", right: "5%", bottom: "5%" }} />
         </div>
@@ -328,7 +329,7 @@ export default function PublicHomePage() {
       <section style={{ padding: "64px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse 80% 40% at 50% 0%, rgba(20,120,74,0.04) 0%, transparent 60%)" }} />
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1 }}>
-          <motion.div {...fadeUp(0)} style={{ textAlign: "center", marginBottom: 40 }}>
+          <motion.div {...fadeUp(0)} style={{ textAlign: "center", marginBottom: 40, padding: "12px 0", background: "radial-gradient(ellipse 50% 60% at 50% 50%, rgba(246,244,239,0.97) 45%, rgba(246,244,239,0) 100%)" }}>
             <h2 style={{ fontSize: "clamp(26px, 4vw, 42px)", fontWeight: 900, color: "#15201a", margin: "0 0 14px", letterSpacing: "-0.04em", lineHeight: 1.07 }}>
               From Idea to Impact<br />in Four Steps
             </h2>
@@ -456,7 +457,7 @@ export default function PublicHomePage() {
       ══════════════════════════════════════════════ */}
       <section style={{ padding: "64px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{ textAlign: "center", marginBottom: 36, padding: "12px 0", background: "radial-gradient(ellipse 50% 60% at 50% 50%, rgba(246,244,239,0.97) 45%, rgba(246,244,239,0) 100%)" }}>
             <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "clamp(28px, 4vw, 40px)", letterSpacing: "-0.02em", color: "#15201a", margin: 0 }}>
               Real Causes. Real Gambians.
             </h2>
@@ -510,7 +511,7 @@ export default function PublicHomePage() {
       <section style={{ padding: "64px clamp(16px, 5vw, 72px)", borderTop: "1px solid rgba(21,32,26,0.05)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse 60% 40% at 50% 100%, rgba(99,102,241,0.06) 0%, transparent 70%)" }} />
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1 }}>
-          <motion.div {...fadeUp(0)} style={{ textAlign: "center", marginBottom: 40 }}>
+          <motion.div {...fadeUp(0)} style={{ textAlign: "center", marginBottom: 40, padding: "12px 0", background: "radial-gradient(ellipse 50% 60% at 50% 50%, rgba(246,244,239,0.97) 45%, rgba(246,244,239,0) 100%)" }}>
             <h2 style={{ fontSize: "clamp(26px, 4vw, 42px)", fontWeight: 900, color: "#15201a", margin: "0 0 14px", letterSpacing: "-0.04em", lineHeight: 1.07 }}>
               However You Want to Give,<br />We&apos;ve Got You
             </h2>

@@ -68,6 +68,11 @@ export const appTheme: ThemeConfig = {
       colorBgContainer: "#ffffff",
       colorBorder: "rgba(21,32,26,0.16)",
       colorBgElevated: "#ffffff",
+      // Match StyledSelect: dark ink on white, pale green for the chosen option.
+      optionSelectedBg: "#e6f4ec",
+      optionSelectedColor: "#14784a",
+      optionActiveBg: "rgba(21,32,26,0.05)",
+      colorText: "#15201a",
     },
     Statistic: {
       colorTextDescription: "#56625b",

@@ -120,7 +120,7 @@ export function StyledSelect({ value, onChange, options, style, placeholder, dis
                   fontFamily: "inherit",
                   cursor: "pointer",
                   background: isSelected ? "rgba(20,120,74,0.08)" : "transparent",
-                  color: isSelected ? BLUE : "#d0d8e8",
+                  color: isSelected ? BLUE : "#15201a",
                   border: "none",
                   borderBottom: i < options.length - 1 ? "1px solid rgba(21,32,26,0.04)" : "none",
                   transition: "background 0.1s",

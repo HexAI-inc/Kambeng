@@ -176,6 +176,13 @@ body::before {
 }
 
 .ant-input::placeholder { color: var(--ink-dim) !important; }
+
+/* Native dropdown lists: keep options dark-on-white even when the OS theme
+   is dark, which otherwise gives light option text on our white menus. */
+select option, select optgroup {
+  color: var(--ink);
+  background: var(--bg-card);
+}
 .ant-input:focus, .ant-input:hover { border-color: var(--primary) !important; }
 
 .ant-drawer-content {

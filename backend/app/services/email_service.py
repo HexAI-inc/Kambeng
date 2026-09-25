@@ -185,6 +185,83 @@ def render_kyc_rejected_email(full_name: str, rejection_reason: str, kyc_link: s
     )
 
 
+def render_org_verification_submission_review(
+    full_name: str, user_email: str, organization_name: str, evidence_type: str, review_link: str
+) -> str:
+    return render_template(
+        "org_verification_submission_review.html",
+        full_name=full_name,
+        user_email=user_email,
+        organization_name=organization_name,
+        evidence_type=evidence_type,
+        review_link=review_link,
+    )
+
+
+def render_org_verification_approved_email(
+    full_name: str, organization_name: str, payout_wave_number: str, dashboard_link: str
+) -> str:
+    return render_template(
+        "org_verification_approved.html",
+        full_name=full_name,
+        organization_name=organization_name,
+        payout_wave_number=payout_wave_number,
+        dashboard_link=dashboard_link,
+    )
+
+
+def render_org_verification_rejected_email(
+    full_name: str, organization_name: str, rejection_reason: str, dashboard_link: str
+) -> str:
+    return render_template(
+        "org_verification_rejected.html",
+        full_name=full_name,
+        organization_name=organization_name,
+        rejection_reason=rejection_reason,
+        dashboard_link=dashboard_link,
+    )
+
+
+def render_withdrawal_approval_needed_email(
+    full_name: str, requester_name: str, organization_name: str, campaign_title: str, amount: float, review_link: str
+) -> str:
+    return render_template(
+        "withdrawal_approval_needed.html",
+        full_name=full_name,
+        requester_name=requester_name,
+        organization_name=organization_name,
+        campaign_title=campaign_title,
+        amount=f"{amount:,.0f}",
+        review_link=review_link,
+    )
+
+
+def render_organization_invite_email(
+    full_name: str, inviter_name: str, organization_name: str, title: str | None, accept_link: str
+) -> str:
+    return render_template(
+        "organization_invite.html",
+        full_name=full_name,
+        inviter_name=inviter_name,
+        organization_name=organization_name,
+        title=title,
+        accept_link=accept_link,
+    )
+
+
+def render_receipt_reminder_email(
+    full_name: str, campaign_title: str, amount: float, unaccounted: float, update_link: str
+) -> str:
+    return render_template(
+        "receipt_reminder.html",
+        full_name=full_name,
+        campaign_title=campaign_title,
+        amount=f"{amount:,.0f}",
+        unaccounted=f"{unaccounted:,.0f}",
+        update_link=update_link,
+    )
+
+
 def render_withdrawal_initiated_email(
     full_name: str,
     campaign_title: str,
@@ -215,6 +292,7 @@ def render_withdrawal_confirmed_email(
     wave_number: str,
     reference: str,
     dashboard_link: str,
+    update_link: str | None = None,
 ) -> str:
     return render_template(
         "withdrawal_confirmed.html",
@@ -224,6 +302,7 @@ def render_withdrawal_confirmed_email(
         wave_number=wave_number,
         reference=reference,
         dashboard_link=dashboard_link,
+        update_link=update_link,
     )
 
 

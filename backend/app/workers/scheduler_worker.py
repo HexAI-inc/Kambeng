@@ -57,6 +57,7 @@ def build_job_registry() -> list[Job]:
     from app.services.kyc_reminder_service import send_pending_kyc_reminders
     from app.services.marketing_service import process_marketing_sequences
     from app.services.recurring_charge_service import process_recurring_charges
+    from app.services.spending import send_receipt_reminders
 
     return [
         Job(
@@ -76,6 +77,12 @@ def build_job_registry() -> list[Job]:
             name="Send Pending KYC Reminders",
             func=send_pending_kyc_reminders,
             trigger=CronTrigger(hour=8, minute=0, timezone="UTC"),
+        ),
+        Job(
+            id="send_receipt_reminders",
+            name="Nudge Organizers To Post Spending Receipts",
+            func=send_receipt_reminders,
+            trigger=CronTrigger(hour=9, minute=0, timezone="UTC"),
         ),
     ]
 

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from app.services.campaign_access import can_manage_campaign
 from app.api.routes.auth import get_current_user, get_admin_user
 from app.db.database import get_db
 from app.models.alias import CampaignAlias
@@ -38,7 +39,7 @@ async def create_campaign_alias(
         raise HTTPException(status_code=404, detail="Campaign not found")
     
     # Verify authorization (owner or admin)
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Only campaign owner or admin can create aliases")
     
     # Generate short code if not provided
@@ -87,7 +88,7 @@ async def list_campaign_aliases(
         raise HTTPException(status_code=404, detail="Campaign not found")
     
     # Verify authorization
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Only campaign owner or admin can view aliases")
     
     # Get aliases
@@ -115,7 +116,7 @@ async def delete_campaign_alias(
         raise HTTPException(status_code=404, detail="Campaign not found")
     
     # Verify authorization
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Only campaign owner or admin can delete aliases")
     
     # Verify alias belongs to campaign

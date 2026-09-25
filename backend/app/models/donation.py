@@ -21,6 +21,9 @@ class Donation(Base):
     # Optional donor details
     donor_name = Column(String, nullable=True, default="Anonymous")
     message = Column(String, nullable=True)
+    # "Class of 2009" — optional, only asked on campaigns with the class
+    # board on. Powers the giving-by-graduating-class board.
+    graduating_class = Column(Integer, nullable=True, index=True)
     # Required by the gateway for Waychit Card and APS (identity/KYC step on
     # their side) — not required for Wave, which has no such requirement.
     donor_email = Column(String, nullable=True)

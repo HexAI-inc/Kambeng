@@ -40,6 +40,14 @@ class StorageStrategy(ABC):
         pass
 
     @abstractmethod
+    def save_organization_file(
+        self, organization_id: int, file_content: bytes, file_extension: str, content_type: str, public: bool
+    ) -> str:
+        """Save an organization logo (public) or verification document (private
+        where the backend supports it — read it back through presign_get)."""
+        pass
+
+    @abstractmethod
     def presign_get(self, path: str, expires: int = 3600) -> str:
         """Return a URL that can be used to GET the object. For local strategy this may be the direct URL."""
         pass

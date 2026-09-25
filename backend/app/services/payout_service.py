@@ -109,7 +109,8 @@ async def _notify_campaign_owner(db: AsyncSession, payout: Payout, new_status: s
         campaign = camp_result.scalars().first()
         if not campaign:
             return
-        user_result = await db.execute(select(User).where(User.id == campaign.user_id))
+        # Whoever asked for the withdrawal (a manager, for organizations).
+        user_result = await db.execute(select(User).where(User.id == (payout.requested_by_user_id or campaign.user_id)))
         user = user_result.scalars().first()
         if not user or not user.email:
             return
@@ -123,9 +124,10 @@ async def _notify_campaign_owner(db: AsyncSession, payout: Payout, new_status: s
                     full_name=user.full_name or user.email,
                     campaign_title=campaign.title,
                     net_amount=payout.net_amount or 0.0,
-                    wave_number=user.wave_number,
+                    wave_number=payout.recipient_wave_number or user.wave_number,
                     reference=payout.client_reference,
                     dashboard_link=dashboard_link,
+                    update_link=f"{settings.FRONTEND_URL.rstrip('/')}/dashboard/my-campaigns/{campaign.id}/updates",
                 ),
             )
         else:
@@ -136,7 +138,7 @@ async def _notify_campaign_owner(db: AsyncSession, payout: Payout, new_status: s
                     full_name=user.full_name or user.email,
                     campaign_title=campaign.title,
                     gross_amount=payout.gross_amount or 0.0,
-                    wave_number=user.wave_number,
+                    wave_number=payout.recipient_wave_number or user.wave_number,
                     reference=payout.client_reference,
                     dashboard_link=dashboard_link,
                 ),

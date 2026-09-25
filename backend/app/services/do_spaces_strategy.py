@@ -193,6 +193,28 @@ class DOSpacesStrategy(StorageStrategy):
             logger.error(f"Failed to upload KYC document: {e}")
             raise
 
+    def save_organization_file(
+        self, organization_id: int, file_content: bytes, file_extension: str, content_type: str, public: bool
+    ) -> str:
+        """Upload an organization logo (public-read) or verification document (private)."""
+        extension = f".{file_extension.lstrip('.')}" if file_extension else ".bin"
+        file_name = f"{uuid.uuid4().hex}{extension}"
+        key = self._key("organizations", str(organization_id), file_name)
+
+        try:
+            self._ensure_bucket_exists()
+            self.s3_client.put_object(
+                Bucket=self.bucket,
+                Key=key,
+                Body=file_content,
+                ContentType=content_type,
+                ACL="public-read" if public else "private",
+            )
+            return self._public_url(key)
+        except ClientError as e:
+            logger.error(f"Failed to upload organization file: {e}")
+            raise
+
     def presign_get(self, path: str, expires: int = 3600) -> str:
         """Return a presigned GET URL for the given object key or public URL.
 

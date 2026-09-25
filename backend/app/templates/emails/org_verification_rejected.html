@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block preheader %}We couldn't verify {{ organization_name }} yet. You can resubmit.{% endblock %}
+{% block eyebrow %}Organization Verification{% endblock %}
+{% block heading %}Verification not approved{% endblock %}
+{% block intro %}Hi {{ full_name }}, we couldn't verify {{ organization_name }} with the evidence you sent. Please read the reason below and resubmit.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="detail">
+      <div class="detail-label">Reason</div>
+      <div class="detail-value" style="color:#b42323;">{{ rejection_reason }}</div>
+    </div>
+
+    <div style="height:16px"></div>
+
+    <p style="font-size:13px; color:#626d66; line-height:1.7;">
+      Common fixes: make sure the letter is signed and stamped, names you as the person raising money,
+      and names the Wave number payouts should go to if it is your personal number.
+    </p>
+
+    <div style="height:20px"></div>
+
+    <div style="text-align:center;">
+      <a class="button" href="{{ dashboard_link }}">Resubmit evidence</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}If you need help with your submission, reply to this email and our team will assist you.{% endblock %}

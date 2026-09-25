@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block preheader %}{{ inviter_name }} invited you to help manage {{ organization_name }} on Kambeng.{% endblock %}
+{% block eyebrow %}Team invitation{% endblock %}
+{% block heading %}Join {{ organization_name }}{% endblock %}
+{% block intro %}Hi {{ full_name }}, {{ inviter_name }} invited you to manage {{ organization_name }}'s campaigns{% if title %} as {{ title }}{% endif %}. Managers can post updates and receipts, withdraw funds, and approve each other's large withdrawals.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div style="text-align:center;">
+      <a class="button" href="{{ accept_link }}">See the invitation</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}If you weren't expecting this, you can simply decline it.{% endblock %}

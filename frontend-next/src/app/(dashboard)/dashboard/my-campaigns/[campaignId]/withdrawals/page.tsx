@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 
 import { useAppFeedback } from "@/components/ui";
 import { useCampaignWithdrawalSummary, useSessionProfile, useWithdrawCampaignFunds } from "@/hooks/use-frontend-data";
+import { WithdrawalRequestsPanel } from "@/components/campaigns/withdrawal-requests";
 
 const BLUE = "#14784a";
 const GREEN = "#1f9960";
@@ -73,7 +74,10 @@ export default function CampaignWithdrawalsPage() {
   // Clamp: legacy over-withdrawn campaigns can report a negative balance
   const availableBalance = Math.max(0, summary?.available_balance ?? 0);
   const withdrawalHistory = summary?.withdrawal_history ?? [];
-  const canWithdraw = kycApproved && Boolean(summary) && availableBalance > 0;
+  const orgBlocked = Boolean(summary?.withdrawal_blocked_reason);
+  const canWithdraw = kycApproved && !orgBlocked && Boolean(summary) && availableBalance > 0;
+  const payoutNumber = summary?.payout_wave_number ?? me?.wave_number;
+  const needsApproval = summary?.approval_threshold != null && Number(grossAmount) > summary.approval_threshold;
 
   // Live payout preview — estimates mirroring the server's fee structure; the
   // server recomputes exact figures on submit. HPG bills 2% rounded up with a
@@ -101,6 +105,11 @@ export default function CampaignWithdrawalsPage() {
       return;
     }
 
+    if (summary.withdrawal_blocked_reason) {
+      message.error(summary.withdrawal_blocked_reason);
+      return;
+    }
+
     const amount = Number(grossAmount);
     if (!Number.isFinite(amount) || amount <= 0) {
       message.error("Enter a valid amount");
@@ -120,7 +129,11 @@ export default function CampaignWithdrawalsPage() {
 
     try {
       const result = await withdrawMutation.mutateAsync({ campaignId: summary.campaign_id, amount });
-      message.success(`Withdrawal successful. Net received: ${fmt(result.net_received)} GMD`);
+      if (result.status === "PENDING_APPROVAL") {
+        message.success(result.message);
+      } else {
+        message.success(`Withdrawal successful. Net received: ${fmt(result.net_received)} GMD`);
+      }
       setGrossAmount("");
     } catch (error: unknown) {
       const axiosErr = error as { response?: { data?: { detail?: string; message?: string } } };
@@ -167,6 +180,27 @@ export default function CampaignWithdrawalsPage() {
               <motion.div {...fadeUp(0.04)} style={{ padding: "14px 18px", borderRadius: 12, background: "#fdf3ec", border: "1px solid rgba(232,101,15,0.25)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                 <div style={{ fontSize: 13, color: "#e8650f", fontWeight: 600 }}>Identity verification is required before you can withdraw.</div>
                 <Link href="/dashboard/kyc" style={{ fontSize: 12, fontWeight: 700, color: "#e8650f", textDecoration: "underline" }}>Complete KYC →</Link>
+              </motion.div>
+            )}
+
+            {(summary.spent_unaccounted ?? 0) > 0 && (
+              <motion.div {...fadeUp(0.05)} style={{ padding: "14px 18px", borderRadius: 12, background: "#fff", border: "1px solid rgba(20,120,74,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <div style={{ fontSize: 13, color: "#56625b", maxWidth: 620, lineHeight: 1.5 }}>
+                  <strong style={{ color: "#15201a" }}>{fmt(summary.spent_unaccounted ?? 0)} GMD</strong> withdrawn but not yet shown with receipts.
+                  Donors give again when they can see where the money went.
+                </div>
+                <Link href={`/dashboard/my-campaigns/${summary.campaign_id}/updates`} style={{ fontSize: 12, fontWeight: 700, color: BLUE, textDecoration: "underline" }}>Post receipts →</Link>
+              </motion.div>
+            )}
+
+            {orgBlocked && (
+              <motion.div {...fadeUp(0.05)} style={{ padding: "14px 18px", borderRadius: 12, background: "#fdf3ec", border: "1px solid rgba(232,101,15,0.25)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <div style={{ fontSize: 13, color: "#b9500b", fontWeight: 600, maxWidth: 620, lineHeight: 1.5 }}>
+                  {summary.organization_verification_status === "SUBMITTED" || summary.organization_verification_status === "REVIEWING"
+                    ? `${summary.organization_name} is under review. Withdrawals open once it's verified.`
+                    : `This campaign raises money for ${summary.organization_name}. Verify the organization to withdraw.`}
+                </div>
+                <Link href="/dashboard/organizations" style={{ fontSize: 12, fontWeight: 700, color: "#b9500b", textDecoration: "underline" }}>Organizations →</Link>
               </motion.div>
             )}
 
@@ -238,7 +272,7 @@ export default function CampaignWithdrawalsPage() {
                       <span>Platform fee</span><span>−{PLATFORM_FEE_GMD} GMD</span>
                     </div>
                     <div style={{ borderTop: "1px solid rgba(21,32,26,0.08)", paddingTop: 8, display: "flex", justifyContent: "space-between", fontWeight: 800, color: previewNet > 0 ? GREEN : "#d42f2f" }}>
-                      <span>You receive{me?.wave_number ? ` on ${me.wave_number}` : ""}</span>
+                      <span>{summary.organization_name && !orgBlocked ? `${summary.organization_name} receives` : "You receive"}{payoutNumber ? ` on ${payoutNumber}` : ""}</span>
                       <span>{previewNet > 0 ? previewNet.toLocaleString() : "0"} GMD</span>
                     </div>
                     <div style={{ fontSize: 12, color: "#56625b" }}>
@@ -248,6 +282,12 @@ export default function CampaignWithdrawalsPage() {
                     {previewNet <= 0 && (
                       <div style={{ fontSize: 12, color: "#d42f2f" }}>Amount is too small to cover the fees.</div>
                     )}
+                  </div>
+                )}
+
+                {needsApproval && (
+                  <div style={{ fontSize: 12, color: "#b9500b", lineHeight: 1.5 }}>
+                    Above {summary.approval_threshold?.toLocaleString()} GMD, so another manager has to approve before it&apos;s sent.
                   </div>
                 )}
 
@@ -262,10 +302,16 @@ export default function CampaignWithdrawalsPage() {
                     boxShadow: canWithdraw ? "0 4px 16px rgba(20,120,74,0.3)" : "none",
                   }}
                 >
-                  {withdrawMutation.isPending ? "Submitting…" : "Withdraw funds"}
+                  {withdrawMutation.isPending ? "Submitting…" : needsApproval ? "Ask for approval" : "Withdraw funds"}
                 </button>
               </div>
             </motion.div>
+
+            {summary.organization_name && (
+              <motion.div {...fadeUp(0.14)}>
+                <WithdrawalRequestsPanel campaignId={summary.campaign_id} threshold={summary.approval_threshold} />
+              </motion.div>
+            )}
 
             <motion.div {...fadeUp(0.18)} style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, overflow: "hidden" }}>
               <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(21,32,26,0.06)" }}>

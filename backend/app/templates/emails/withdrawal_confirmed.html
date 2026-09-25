@@ -28,8 +28,12 @@
       <div class="detail-value" style="font-family:'Courier New',monospace;font-size:13px;">{{ reference }}</div>
     </div>
     <div style="height:20px"></div>
+    <p style="font-size:13px; color:#56625b; line-height:1.7; margin:0 0 16px;">
+      <strong>Next:</strong> once you spend it, post an update with photos of the receipts and the amount spent.
+      Donors give again when they can see where their money went.
+    </p>
     <div style="text-align:center;">
-      <a class="button" href="{{ dashboard_link }}">Go to your dashboard</a>
+      <a class="button" href="{{ update_link or dashboard_link }}">{% if update_link %}Post receipts{% else %}Go to your dashboard{% endif %}</a>
     </div>
   </div>
 {% endblock %}

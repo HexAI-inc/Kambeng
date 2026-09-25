@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from app.services.campaign_access import can_manage_campaign
 from app.api.routes.auth import get_current_user
 from app.core.logging_config import get_logger
 from app.db.database import get_db
@@ -57,7 +58,7 @@ async def list_campaign_goals_for_owner(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to manage goals for this campaign")
 
     result = await db.execute(
@@ -79,7 +80,7 @@ async def create_campaign_goal(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to create goals for this campaign")
 
     goal = CampaignGoal(
@@ -124,7 +125,7 @@ async def update_campaign_goal(
     if campaign is None:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to update this goal")
 
     if goal_in.title is not None:

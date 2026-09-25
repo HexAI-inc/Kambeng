@@ -2,29 +2,36 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { AppstoreOutlined, ReadOutlined, HeartOutlined, ThunderboltOutlined, SearchOutlined } from "@ant-design/icons";
-import { usePublicCampaignDiscovery } from "@/hooks/use-frontend-data";
+import { AppstoreOutlined, SearchOutlined } from "@ant-design/icons";
+import { usePopularCampaignTags, usePublicCampaignDiscovery } from "@/hooks/use-frontend-data";
+import { CAMPAIGN_CATEGORIES, getCampaignCategory, normalizeTag } from "@/lib/campaign-categories";
+import { OrganizationBadge } from "@/components/campaigns/organization-badge";
 
-type BrowseFilter = "all" | "schools" | "health" | "emergency";
-
-type IconComp = React.ComponentType<{ style?: React.CSSProperties }>;
-const FILTERS: Array<{ value: BrowseFilter; label: string; icon: IconComp; keywords?: string[] }> = [
-  { value: "all",       label: "All",       icon: AppstoreOutlined },
-  { value: "schools",   label: "Education", icon: ReadOutlined,        keywords: ["school", "education", "classroom", "student"] },
-  { value: "health",    label: "Health",    icon: HeartOutlined,        keywords: ["health", "clinic", "medical", "hospital"] },
-  { value: "emergency", label: "Emergency", icon: ThunderboltOutlined,  keywords: ["flood", "relief", "emergency", "disaster"] },
-];
-
-function matchesFilter(
-  item: { title: string; slug: string; description: string; mode: string },
-  filter: BrowseFilter,
-) {
-  if (filter === "all") return true;
-  const keywords = FILTERS.find((e) => e.value === filter)?.keywords ?? [];
-  const haystack = [item.title, item.slug, item.description, item.mode].join(" ").toLowerCase();
-  return keywords.some((kw) => haystack.includes(kw));
+function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      style={{
+        display: "flex", alignItems: "center", gap: 6,
+        padding: "8px 16px",
+        borderRadius: 20,
+        border: active ? "1px solid rgba(20,120,74,0.4)" : "1px solid rgba(21,32,26,0.08)",
+        background: active ? "rgba(20,120,74,0.1)" : "rgba(21,32,26,0.04)",
+        color: active ? "#14784a" : "#56625b",
+        fontSize: 13,
+        fontWeight: active ? 600 : 400,
+        cursor: "pointer",
+        transition: "all 0.2s",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {children}
+    </button>
+  );
 }
 
 function ProgressBar({ value, max }: { value: number; max: number }) {
@@ -64,7 +71,8 @@ function CampaignSkeleton() {
   );
 }
 
-function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePublicCampaignDiscovery>["data"] extends Array<infer T> | undefined ? T : never; index: number }) {
+function CampaignCard({ campaign, index, onTagClick }: { campaign: ReturnType<typeof usePublicCampaignDiscovery>["data"] extends Array<infer T> | undefined ? T : never; index: number; onTagClick: (tag: string) => void }) {
+  const category = getCampaignCategory(campaign.category);
   const pct = campaign.target_amount && campaign.target_amount > 0
     ? Math.min(100, (campaign.amount_raised / campaign.target_amount) * 100)
     : 0;
@@ -159,10 +167,22 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
 
       {/* Body */}
       <div style={{ padding: "18px 20px 20px", display: "flex", flexDirection: "column", flex: 1, gap: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          {category && (
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              fontSize: 11, fontWeight: 600, color: "#14784a",
+              background: "#e8f2ed",
+              padding: "2px 8px", borderRadius: 4,
+              textTransform: "uppercase", letterSpacing: "0.05em",
+            }}>
+              <category.icon style={{ fontSize: 11 }} />
+              {category.label}
+            </span>
+          )}
           <span style={{
-            fontSize: 11, fontWeight: 600, color: "#14784a",
-            background: "#e8f2ed",
+            fontSize: 11, fontWeight: 600, color: "#56625b",
+            background: "rgba(21,32,26,0.05)",
             padding: "2px 8px", borderRadius: 4,
             textTransform: "uppercase", letterSpacing: "0.05em",
           }}>
@@ -181,6 +201,13 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
           {campaign.title}
         </h3>
 
+        {campaign.organization && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: -4 }}>
+            <span style={{ fontSize: 12, color: "#56625b", fontWeight: 600 }}>{campaign.organization.name}</span>
+            <OrganizationBadge verified={campaign.organization.is_verified} size="sm" />
+          </div>
+        )}
+
         <p style={{
           margin: 0, fontSize: 13, color: "#56625b", lineHeight: 1.6,
           display: "-webkit-box",
@@ -191,6 +218,26 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
         }}>
           {campaign.description}
         </p>
+
+        {campaign.tags && campaign.tags.length > 0 && (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {campaign.tags.slice(0, 3).map((tag) => (
+              <button
+                key={tag}
+                onClick={() => onTagClick(tag)}
+                style={{
+                  padding: 0, border: "none", background: "none", cursor: "pointer",
+                  fontSize: 12, color: "#14784a", fontWeight: 500,
+                }}
+              >
+                #{tag}
+              </button>
+            ))}
+            {campaign.tags.length > 3 && (
+              <span style={{ fontSize: 12, color: "#6e7872" }}>+{campaign.tags.length - 3}</span>
+            )}
+          </div>
+        )}
 
         {/* Progress */}
         <div style={{ marginTop: 4 }}>
@@ -253,9 +300,56 @@ function CampaignCard({ campaign, index }: { campaign: ReturnType<typeof usePubl
 }
 
 export default function CampaignDiscoveryPage() {
+  return (
+    <Suspense>
+      <CampaignDiscovery />
+    </Suspense>
+  );
+}
+
+function CampaignDiscovery() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<BrowseFilter>("all");
   const { data, isLoading } = usePublicCampaignDiscovery();
+  const { data: popularTags } = usePopularCampaignTags(12);
+
+  // Category and tag live in the URL so filtered views can be shared and
+  // campaign pages can link straight to them (/campaigns?tag=brikama).
+  const activeCategory = searchParams.get("category");
+  const rawTag = searchParams.get("tag");
+  const activeTag = rawTag ? normalizeTag(rawTag) : null;
+
+  const setFilters = (next: { category?: string | null; tag?: string | null }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(next)) {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const item of data ?? []) {
+      if (item.category) counts[item.category] = (counts[item.category] ?? 0) + 1;
+    }
+    return counts;
+  }, [data]);
+
+  // Show categories that have campaigns (plus the active one), so the row
+  // stays short on phones.
+  const visibleCategories = CAMPAIGN_CATEGORIES.filter(
+    (c) => categoryCounts[c.value] || c.value === activeCategory,
+  );
+
+  // Keep the active tag visible even when it isn't one of the popular ones.
+  const tagChips = useMemo(() => {
+    const tags = (popularTags ?? []).map((t) => t.tag);
+    return activeTag && !tags.includes(activeTag) ? [activeTag, ...tags] : tags;
+  }, [activeTag, popularTags]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -264,10 +358,13 @@ export default function CampaignDiscoveryPage() {
         !q ||
         item.title.toLowerCase().includes(q) ||
         item.slug.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q);
-      return matchesQuery && matchesFilter(item, activeFilter);
+        item.description.toLowerCase().includes(q) ||
+        (item.tags ?? []).some((t) => t.includes(q));
+      const matchesCategory = !activeCategory || item.category === activeCategory;
+      const matchesTag = !activeTag || (item.tags ?? []).includes(activeTag);
+      return matchesQuery && matchesCategory && matchesTag;
     });
-  }, [activeFilter, data, query]);
+  }, [activeCategory, activeTag, data, query]);
 
   return (
     <div style={{ minHeight: "100vh" }}>
@@ -340,28 +437,47 @@ export default function CampaignDiscoveryPage() {
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {FILTERS.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setActiveFilter(f.value)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  padding: "8px 16px",
-                  borderRadius: 20,
-                  border: activeFilter === f.value ? "1px solid rgba(20,120,74,0.4)" : "1px solid rgba(21,32,26,0.08)",
-                  background: activeFilter === f.value ? "rgba(20,120,74,0.1)" : "rgba(21,32,26,0.04)",
-                  color: activeFilter === f.value ? "#14784a" : "#56625b",
-                  fontSize: 13,
-                  fontWeight: activeFilter === f.value ? 600 : 400,
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
+            <FilterChip active={!activeCategory} onClick={() => setFilters({ category: null })}>
+              <AppstoreOutlined style={{ fontSize: 13 }} />
+              All
+            </FilterChip>
+            {visibleCategories.map((c) => (
+              <FilterChip
+                key={c.value}
+                active={activeCategory === c.value}
+                onClick={() => setFilters({ category: activeCategory === c.value ? null : c.value })}
               >
-                <f.icon style={{ fontSize: 13 }} />
-                {f.label}
-              </button>
+                <c.icon style={{ fontSize: 13 }} />
+                {c.label}
+                <span style={{ fontSize: 11, opacity: 0.7 }}>{categoryCounts[c.value] ?? 0}</span>
+              </FilterChip>
             ))}
           </div>
+
+          {tagChips.length > 0 && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontSize: 12, color: "#6e7872", marginRight: 4 }}>Popular tags</span>
+              {tagChips.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setFilters({ tag: activeTag === tag ? null : tag })}
+                  aria-pressed={activeTag === tag}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 14,
+                    border: activeTag === tag ? "1px solid rgba(20,120,74,0.4)" : "1px solid transparent",
+                    background: activeTag === tag ? "rgba(20,120,74,0.1)" : "transparent",
+                    color: activeTag === tag ? "#14784a" : "#56625b",
+                    fontSize: 12,
+                    fontWeight: activeTag === tag ? 600 : 400,
+                    cursor: "pointer",
+                  }}
+                >
+                  #{tag}{activeTag === tag ? " ×" : ""}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -387,7 +503,7 @@ export default function CampaignDiscoveryPage() {
         ) : filtered.length > 0 ? (
           <AnimatePresence mode="wait">
             <motion.div
-              key={activeFilter + query}
+              key={`${activeCategory}|${activeTag}|${query}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -399,7 +515,7 @@ export default function CampaignDiscoveryPage() {
               }}
             >
               {filtered.map((campaign, i) => (
-                <CampaignCard key={campaign.id} campaign={campaign} index={i} />
+                <CampaignCard key={campaign.id} campaign={campaign} index={i} onTagClick={(tag) => setFilters({ tag })} />
               ))}
             </motion.div>
           </AnimatePresence>
@@ -420,7 +536,7 @@ export default function CampaignDiscoveryPage() {
               Try a different keyword or browse all campaigns.
             </p>
             <button
-              onClick={() => { setQuery(""); setActiveFilter("all"); }}
+              onClick={() => { setQuery(""); setFilters({ category: null, tag: null }); }}
               style={{
                 marginTop: 20,
                 padding: "10px 24px",

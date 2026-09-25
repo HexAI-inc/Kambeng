@@ -9,6 +9,7 @@ import {
   AdminCampaign,
   AdminDonation,
   AdminKYCSubmission,
+  AdminOrgVerification,
   AdminModerationReport,
   AdminPayoutOverview,
   AdminSystemStats,
@@ -24,6 +25,7 @@ import {
   CampaignUpdate,
   CampaignWithdrawalSummaryResponse,
   CampaignWithdrawalResponse,
+  WithdrawalPendingApprovalResponse,
   CommissionSummary,
   CommissionSourceItem,
   AdminCommissionWithdrawalResponse,
@@ -32,6 +34,12 @@ import {
   FilterOptionsResponse,
   HomeFeedResponse,
   KYCStatusResponse,
+  ClassBoard,
+  Organization,
+  OrganizationInvitation,
+  OrganizationType,
+  SpendingSummary,
+  WithdrawalRequest,
   Proof,
   PublicCampaignImage,
   RecurringDonation,
@@ -107,6 +115,32 @@ export function usePublicCampaignDiscovery() {
     queryFn: async () => {
       const response = await api.get<CampaignDiscoveryItem[]>("/utils/frontend/v1/campaign-cards");
       return response.data;
+    },
+  });
+}
+
+export function usePopularCampaignTags(limit = 20) {
+  return useQuery({
+    queryKey: ["popular-campaign-tags", limit],
+    queryFn: async () => {
+      const response = await api.get<Array<{ tag: string; count: number }>>("/campaigns/tags", { params: { limit } });
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useUpdateCampaignClassification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ slug, category, tags }: { slug: string; category: string | null; tags: string[] }) => {
+      const response = await api.patch<CampaignDiscoveryItem>(`/campaigns/${slug}/classification`, { category, tags });
+      return response.data;
+    },
+    onSuccess: () => {
+      for (const key of ["my-campaigns", "public-campaigns", "campaign-detail", "admin-campaigns", "admin-campaign-detail", "popular-campaign-tags"]) {
+        queryClient.invalidateQueries({ queryKey: [key] });
+      }
     },
   });
 }
@@ -519,6 +553,218 @@ export function useSubmitKYC() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["kyc-status"] });
+    },
+  });
+}
+
+// ===== Organization profiles & verification =====
+
+export type OrganizationInput = {
+  name: string;
+  org_type: OrganizationType;
+  region?: string | null;
+  village?: string | null;
+  description?: string | null;
+  representative_role?: string | null;
+};
+
+function invalidateOrganizations(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.invalidateQueries({ queryKey: ["my-organizations"] });
+}
+
+export function useMyOrganizations(enabled = true) {
+  return useQuery({
+    queryKey: ["my-organizations"],
+    enabled,
+    queryFn: async () => {
+      const response = await api.get<Organization[]>("/organizations/me");
+      return response.data;
+    },
+  });
+}
+
+export function useCreateOrganization() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: OrganizationInput) => {
+      const response = await api.post<Organization>("/organizations", payload);
+      return response.data;
+    },
+    onSuccess: () => invalidateOrganizations(queryClient),
+  });
+}
+
+export function useUpdateOrganization() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...payload }: Partial<OrganizationInput> & { id: number; approval_threshold?: number | null }) => {
+      const response = await api.patch<Organization>(`/organizations/${id}`, payload);
+      return response.data;
+    },
+    onSuccess: () => invalidateOrganizations(queryClient),
+  });
+}
+
+export function useUploadOrganizationLogo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: number; file: File }) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      const response = await api.post<Organization>(`/organizations/${id}/logo`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    },
+    onSuccess: () => invalidateOrganizations(queryClient),
+  });
+}
+
+export function useSubmitOrgVerification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, formData }: { id: number; formData: FormData }) => {
+      const response = await api.post<Organization>(`/organizations/${id}/verification`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    },
+    onSuccess: () => invalidateOrganizations(queryClient),
+  });
+}
+
+export function useMyOrganizationInvitations(enabled = true) {
+  return useQuery({
+    queryKey: ["my-organization-invitations"],
+    enabled,
+    queryFn: async () => {
+      const response = await api.get<OrganizationInvitation[]>("/organizations/invitations/me");
+      return response.data;
+    },
+  });
+}
+
+export function useRespondToInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ memberId, accept }: { memberId: number; accept: boolean }) => {
+      await api.post(`/organizations/invitations/${memberId}/${accept ? "accept" : "decline"}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-organization-invitations"] });
+      invalidateOrganizations(queryClient);
+      queryClient.invalidateQueries({ queryKey: ["my-campaigns"] });
+    },
+  });
+}
+
+export function useInviteOrganizationMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, identifier, title }: { id: number; identifier: string; title?: string }) => {
+      const response = await api.post<Organization>(`/organizations/${id}/members`, { identifier, title });
+      return response.data;
+    },
+    onSuccess: () => invalidateOrganizations(queryClient),
+  });
+}
+
+export function useRemoveOrganizationMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, memberId }: { id: number; memberId: number }) => {
+      await api.delete(`/organizations/${id}/members/${memberId}`);
+    },
+    onSuccess: () => {
+      invalidateOrganizations(queryClient);
+      queryClient.invalidateQueries({ queryKey: ["my-campaigns"] });
+    },
+  });
+}
+
+export function useWithdrawalRequests(campaignId?: number, enabled = true) {
+  return useQuery({
+    queryKey: ["withdrawal-requests", campaignId],
+    enabled: enabled && !!campaignId,
+    queryFn: async () => {
+      const response = await api.get<WithdrawalRequest[]>("/payments/withdrawal-requests", { params: { campaign_id: campaignId } });
+      return response.data;
+    },
+  });
+}
+
+export function useDecideWithdrawalRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ requestId, action, note }: { requestId: number; action: "approve" | "reject" | "cancel"; note?: string }) => {
+      const response = await api.post(`/payments/withdrawal-requests/${requestId}/${action}`, action === "reject" ? { note } : undefined);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["withdrawal-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["campaign-withdrawal-summary"] });
+    },
+  });
+}
+
+export function useCampaignClassBoard(slug?: string, enabled = true) {
+  return useQuery({
+    queryKey: ["class-board", slug],
+    enabled: enabled && !!slug,
+    queryFn: async () => {
+      const response = await api.get<ClassBoard>(`/campaigns/${slug}/class-board`);
+      return response.data;
+    },
+  });
+}
+
+export function useCampaignSpending(slug?: string, enabled = true) {
+  return useQuery({
+    queryKey: ["campaign-spending", slug],
+    enabled: enabled && !!slug,
+    queryFn: async () => {
+      const response = await api.get<SpendingSummary>(`/campaigns/${slug}/spending`);
+      return response.data;
+    },
+  });
+}
+
+export function useAdminOrgVerificationQueue(statusFilter?: string, enabled = true) {
+  return useQuery({
+    queryKey: ["admin-org-verifications", statusFilter ?? "PENDING"],
+    enabled,
+    queryFn: async () => {
+      const response = await api.get<AdminOrgVerification[]>("/admin/org-verifications", {
+        params: statusFilter ? { status: statusFilter } : undefined,
+      });
+      return response.data;
+    },
+  });
+}
+
+export function useAdminOrgVerificationDetail(submissionId?: number, enabled = true) {
+  return useQuery({
+    queryKey: ["admin-org-verification", submissionId],
+    enabled: enabled && !!submissionId,
+    queryFn: async () => {
+      const response = await api.get<AdminOrgVerification>(`/admin/org-verifications/${submissionId}`);
+      return response.data;
+    },
+  });
+}
+
+export function useDecideOrgVerification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ submissionId, approve, reason }: { submissionId: number; approve: boolean; reason?: string }) => {
+      const response = approve
+        ? await api.post<AdminOrgVerification>(`/admin/org-verifications/${submissionId}/approve`)
+        : await api.post<AdminOrgVerification>(`/admin/org-verifications/${submissionId}/reject`, { rejection_reason: reason });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-org-verifications"] });
+      queryClient.setQueryData(["admin-org-verification", data.id], data);
     },
   });
 }
@@ -960,7 +1206,7 @@ export function useWithdrawCampaignFunds() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ campaignId, amount }: { campaignId: number; amount: number }) => {
-      const response = await api.post<CampaignWithdrawalResponse>("/payments/withdraw", {
+      const response = await api.post<CampaignWithdrawalResponse | WithdrawalPendingApprovalResponse>("/payments/withdraw", {
         campaign_id: campaignId,
         amount,
       });
@@ -970,6 +1216,7 @@ export function useWithdrawCampaignFunds() {
       queryClient.invalidateQueries({ queryKey: ["my-campaigns"] });
       queryClient.invalidateQueries({ queryKey: ["session", "me"] });
       queryClient.invalidateQueries({ queryKey: ["campaign-withdrawal-summary", variables.campaignId] });
+      queryClient.invalidateQueries({ queryKey: ["withdrawal-requests", variables.campaignId] });
     },
   });
 }

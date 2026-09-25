@@ -25,6 +25,9 @@ class DonationCreate(DonationBase):
     amount: DonationAmount = Field(..., gt=0, description="Donation amount in whole dalasi, at least the platform minimum")
     campaign_id: int
     goal_id: Optional[int] = None
+    # "Class of 2009" — kept only when the campaign has its class board on.
+    # Up to a few years ahead so current pupils can give too.
+    graduating_class: Optional[int] = Field(default=None, ge=1940, le=datetime.now().year + 8)
     provider: Optional[DonationProvider] = None
     # Required only for provider="aps" — APS texts the OTP to this number.
     customer_mobile: Optional[str] = Field(default=None, max_length=20)
@@ -62,6 +65,7 @@ class DonationRead(DonationBase):
     id: int
     campaign_id: int
     goal_id: Optional[int] = None
+    graduating_class: Optional[int] = None
     client_reference: str # The DON-12345 reference sent to HexAI
     status: str # PENDING, SUCCEEDED, FAILED
     created_at: datetime

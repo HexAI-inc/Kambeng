@@ -1,6 +1,7 @@
-from app.models.campaign import Campaign, CampaignMode, CampaignStatus
+from app.models.campaign import Campaign, CampaignMode, CampaignStatus, CampaignTag
 from app.models.campaign_goal import CampaignGoal, GoalStatus
 from app.models.donation import Donation
+from app.models.organization import Organization, OrganizationMember, OrgVerification, WithdrawalRequest
 from app.models.payout import Payout
 from app.models.promotion import Promotion, PromoApplication, PromoType
 from app.models.proof import Proof
@@ -12,9 +13,14 @@ __all__ = [
 	"Campaign",
 	"CampaignMode",
 	"CampaignStatus",
+	"CampaignTag",
 	"CampaignGoal",
 	"GoalStatus",
 	"Donation",
+	"Organization",
+	"OrgVerification",
+	"OrganizationMember",
+	"WithdrawalRequest",
 	"Payout",
 	"Promotion",
 	"PromoApplication",

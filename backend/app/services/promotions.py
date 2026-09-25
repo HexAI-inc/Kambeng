@@ -111,8 +111,10 @@ async def resolve_withdrawal_fee_waiver(db: AsyncSession, campaign: Campaign, ow
         if promo and promo.promo_type == PromoType.CAMPAIGN_FEE_WAIVER.value and is_promo_live(promo):
             return WithdrawalWaiverResult(promo.fee_waiver_pct or 0.0, promo)
 
-    # 2. NGO onboarding — first campaign only, for organiser_type == 'ngo'
-    if campaign.organiser_type == "ngo":
+    # 2. NGO onboarding — first campaign only, for organization campaigns whose
+    # organization is verified (organiser_type alone is no longer trusted).
+    organization = campaign.organization if campaign.organization_id else None
+    if campaign.organiser_type == "ngo" and organization is not None and organization.is_verified:
         promo = await get_active_promo_by_type(db, PromoType.NGO_ONBOARDING)
         if promo:
             count_result = await db.execute(select(func.count(Campaign.id)).where(Campaign.user_id == owner.id))

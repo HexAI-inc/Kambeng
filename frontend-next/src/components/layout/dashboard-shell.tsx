@@ -76,21 +76,22 @@ function IcAdmin({ c }: { c: string }) {
 
 // ── Nav config ────────────────────────────────────────────────────────────────
 
-type Tab = { key: string; label: string; href: string; icon: (c: string) => React.ReactNode };
+type Tab = { key: string; label: string; href: string; icon: (c: string) => React.ReactNode; also?: string[] };
 
 const BASE_TABS: Tab[] = [
   { key: "home",      label: "Home",      href: "/dashboard",              icon: (c) => <IcHome c={c} /> },
   { key: "campaigns", label: "Campaigns", href: "/dashboard/my-campaigns", icon: (c) => <IcCampaigns c={c} /> },
   { key: "giving",    label: "Giving",    href: "/dashboard/my-donations", icon: (c) => <IcGiving c={c} /> },
-  { key: "kyc",       label: "KYC",       href: "/dashboard/kyc",          icon: (c) => <IcKYC c={c} /> },
+  // Covers both identity (KYC) and organization verification.
+  { key: "kyc",       label: "KYC",       href: "/dashboard/kyc",          icon: (c) => <IcKYC c={c} />, also: ["/dashboard/organizations"] },
   { key: "profile",   label: "Profile",   href: "/dashboard/profile",      icon: (c) => <IcProfile c={c} /> },
 ];
 
 const ADMIN_TAB: Tab = { key: "admin", label: "Admin", href: "/admin/overview", icon: (c) => <IcAdmin c={c} /> };
 
-function isActive(pathname: string, href: string) {
+function isActive(pathname: string, href: string, also: string[] = []) {
   if (href === "/dashboard") return pathname === "/dashboard";
-  return pathname.startsWith(href);
+  return [href, ...also].some((prefix) => pathname.startsWith(prefix));
 }
 
 // ── Shell ─────────────────────────────────────────────────────────────────────
@@ -130,7 +131,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         {/* Desktop centre nav */}
         <nav className="dash-top-nav" style={{ display: "none", alignItems: "center", gap: 2 }}>
           {tabs.map((tab) => {
-            const active = isActive(pathname, tab.href);
+            const active = isActive(pathname, tab.href, tab.also);
             const col = active ? BLUE : "#56625b";
             return (
               <Link key={tab.key} href={tab.href} style={{ textDecoration: "none" }}>
@@ -213,7 +214,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         padding: "0 0 env(safe-area-inset-bottom)",
       }}>
         {tabs.map((tab) => {
-          const active = isActive(pathname, tab.href);
+          const active = isActive(pathname, tab.href, tab.also);
           const col = active ? BLUE : "#6e7872";
           return (
             <Link key={tab.key} href={tab.href} style={{ flex: 1, textDecoration: "none" }}>

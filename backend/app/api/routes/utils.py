@@ -5,15 +5,18 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import String, cast, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.services.campaign_access import can_manage_campaign
 from app.api.routes.auth import get_admin_user, get_current_user
+from app.api.routes.campaigns import apply_classification_filters
 from app.core.config import settings
 from app.core.logging_config import get_logger
 from app.db.database import get_db
-from app.models.campaign import Campaign, CampaignMode, CampaignStatus
+from app.models.campaign import CAMPAIGN_CATEGORIES, Campaign, CampaignMode, CampaignStatus, CampaignTag
 from app.models.donation import Donation
 from app.models.kyc import KYC, KYCStatus, KYCDocumentType
 from app.models.ledger import TransactionStatus, TransactionType
 from app.models.moderation import ModerationReport, ReportReason, ReportStatus
+from app.models.organization import Organization, OrgVerificationStatus
 from app.models.payout import Payout
 from app.models.review import Review
 from app.models.user import User
@@ -142,7 +145,13 @@ async def _build_home_feed_payload(db: AsyncSession, featured_limit: int, recent
     }
 
 
-async def _build_campaign_cards_payload(db: AsyncSession, limit: int, q: str | None):
+async def _build_campaign_cards_payload(
+    db: AsyncSession,
+    limit: int,
+    q: str | None,
+    category: str | None = None,
+    tag: str | None = None,
+):
     query = (
         select(
             Campaign.id,
@@ -156,9 +165,14 @@ async def _build_campaign_cards_payload(db: AsyncSession, limit: int, q: str | N
             cast(Campaign.status, String).label("status"),
             Campaign.created_at,
             Campaign.cover_image_url,
+            Campaign.category,
+            Organization.name.label("organization_name"),
+            Organization.verification_status.label("organization_status"),
         )
+        .outerjoin(Organization, Organization.id == Campaign.organization_id)
         .where(cast(Campaign.status, String) == CampaignStatus.ACTIVE.value)
     )
+    query = apply_classification_filters(query, category, tag)
 
     if q and q.strip():
         query_text = q.strip()
@@ -167,11 +181,24 @@ async def _build_campaign_cards_payload(db: AsyncSession, limit: int, q: str | N
                 Campaign.title.ilike(f"%{query_text}%"),
                 Campaign.slug.ilike(f"%{query_text}%"),
                 Campaign.description.ilike(f"%{query_text}%"),
+                Campaign.id.in_(
+                    select(CampaignTag.campaign_id).where(CampaignTag.tag.ilike(f"%{query_text}%"))
+                ),
             )
         )
 
     result = await db.execute(query.order_by(Campaign.created_at.desc()).limit(limit))
     rows = result.all()
+
+    tags_by_campaign: dict[int, list[str]] = {row.id: [] for row in rows}
+    if rows:
+        tag_rows = await db.execute(
+            select(CampaignTag.campaign_id, CampaignTag.tag)
+            .where(CampaignTag.campaign_id.in_(tags_by_campaign.keys()))
+            .order_by(CampaignTag.tag)
+        )
+        for campaign_id, tag_value in tag_rows.all():
+            tags_by_campaign[campaign_id].append(tag_value)
 
     return [
         {
@@ -186,6 +213,12 @@ async def _build_campaign_cards_payload(db: AsyncSession, limit: int, q: str | N
             "status": row.status,
             "created_at": row.created_at,
             "cover_image_url": _resolve_campaign_cover_image_url(row.id, row.cover_image_url),
+            "category": row.category,
+            "tags": tags_by_campaign[row.id],
+            "organization": (
+                {"name": row.organization_name, "is_verified": row.organization_status == OrgVerificationStatus.APPROVED.value}
+                if row.organization_name else None
+            ),
         }
         for row in rows
     ]
@@ -219,6 +252,7 @@ async def get_filter_options():
         "campaign": {
             "status": [item.value for item in CampaignStatus],
             "mode": [item.value for item in CampaignMode],
+            "category": list(CAMPAIGN_CATEGORIES),
         },
         "kyc": {
             "status": [item.value for item in KYCStatus],
@@ -457,10 +491,12 @@ async def get_frontend_home_feed(
 async def get_frontend_campaign_cards(
     limit: int = Query(default=60, ge=1, le=200),
     q: str | None = Query(default=None),
+    category: str | None = Query(default=None),
+    tag: str | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
 ):
     """Public campaign-card payload with cover image and summary fields."""
-    payload = await _build_campaign_cards_payload(db, limit, q)
+    payload = await _build_campaign_cards_payload(db, limit, q, category, tag)
     logger.info(
         "Frontend campaign cards fetched",
         extra={"action": "frontend_campaign_cards", "limit": limit, "has_query": bool(q)},
@@ -551,9 +587,11 @@ async def get_frontend_home_feed_v1(
 async def get_frontend_campaign_cards_v1(
     limit: int = Query(default=60, ge=1, le=200),
     q: str | None = Query(default=None),
+    category: str | None = Query(default=None),
+    tag: str | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
 ):
-    return await _build_campaign_cards_payload(db, limit, q)
+    return await _build_campaign_cards_payload(db, limit, q, category, tag)
 
 
 @router.get("/frontend/v1/counts")
@@ -713,7 +751,7 @@ async def regenerate_campaign_qr_codes(
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         from fastapi import HTTPException
         raise HTTPException(status_code=403, detail="Not authorized to regenerate QR codes for this campaign")
 

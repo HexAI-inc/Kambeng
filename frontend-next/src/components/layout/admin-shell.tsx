@@ -8,7 +8,7 @@ import {
   AppstoreOutlined, FundProjectionScreenOutlined, TeamOutlined,
   HeartOutlined, ReconciliationOutlined, PercentageOutlined,
   WalletOutlined, AuditOutlined, BarChartOutlined,
-  FileProtectOutlined, WarningOutlined, MailOutlined, AlertOutlined,
+  FileProtectOutlined, BankOutlined, WarningOutlined, MailOutlined, AlertOutlined,
   MenuOutlined, CloseOutlined, LogoutOutlined, SwapOutlined,
   MenuFoldOutlined, MenuUnfoldOutlined, NotificationOutlined, GiftOutlined,
   ApiOutlined,
@@ -57,6 +57,7 @@ const NAV: NavSection[] = [
     label: "Compliance",
     items: [
       { key: "kyc", label: "KYC Queue", href: "/admin/kyc-queue", icon: FileProtectOutlined },
+      { key: "org-verifications", label: "Organizations", href: "/admin/org-verifications", icon: BankOutlined },
       { key: "kyc-emails", label: "KYC Emails", href: "/admin/kyc-notification-emails", icon: MailOutlined },
       { key: "moderation", label: "Moderation", href: "/admin/moderation", icon: WarningOutlined },
       { key: "fraud-emails", label: "Fraud Emails", href: "/admin/fraud-report-notification-emails", icon: AlertOutlined },

@@ -104,6 +104,19 @@ class LocalStorageStrategy(StorageStrategy):
         url = f"{settings.MEDIA_URL_PREFIX}/{relative}"
         return url
 
+    def save_organization_file(
+        self, organization_id: int, file_content: bytes, file_extension: str, content_type: str, public: bool
+    ) -> str:
+        """Save an organization file. Local media is served as-is, so `public` has no effect here."""
+        extension = f".{file_extension.lstrip('.')}" if file_extension else ".bin"
+        file_name = f"{uuid.uuid4().hex}{extension}"
+
+        org_dir = self.media_root / "organizations" / str(organization_id)
+        org_dir.mkdir(parents=True, exist_ok=True)
+        (org_dir / file_name).write_bytes(file_content)
+
+        return f"{settings.MEDIA_URL_PREFIX}/organizations/{organization_id}/{file_name}"
+
     def presign_get(self, path: str, expires: int = 3600) -> str:
         """For local storage, the media URL is directly accessible via MEDIA_URL_PREFIX; return that URL.
 

@@ -5,6 +5,7 @@ import MediaViewer from "@/components/ui/MediaViewer";
 import { useKYCStatus, useSubmitKYC, useSessionProfile } from "@/hooks/use-frontend-data";
 import { useAppFeedback } from "@/components/ui";
 import { motion } from "framer-motion";
+import { VerificationTabs } from "@/components/layout/verification-tabs";
 
 const BLUE = "#14784a";
 const GREEN = "#1f9960";
@@ -203,6 +204,8 @@ export default function KYCPage() {
   return (
     <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+
+        <VerificationTabs />
 
         {/* Header */}
         <motion.div {...fadeUp(0)}>

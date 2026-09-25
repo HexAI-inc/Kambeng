@@ -26,7 +26,10 @@ import {
   useToggleCampaignSubscription,
 } from "@/hooks/use-frontend-data";
 import { api } from "@/lib/api";
+import { getCampaignCategory } from "@/lib/campaign-categories";
 import type { CampaignDiscoveryItem, CampaignGoal, CampaignReview, CampaignUpdate } from "@/types/frontend";
+import { OrganizationCard } from "@/components/campaigns/organization-badge";
+import { ClassBoardCard, SpendingStrip } from "@/components/campaigns/campaign-accountability";
 
 const BLUE = "#14784a";
 const GREEN = "#1f9960";
@@ -992,6 +995,23 @@ export default function CampaignDetailPage() {
                     background: "#e8f2ed", color: BLUE,
                     border: "1px solid rgba(20,120,74,0.2)",
                   }}>{campaign.mode}</span>
+                  {getCampaignCategory(campaign.category) && (() => {
+                    const category = getCampaignCategory(campaign.category)!;
+                    return (
+                      <Link
+                        href={`/campaigns?category=${category.value}`}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 5,
+                          padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,
+                          background: "#fff", color: BLUE, textDecoration: "none",
+                          border: "1px solid rgba(20,120,74,0.2)",
+                        }}
+                      >
+                        <category.icon style={{ fontSize: 11 }} />
+                        {category.label}
+                      </Link>
+                    );
+                  })()}
                 </div>
                 <button
                   onClick={() => setShowShare(true)}
@@ -1045,7 +1065,25 @@ export default function CampaignDetailPage() {
                 {campaign.title}
               </h1>
 
-              {campaign.owner && (
+              {campaign.tags && campaign.tags.length > 0 && (
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+                  {campaign.tags.map((tag) => (
+                    <Link
+                      key={tag}
+                      href={`/campaigns?tag=${encodeURIComponent(tag)}`}
+                      style={{ fontSize: 13, color: BLUE, fontWeight: 500, textDecoration: "none" }}
+                    >
+                      #{tag}
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {campaign.organization && (
+                <OrganizationCard org={campaign.organization} owner={campaign.owner} />
+              )}
+
+              {campaign.owner && !campaign.organization && (
                 <Link href={`/profiles/${campaign.owner.id}`} style={{ textDecoration: "none", alignSelf: "flex-start" }}>
                   <div
                     style={{
@@ -1166,6 +1204,9 @@ export default function CampaignDetailPage() {
       <div className="campaign-body">
         {/* Left column */}
         <div style={{ display: "flex", flexDirection: "column", gap: 20, minWidth: 0 }}>
+
+          <SpendingStrip slug={campaign.slug} />
+          <ClassBoardCard slug={campaign.slug} />
 
           {/* Campaign Updates — first because it builds the most trust */}
           <motion.div {...fadeUp(0.1)}>

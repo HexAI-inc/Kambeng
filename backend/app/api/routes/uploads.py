@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import sqlalchemy as sa
 
+from app.services.campaign_access import can_manage_campaign
 from app.api.routes.auth import get_current_user
 from app.api.routes.auth import get_current_user_optional
 from app.db.database import get_db
@@ -87,7 +88,7 @@ async def upload_campaign_proof(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to upload proof for this campaign")
 
     if file.content_type not in ALLOWED_PROOF_TYPES:
@@ -191,7 +192,7 @@ async def list_campaign_proofs(
         raise HTTPException(status_code=404, detail="Campaign not found")
 
     # Determine viewer role relative to this campaign
-    is_owner = bool(current_user and campaign.user_id == current_user.id)
+    is_owner = can_manage_campaign(campaign, current_user, allow_admin=False)
     is_admin = bool(current_user and current_user.role == "ADMIN")
     
     # Check if viewer is a donor to this campaign using the transaction ledger.
@@ -245,7 +246,7 @@ async def delete_campaign_proof(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to modify proofs for this campaign")
 
     proof_result = await db.execute(
@@ -280,7 +281,7 @@ async def presign_campaign_image(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to presign uploads for this campaign")
 
     if settings.STORAGE_STRATEGY != "do_spaces":
@@ -347,7 +348,7 @@ async def upload_campaign_images(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to upload images for this campaign")
 
     if not files:
@@ -440,7 +441,7 @@ async def delete_campaign_image(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to delete images for this campaign")
 
     deleted = storage_strategy.delete_campaign_image(campaign_id=campaign.id, file_name=file_name)

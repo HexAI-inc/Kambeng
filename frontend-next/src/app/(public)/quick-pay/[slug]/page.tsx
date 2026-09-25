@@ -12,6 +12,9 @@ import { api } from "@/lib/api";
 import { useCampaignGoals } from "@/hooks/use-frontend-data";
 import type { CampaignDiscoveryItem, CampaignGoal } from "@/types/frontend";
 
+// Newest first; matches the API range (1940 to a few years ahead for current pupils).
+const CLASS_YEARS = Array.from({ length: new Date().getFullYear() + 8 - 1940 + 1 }, (_, i) => new Date().getFullYear() + 8 - i);
+
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000];
 // Below this the rail's cut and the per-transaction overhead swallow the gift.
 // Mirrors MINIMUM_DONATION_GMD on the server.
@@ -78,6 +81,7 @@ export default function QuickPayPage() {
   const [donorName, setDonorName] = useState("");
   const [donorEmail, setDonorEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [graduatingClass, setGraduatingClass] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("wave");
   const [apsPhone, setApsPhone] = useState("");
   const [apsStep, setApsStep] = useState<"phone" | "otp">("phone");
@@ -150,6 +154,7 @@ export default function QuickPayPage() {
           amount: parsed,
           donor_name: donorName.trim() || "Anonymous",
           message: message.trim() || undefined,
+          graduating_class: campaign?.class_board_enabled && graduatingClass ? Number(graduatingClass) : undefined,
         }),
       });
       const payload = await res.json().catch(() => ({})) as { redirect_url?: string; detail?: string };
@@ -179,6 +184,7 @@ export default function QuickPayPage() {
           amount: parsed,
           donor_name: donorName.trim() || "Anonymous",
           message: message.trim() || undefined,
+          graduating_class: campaign?.class_board_enabled && graduatingClass ? Number(graduatingClass) : undefined,
           provider: "waychit_card",
           customer_email: donorEmail.trim(),
         }),
@@ -213,6 +219,7 @@ export default function QuickPayPage() {
           amount: parsed,
           donor_name: donorName.trim() || "Anonymous",
           message: message.trim() || undefined,
+          graduating_class: campaign?.class_board_enabled && graduatingClass ? Number(graduatingClass) : undefined,
           provider: "aps",
           // No "+220" prefix — the gateway's authorize-customer step wants
           // just the local 7-digit number.
@@ -401,6 +408,21 @@ export default function QuickPayPage() {
                   onBlur={(e) => { e.target.style.borderColor = "rgba(21,32,26,0.1)"; }}
                 />
               </div>
+
+              {/* ── Graduating class (alumni campaigns) ── */}
+              {campaign?.class_board_enabled && (
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>CLASS OF (OPTIONAL)</label>
+                  <select
+                    value={graduatingClass} onChange={(e) => setGraduatingClass(e.target.value)}
+                    style={{ ...inputStyle, appearance: "auto" }}
+                  >
+                    <option value="">Not an alumnus / prefer not to say</option>
+                    {CLASS_YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                  <div style={{ fontSize: 11, color: "#6e7872", marginTop: 5 }}>Your gift counts towards your class on the giving board.</div>
+                </div>
+              )}
 
               {/* ── Message ── */}
               <div style={{ marginBottom: 22 }}>

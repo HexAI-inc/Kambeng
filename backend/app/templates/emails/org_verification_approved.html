@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block preheader %}{{ organization_name }} is now a verified organization on Kambeng.{% endblock %}
+{% block eyebrow %}Organization Verified{% endblock %}
+{% block heading %}{{ organization_name }} is verified{% endblock %}
+{% block intro %}Hi {{ full_name }}, we reviewed your evidence and approved {{ organization_name }}. Its campaigns now show a &ldquo;Verified organization&rdquo; badge, and you can withdraw funds raised for it once your own KYC is approved.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="detail">
+      <div class="detail-label">Payouts go to</div>
+      <div class="detail-value">{{ payout_wave_number }}</div>
+    </div>
+
+    <div style="height:20px"></div>
+
+    <div style="text-align:center;">
+      <a class="button" href="{{ dashboard_link }}">Go to your organizations</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}Donors keep giving when they see how the money was spent. Post receipts as a campaign update after each withdrawal.{% endblock %}

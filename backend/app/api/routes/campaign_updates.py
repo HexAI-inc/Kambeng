@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
+from app.services.campaign_access import can_manage_campaign
 from app.api.routes.auth import get_current_user, get_current_user_optional
 from app.db.database import get_db
 from app.models.campaign import Campaign
@@ -101,7 +102,7 @@ async def create_campaign_update(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Only the campaign owner can post updates")
 
     update = CampaignUpdate(
@@ -212,7 +213,7 @@ async def delete_campaign_update(
     if not update:
         raise HTTPException(status_code=404, detail="Update not found")
 
-    if update.user_id != current_user.id and current_user.role != "ADMIN":
+    if update.user_id != current_user.id and not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to delete this update")
 
     await db.delete(update)
@@ -231,7 +232,7 @@ async def upload_campaign_cover(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id and current_user.role != "ADMIN":
+    if not can_manage_campaign(campaign, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to update this campaign")
 
     allowed = {"image/jpeg", "image/png", "image/webp"}

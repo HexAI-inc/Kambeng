@@ -4,16 +4,19 @@ from sqlalchemy.future import select
 from datetime import UTC, datetime, date, timedelta
 import uuid, time
 from app.models.payout import Payout
+from app.models.organization import WithdrawalRequest, WithdrawalRequestStatus
 from app.models.user import User
 from app.models.ledger import TransactionLedger, TransactionType, TransactionStatus
 from app.models.audit_log import AdminAuditLog, AuditActionType
 from app.api.routes.auth import get_admin_user, get_current_user, get_current_user_optional
-from app.schemas.payout import PayoutRequest, CampaignWithdrawalSummaryResponse, WithdrawalHistoryItem
+from app.schemas.payout import PayoutRequest, CampaignWithdrawalSummaryResponse, WithdrawalHistoryItem, WithdrawalRequestDecision, WithdrawalRequestRead
 from app.core.config import settings
-from sqlalchemy import func
+from sqlalchemy import func, update as sa_update
 
 from app.db.database import get_db
 from app.models.campaign import Campaign, CampaignStatus
+from app.services.campaign_access import can_manage_campaign
+from app.services.spending import spending_summary
 from app.models.campaign_goal import CampaignGoal, GoalStatus
 from app.models.donation import Donation
 from app.models.recurring_donation import RecurringDonation
@@ -35,6 +38,7 @@ from app.services.hexai_service import HexAIGatewayError, HexAIPaymentService
 from app.services.email_service import (
     send_email,
     render_recurring_donation_confirmation_email,
+    render_withdrawal_approval_needed_email,
     render_withdrawal_initiated_email,
 )
 from app.services.payment_reconciliation import (
@@ -263,6 +267,7 @@ async def initiate_donation(
         donor_name=donation_in.donor_name,
         donor_email=donation_in.customer_email,
         message=donation_in.message,
+        graduating_class=donation_in.graduating_class if campaign.class_board_enabled else None,
         status="PENDING",
         provider=donation_in.provider or "wave",
         gateway_transaction_id=gateway_data.get("transaction_id"),
@@ -372,40 +377,136 @@ async def confirm_aps_donation(
     
     
     
+def resolve_payout_destination(campaign: Campaign, owner: User) -> tuple[str, str | None, str | None]:
+    """(wave number, recipient name, reason withdrawals are blocked or None).
+
+    Organization campaigns pay the number declared in the approved
+    organization verification; everything else pays the owner. Requires
+    campaign.organization to be loaded (it is selectin)."""
+    organization = campaign.organization if campaign.organization_id else None
+    if organization is None:
+        return owner.wave_number, owner.full_name, None
+    if not organization.is_verified:
+        return owner.wave_number, owner.full_name, (
+            f"This campaign raises money for {organization.name}. Withdrawals open once the organization is verified "
+            f"(current status: {organization.verification_status}). Submit its evidence from Dashboard → KYC → Organizations."
+        )
+    number = organization.payout_wave_number or owner.wave_number
+    name = organization.name if organization.payout_account_holder == "ORGANIZATION" else owner.full_name
+    return number, name, None
+
+
+async def _load_campaign_for_withdrawal(db: AsyncSession, campaign_id: int, user: User) -> Campaign:
+    """Campaign + the checks every withdrawal path shares: the user's own KYC,
+    permission to manage the campaign, and (for organizations) verification."""
+    if user.kyc_status != "APPROVED":
+        raise HTTPException(
+            status_code=403,
+            detail=f"KYC verification required to withdraw funds. Current status: {user.kyc_status}. Please submit and wait for approval."
+        )
+
+    result = await db.execute(select(Campaign).where(Campaign.id == campaign_id))
+    campaign = result.scalars().first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    # The owner, or — for organization campaigns — any of its managers.
+    # Platform admins deliberately can't move campaign money.
+    if not can_manage_campaign(campaign, user, allow_admin=False):
+        raise HTTPException(status_code=403, detail="Only the campaign's managers can withdraw funds")
+
+    # Organization campaigns also need the organization verified — personal
+    # KYC proves who the representative is, not that they may hold the
+    # organization's money.
+    _, _, org_block = resolve_payout_destination(campaign, user)
+    if org_block:
+        raise HTTPException(status_code=403, detail=org_block)
+    return campaign
+
+
+async def _check_balance(db: AsyncSession, campaign: Campaign, amount: float) -> None:
+    available_balance, _, _ = await get_campaign_withdrawal_summary(db, campaign)
+    if amount > available_balance:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Insufficient funds. You only have {floor_dalasi(max(available_balance, 0)):.0f} GMD available."
+        )
+
+
 @router.post("/withdraw")
 async def withdraw_funds(
         payout_req: PayoutRequest,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user) # 👈 Requires login!
     ):
-        
-    """Campaigners use this to withdraw funds to their Wave account"""
-    
-    # 1. Verify KYC Status (Required before withdrawals)
-    if current_user.kyc_status != "APPROVED":
-        raise HTTPException(
-            status_code=403,
-            detail=f"KYC verification required to withdraw funds. Current status: {current_user.kyc_status}. Please submit and wait for approval."
-        )
-    
-    # 2. Verify Campaign Ownership
-    result = await db.execute(select(Campaign).where(Campaign.id == payout_req.campaign_id))
-    campaign = result.scalars().first()
+    """Campaigners use this to withdraw funds to their Wave account.
 
-    if not campaign:
-        raise HTTPException(status_code=404, detail="Campaign not found")
+    For an organization with an approval threshold, a withdrawal above it
+    becomes a WithdrawalRequest instead (status PENDING_APPROVAL) and no
+    money moves until another manager approves it."""
+    campaign = await _load_campaign_for_withdrawal(db, payout_req.campaign_id, current_user)
+    await _check_balance(db, campaign, payout_req.amount)
 
-    if campaign.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only the campaign owner can withdraw funds")
+    organization = campaign.organization if campaign.organization_id else None
+    if organization is not None:
+        pending = (await db.execute(
+            select(WithdrawalRequest).where(
+                WithdrawalRequest.campaign_id == campaign.id,
+                WithdrawalRequest.status == WithdrawalRequestStatus.PENDING.value,
+            )
+        )).scalars().first()
+        if pending:
+            raise HTTPException(
+                status_code=409,
+                detail="A withdrawal for this campaign is already waiting for approval. Approve, reject or cancel it first.",
+            )
 
-    # 3. Calculate Available Balance (Updated for new fee structure)
-    available_balance, total_gross_withdrawn, _ = await get_campaign_withdrawal_summary(db, campaign)
+        threshold = organization.approval_threshold
+        if threshold is not None and payout_req.amount > threshold:
+            request = WithdrawalRequest(
+                campaign_id=campaign.id,
+                organization_id=organization.id,
+                amount=payout_req.amount,
+                requested_by_user_id=current_user.id,
+            )
+            db.add(request)
+            await db.commit()
+            await db.refresh(request)
+            await notify_approvers(db, request, campaign, organization, current_user)
+            logger.info(
+                "Withdrawal awaiting approval",
+                extra={"action": "withdrawal_request_created", "user_id": current_user.id, "campaign_id": campaign.id,
+                       "request_id": request.id, "amount": payout_req.amount, "threshold": threshold},
+            )
+            return {
+                "status": "PENDING_APPROVAL",
+                "message": f"Withdrawals above {threshold:,.0f} GMD need a second manager of {organization.name} to approve. They've been notified.",
+                "request_id": request.id,
+                "gross_amount": payout_req.amount,
+            }
 
-    if payout_req.amount > available_balance:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Insufficient funds. You only have {floor_dalasi(max(available_balance, 0)):.0f} GMD available."
-        )
+    return await execute_withdrawal(db, campaign, payout_req.amount, requested_by=current_user)
+
+
+async def execute_withdrawal(
+    db: AsyncSession,
+    campaign: Campaign,
+    amount: float,
+    *,
+    requested_by: User,
+    approved_by: User | None = None,
+) -> dict:
+    """Send the payout. Callers have already run _load_campaign_for_withdrawal
+    and _check_balance for the requester (and the approver, when there is one)."""
+    owner = (await db.execute(select(User).where(User.id == campaign.user_id))).scalars().first() or requested_by
+    # Money never goes to whoever clicked: it goes to the organization's
+    # verified payout number, or else the campaign owner's own number.
+    payee = owner
+    if campaign.organization_id and campaign.organization.owner_user_id != owner.id:
+        payee = (await db.execute(
+            select(User).where(User.id == campaign.organization.owner_user_id)
+        )).scalars().first() or owner
+    payout_number, payout_name, _ = resolve_payout_destination(campaign, payee)
 
     # 4. Calculate fee breakdown — check for an active fee waiver first
     # (Founding Campaigns / NGO onboarding / referral reward). See
@@ -415,11 +516,11 @@ async def withdraw_funds(
     # Fees are whole dalasi, rounded down (app/services/money.py): with a whole
     # gross in, the net below comes out whole too, and gross == net + fees
     # holds exactly.
-    gross_amount = payout_req.amount
+    gross_amount = amount
     hexai_fee = withdrawal_fee(gross_amount)
     standard_commission = floor_dalasi(settings.PLATFORM_FIXED_COMMISSION_GMD)
 
-    waiver = await resolve_withdrawal_fee_waiver(db, campaign, current_user)
+    waiver = await resolve_withdrawal_fee_waiver(db, campaign, owner)
     platform_commission = floor_dalasi(standard_commission * (1 - (waiver.waiver_pct / 100 if waiver.applies else 0.0)))
     fee_waived_amount = round(standard_commission - platform_commission, 2)
     net_amount = gross_amount - hexai_fee - platform_commission
@@ -447,7 +548,7 @@ async def withdraw_funds(
     client_reference = f"PAYOUT-{int(time.time() * 1000)}"
 
     # 5.5 Format the Phone Number for Wave (+220)
-    formatted_mobile = current_user.wave_number.strip()
+    formatted_mobile = payout_number.strip()
     if not formatted_mobile.startswith("+220"):
         # If they entered 07834351, strip the 0. Otherwise just prepend +220.
         formatted_mobile = f"+220{formatted_mobile.lstrip('0')}"
@@ -461,13 +562,13 @@ async def withdraw_funds(
     verify_data: dict = {}
     try:
         verification = await hexai_service.verify_payout_recipient(
-            mobile=formatted_mobile, name=current_user.full_name, amount=net_amount,
+            mobile=formatted_mobile, name=payout_name, amount=net_amount,
         )
         verify_data = verification.get("data", {})
     except Exception as exc:
         logger.warning(
             "Recipient verification unavailable — proceeding with payout anyway",
-            extra={"action": "payout_verify_recipient_failed", "user_id": current_user.id, "error": str(exc)},
+            extra={"action": "payout_verify_recipient_failed", "user_id": requested_by.id, "error": str(exc)},
         )
 
     if verify_data.get("receive_limit_reached"):
@@ -475,7 +576,7 @@ async def withdraw_funds(
     if verify_data.get("name_match") is False:
         logger.warning(
             "Payout recipient name mismatch — proceeding anyway",
-            extra={"action": "payout_verify_name_mismatch", "user_id": current_user.id, "gateway_name": verify_data.get("name")},
+            extra={"action": "payout_verify_name_mismatch", "user_id": requested_by.id, "gateway_name": verify_data.get("name")},
         )
 
     # 6. Process Payout with HexAI
@@ -484,7 +585,7 @@ async def withdraw_funds(
             requested_amount=net_amount,  # Send the net amount after Kambeng fees
             recipient_mobile=formatted_mobile,
             payout_reference=client_reference,
-            recipient_name=current_user.full_name # <--- Passes the real DB name
+            recipient_name=payout_name,
         )
     except HexAIGatewayError as e:
         # 4xx from the gateway is a permanent validation failure (e.g.
@@ -495,7 +596,7 @@ async def withdraw_funds(
             "Payout rejected by gateway",
             extra={
                 "action": "payout_gateway_rejected",
-                "user_id": current_user.id,
+                "user_id": requested_by.id,
                 "client_reference": client_reference,
                 "gateway_code": e.code,
                 "gateway_status": e.status_code,
@@ -516,6 +617,9 @@ async def withdraw_funds(
         amount=net_amount,
         status="PENDING",
         gateway_transaction_id=(hexai_response or {}).get("data", {}).get("transaction_id"),
+        recipient_wave_number=formatted_mobile,
+        requested_by_user_id=requested_by.id,
+        approved_by_user_id=approved_by.id if approved_by else None,
     )
     db.add(new_payout)
 
@@ -530,7 +634,7 @@ async def withdraw_funds(
         net_amount=net_amount,
         external_reference=client_reference,
         description=f"Withdrawal to {formatted_mobile}",
-        created_by_user_id=current_user.id,
+        created_by_user_id=requested_by.id,
         confirmed_at=None,
     )
     db.add(ledger_entry)
@@ -543,7 +647,7 @@ async def withdraw_funds(
             db,
             result=waiver,
             campaign=campaign,
-            owner=current_user,
+            owner=owner,
             payout=new_payout,
             fee_waived_amount=fee_waived_amount,
         )
@@ -553,8 +657,8 @@ async def withdraw_funds(
         "Withdrawal initiated",
         extra={
             "action": "withdraw_funds",
-            "user_id": current_user.id,
-            "email": current_user.email,
+            "user_id": requested_by.id,
+            "email": requested_by.email,
             "campaign_id": campaign.id,
             "gross_amount": gross_amount,
             "net_amount": net_amount,
@@ -568,16 +672,16 @@ async def withdraw_funds(
     try:
         dashboard_link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard/my-campaigns/{campaign.id}/withdrawals"
         send_email(
-            current_user.email,
+            requested_by.email,
             f"Withdrawal of {gross_amount:,.0f} GMD initiated — {campaign.title}",
             render_withdrawal_initiated_email(
-                full_name=current_user.full_name or current_user.email,
+                full_name=requested_by.full_name or requested_by.email,
                 campaign_title=campaign.title,
                 gross_amount=gross_amount,
                 hexai_fee=hexai_fee,
                 platform_fee=platform_commission,
                 net_amount=net_amount,
-                wave_number=current_user.wave_number,
+                wave_number=formatted_mobile,
                 reference=client_reference,
             ),
         )
@@ -595,9 +699,191 @@ async def withdraw_funds(
         # Kept in the campaign balance because payouts must be whole dalasi.
         "sub_dalasi_carried_forward": sub_dalasi_remainder,
         "net_received": net_amount,
-        "wave_number": current_user.wave_number,
+        "wave_number": formatted_mobile,
         "status": "PENDING",
     }
+
+
+async def notify_approvers(
+    db: AsyncSession, request: WithdrawalRequest, campaign: Campaign, organization, requester: User,
+) -> None:
+    """Email every other manager that a withdrawal is waiting for them."""
+    approver_ids = organization.active_manager_ids() - {requester.id}
+    if not approver_ids:
+        return
+    users = (await db.execute(select(User).where(User.id.in_(approver_ids)))).scalars().all()
+    link = f"{settings.FRONTEND_URL.rstrip('/')}/dashboard/my-campaigns/{campaign.id}/withdrawals"
+    for user in users:
+        if not user.email:
+            continue
+        try:
+            send_email(
+                user.email,
+                f"Approval needed: {request.amount:,.0f} GMD from {campaign.title}",
+                render_withdrawal_approval_needed_email(
+                    full_name=user.full_name or user.email,
+                    requester_name=requester.full_name or requester.email,
+                    organization_name=organization.name,
+                    campaign_title=campaign.title,
+                    amount=request.amount,
+                    review_link=link,
+                ),
+            )
+        except Exception:
+            logger.exception("Failed to send withdrawal approval email", extra={"request_id": request.id, "user_id": user.id})
+
+
+def _request_read(request: WithdrawalRequest, viewer: User, organization) -> WithdrawalRequestRead:
+    pending = request.status == WithdrawalRequestStatus.PENDING.value
+    is_manager = viewer.id in organization.active_manager_ids()
+    return WithdrawalRequestRead(
+        id=request.id,
+        campaign_id=request.campaign_id,
+        amount=request.amount,
+        status=request.status,
+        requested_by_user_id=request.requested_by_user_id,
+        requested_by_name=request.requested_by.full_name if request.requested_by else None,
+        decided_by_name=request.decided_by.full_name if request.decided_by else None,
+        decided_at=request.decided_at,
+        note=request.note,
+        payout_id=request.payout_id,
+        created_at=request.created_at,
+        can_approve=pending and is_manager and viewer.id != request.requested_by_user_id,
+        can_cancel=pending and viewer.id == request.requested_by_user_id,
+    )
+
+
+async def _load_request(db: AsyncSession, request_id: int) -> WithdrawalRequest:
+    request = (await db.execute(
+        select(WithdrawalRequest).where(WithdrawalRequest.id == request_id).execution_options(populate_existing=True)
+    )).scalars().first()
+    if not request:
+        raise HTTPException(status_code=404, detail="Withdrawal request not found")
+    return request
+
+
+async def _claim_pending(db: AsyncSession, request: WithdrawalRequest, new_status: str, user: User, note: str | None = None) -> None:
+    """Move PENDING -> new_status atomically, so two managers acting at once
+    can't both approve (and pay out) the same request."""
+    result = await db.execute(
+        sa_update(WithdrawalRequest)
+        .where(WithdrawalRequest.id == request.id, WithdrawalRequest.status == WithdrawalRequestStatus.PENDING.value)
+        .values(status=new_status, decided_by_user_id=user.id, decided_at=datetime.now(UTC), note=note)
+    )
+    if result.rowcount != 1:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="This request has already been decided.")
+    await db.commit()
+    await db.refresh(request)
+
+
+@router.get("/withdrawal-requests", response_model=list[WithdrawalRequestRead])
+async def list_withdrawal_requests(
+    campaign_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    campaign = (await db.execute(select(Campaign).where(Campaign.id == campaign_id))).scalars().first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    if not can_manage_campaign(campaign, current_user, allow_admin=False):
+        raise HTTPException(status_code=403, detail="Only the campaign's managers can view withdrawal requests")
+    if not campaign.organization_id:
+        return []
+    requests = (await db.execute(
+        select(WithdrawalRequest)
+        .where(WithdrawalRequest.campaign_id == campaign.id)
+        .order_by(WithdrawalRequest.created_at.desc())
+        .limit(50)
+    )).scalars().all()
+    return [_request_read(r, current_user, campaign.organization) for r in requests]
+
+
+@router.post("/withdrawal-requests/{request_id}/approve")
+async def approve_withdrawal_request(
+    request_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """A second manager approves; the payout is sent immediately."""
+    request = await _load_request(db, request_id)
+    if request.status != WithdrawalRequestStatus.PENDING.value:
+        raise HTTPException(status_code=409, detail="This request has already been decided.")
+    if request.requested_by_user_id == current_user.id:
+        raise HTTPException(status_code=403, detail="A different manager has to approve your withdrawal.")
+
+    # The approver passes every check the requester did: own KYC, manager of
+    # this organization, organization still verified.
+    campaign = await _load_campaign_for_withdrawal(db, request.campaign_id, current_user)
+    organization = campaign.organization
+    if request.requested_by_user_id not in organization.active_manager_ids():
+        raise HTTPException(status_code=409, detail="The person who asked for this withdrawal is no longer a manager. Reject it instead.")
+    await _check_balance(db, campaign, request.amount)
+
+    requester = (await db.execute(select(User).where(User.id == request.requested_by_user_id))).scalars().first()
+    await _claim_pending(db, request, WithdrawalRequestStatus.APPROVED.value, current_user)
+    try:
+        result = await execute_withdrawal(db, campaign, request.amount, requested_by=requester, approved_by=current_user)
+    except HTTPException as exc:
+        await db.rollback()
+        request.status = WithdrawalRequestStatus.FAILED.value
+        request.note = str(exc.detail)[:500]
+        await db.commit()
+        raise
+
+    payout = (await db.execute(select(Payout).where(Payout.client_reference == result["client_reference"]))).scalars().first()
+    request.payout_id = payout.id if payout else None
+    await db.commit()
+    logger.info(
+        "Withdrawal request approved",
+        extra={"action": "withdrawal_request_approved", "request_id": request.id, "approver_id": current_user.id,
+               "requester_id": request.requested_by_user_id, "campaign_id": campaign.id},
+    )
+    return {**result, "request_id": request.id, "approved_by": current_user.full_name}
+
+
+@router.post("/withdrawal-requests/{request_id}/reject", response_model=WithdrawalRequestRead)
+async def reject_withdrawal_request(
+    request_id: int,
+    body: WithdrawalRequestDecision,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    request = await _load_request(db, request_id)
+    campaign = (await db.execute(select(Campaign).where(Campaign.id == request.campaign_id))).scalars().first()
+    if request.requested_by_user_id == current_user.id:
+        raise HTTPException(status_code=403, detail="Cancel your own request instead of rejecting it.")
+    if not can_manage_campaign(campaign, current_user, allow_admin=False):
+        raise HTTPException(status_code=403, detail="Only the organization's managers can reject withdrawals")
+    await _claim_pending(db, request, WithdrawalRequestStatus.REJECTED.value, current_user, note=(body.note or "").strip() or None)
+
+    requester = request.requested_by
+    if requester and requester.email:
+        try:
+            send_email(
+                requester.email,
+                f"Withdrawal not approved — {campaign.title}",
+                f"<p>{current_user.full_name or 'Another manager'} didn't approve your withdrawal of "
+                f"{request.amount:,.0f} GMD from <strong>{campaign.title}</strong>.</p>"
+                + (f"<p>Reason: {request.note}</p>" if request.note else ""),
+            )
+        except Exception:
+            logger.exception("Failed to send withdrawal rejection email", extra={"request_id": request.id})
+    return _request_read(request, current_user, campaign.organization)
+
+
+@router.post("/withdrawal-requests/{request_id}/cancel", response_model=WithdrawalRequestRead)
+async def cancel_withdrawal_request(
+    request_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    request = await _load_request(db, request_id)
+    if request.requested_by_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the person who asked can cancel a withdrawal request")
+    await _claim_pending(db, request, WithdrawalRequestStatus.CANCELLED.value, current_user)
+    campaign = (await db.execute(select(Campaign).where(Campaign.id == request.campaign_id))).scalars().first()
+    return _request_read(request, current_user, campaign.organization)
 
 
 @router.get("/donations/{client_reference}/status")
@@ -706,7 +992,7 @@ async def get_payout_status(
     if payout.campaign_id:
         campaign_result = await db.execute(select(Campaign).where(Campaign.id == payout.campaign_id))
         campaign = campaign_result.scalars().first()
-        if campaign and campaign.user_id != current_user.id:
+        if campaign and not can_manage_campaign(campaign, current_user, allow_admin=False):
             raise HTTPException(status_code=403, detail="Not authorised to view this payout")
     else:
         campaign = None
@@ -763,14 +1049,23 @@ async def get_withdrawal_summary(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if campaign.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only the campaign owner can view withdrawal history")
+    if not can_manage_campaign(campaign, current_user, allow_admin=False):
+        raise HTTPException(status_code=403, detail="Only the campaign's managers can view withdrawal history")
 
     available_balance, total_net_withdrawn, payouts = await get_campaign_withdrawal_summary(db, campaign)
+    payout_number, _, org_block = resolve_payout_destination(campaign, current_user)
+    spending = await spending_summary(db, campaign.id)
 
     return CampaignWithdrawalSummaryResponse(
         campaign_id=campaign.id,
         campaign_title=campaign.title,
+        payout_wave_number=payout_number,
+        organization_name=campaign.organization.name if campaign.organization_id else None,
+        organization_verification_status=campaign.organization.verification_status if campaign.organization_id else None,
+        withdrawal_blocked_reason=org_block,
+        approval_threshold=campaign.organization.approval_threshold if campaign.organization_id else None,
+        spent_accounted_for=spending["accounted_for"],
+        spent_unaccounted=spending["unaccounted"],
         amount_raised=campaign.amount_raised,
         total_withdrawn=total_net_withdrawn,
         available_balance=available_balance,

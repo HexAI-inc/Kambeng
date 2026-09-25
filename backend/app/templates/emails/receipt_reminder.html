@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block preheader %}Show donors how the {{ amount }} GMD from {{ campaign_title }} was spent.{% endblock %}
+{% block eyebrow %}Show your receipts{% endblock %}
+{% block heading %}How was the money spent?{% endblock %}
+{% block intro %}Hi {{ full_name }}, a week ago you withdrew {{ amount }} GMD from {{ campaign_title }}. Donors give again when they can see where their money went: post an update with the receipts and the amount spent.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="detail">
+      <div class="detail-label">Not yet shown with receipts</div>
+      <div class="detail-value" style="color:#b9500b;">{{ unaccounted }} GMD</div>
+    </div>
+    <div style="height:20px"></div>
+    <div style="text-align:center;">
+      <a class="button" href="{{ update_link }}">Post a spending update</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}A photo of each receipt is enough. You'll only get this reminder once per withdrawal.{% endblock %}

@@ -38,6 +38,15 @@ class Payout(Base):
     )
 
     status = Column(String, default="PENDING") # PENDING, SUCCEEDED, FAILED
+
+    # Who moved the money and where it went. For organization campaigns the
+    # recipient is the organization's verified payout number, not the
+    # requester's, and a second manager may have approved it.
+    recipient_wave_number = Column(String, nullable=True)
+    requested_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    approved_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    # Set once the "post your receipts" reminder has gone out for this payout.
+    receipt_reminder_sent_at = Column(DateTime(timezone=True), nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

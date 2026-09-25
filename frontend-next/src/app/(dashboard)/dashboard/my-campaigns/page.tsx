@@ -2,8 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { TagsOutlined } from "@ant-design/icons";
 import { useMyCampaigns } from "@/hooks/use-frontend-data";
+import { CampaignClassificationModal } from "@/components/campaigns/campaign-classification-modal";
+import { getCampaignCategory } from "@/lib/campaign-categories";
+import type { CampaignDiscoveryItem } from "@/types/frontend";
 
 const BLUE = "#14784a";
 const GREEN = "#1f9960";
@@ -51,12 +56,16 @@ function fmt(n: number) {
 
 export default function MyCampaignsPage() {
   const { data: campaigns, isLoading, isError } = useMyCampaigns(true);
+  const [classifying, setClassifying] = useState<CampaignDiscoveryItem | null>(null);
 
   const totalRaised = (campaigns ?? []).reduce((s, c) => s + c.amount_raised, 0);
   const activeCnt = (campaigns ?? []).filter((c) => c.status === "ACTIVE").length;
 
   return (
     <>
+    {classifying && (
+      <CampaignClassificationModal campaign={classifying} open onClose={() => setClassifying(null)} />
+    )}
     <div style={{ minHeight: "100vh", padding: "28px clamp(16px, 4vw, 48px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
@@ -168,6 +177,17 @@ export default function MyCampaignsPage() {
                         <span style={{ fontSize: 11, color: "#6e7872" }}>/{c.slug}</span>
                       </div>
 
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 12 }}>
+                        {c.category ? (
+                          <span style={{ color: BLUE, fontWeight: 600 }}>{getCampaignCategory(c.category)?.label ?? c.category}</span>
+                        ) : (
+                          <span style={{ color: "#b9500b", fontWeight: 600 }}>No category yet</span>
+                        )}
+                        {(c.tags ?? []).map((tag) => (
+                          <span key={tag} style={{ color: "#56625b" }}>#{tag}</span>
+                        ))}
+                      </div>
+
                       <div style={{ fontSize: 16, fontWeight: 800, color: "#15201a", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
                         {c.title}
                       </div>
@@ -211,6 +231,17 @@ export default function MyCampaignsPage() {
                             </button>
                           </Link>
                         ))}
+                        <button
+                          onClick={() => setClassifying(c)}
+                          style={{
+                            display: "inline-flex", alignItems: "center", gap: 6,
+                            padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                            border: "1px solid rgba(21,32,26,0.1)", background: "rgba(21,32,26,0.04)", color: "#56625b",
+                          }}
+                        >
+                          <TagsOutlined />
+                          Category & tags
+                        </button>
                       </div>
                     </div>
                   </div>

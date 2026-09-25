@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block preheader %}{{ requester_name }} wants to withdraw {{ amount }} GMD for {{ organization_name }}. It needs your approval.{% endblock %}
+{% block eyebrow %}Approval needed{% endblock %}
+{% block heading %}A withdrawal is waiting for you{% endblock %}
+{% block intro %}Hi {{ full_name }}, {{ requester_name }} asked to withdraw money raised for {{ organization_name }}. Withdrawals this large need a second manager, so nothing is sent until you approve.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div style="display:flex;gap:12px;">
+      <div class="detail" style="flex:1;">
+        <div class="detail-label">Amount</div>
+        <div class="detail-value" style="color:#14784a;">{{ amount }} GMD</div>
+      </div>
+      <div class="detail" style="flex:1;">
+        <div class="detail-label">Campaign</div>
+        <div class="detail-value">{{ campaign_title }}</div>
+      </div>
+    </div>
+    <div style="height:20px"></div>
+    <div style="text-align:center;">
+      <a class="button" href="{{ review_link }}">Review the withdrawal</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}If you don't recognise this request, reject it and contact the rest of your team.{% endblock %}

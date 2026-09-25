@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAdminCampaignDetail } from "@/hooks/use-frontend-data";
 import { api } from "@/lib/api";
+import { CampaignClassificationModal } from "@/components/campaigns/campaign-classification-modal";
+import { getCampaignCategory } from "@/lib/campaign-categories";
 
 const BLUE = "#14784a";
 const GREEN = "#1f9960";
@@ -37,6 +39,7 @@ export default function CampaignEditPage() {
 
   const [status, setStatus] = useState<CampaignStatus | null>(null);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [classifying, setClassifying] = useState(false);
 
   const showToast = (msg: string, ok: boolean) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3000); };
 
@@ -98,6 +101,20 @@ export default function CampaignEditPage() {
             <Field label="Mode" value={String(campaign.mode ?? "—")} />
             <Field label="Amount Raised" value={`${Number(campaign.amount_raised ?? 0).toLocaleString()} GMD`} />
             <Field label="Target Amount" value={campaign.target_amount ? `${Number(campaign.target_amount).toLocaleString()} GMD` : "No target"} />
+            <Field label="Category" value={getCampaignCategory(campaign.category)?.label ?? campaign.category ?? "None"} />
+            <Field label="Tags" value={campaign.tags?.length ? campaign.tags.map((t) => `#${t}`).join("  ") : "None"} />
+          </div>
+
+          <div>
+            <button
+              onClick={() => setClassifying(true)}
+              style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(20,120,74,0.3)", background: "#ecf4f1", color: BLUE, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+            >
+              Edit category & tags
+            </button>
+            {classifying && (
+              <CampaignClassificationModal campaign={campaign} open onClose={() => setClassifying(false)} />
+            )}
           </div>
 
           {/* Editable: status */}

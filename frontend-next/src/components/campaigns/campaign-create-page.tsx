@@ -11,6 +11,9 @@ import { isAxiosError } from "axios";
 
 import { AppButton, AppCard, AppForm, AppInput, AppSelect, useAppFeedback } from "@/components/ui";
 import { useCreateCampaign } from "@/hooks/use-create-campaign";
+import { CampaignClassificationFields } from "@/components/campaigns/campaign-classification-fields";
+import { BeneficiaryFields } from "@/components/campaigns/beneficiary-fields";
+import { useMyOrganizations } from "@/hooks/use-frontend-data";
 import type { CampaignDiscoveryItem } from "@/types/frontend";
 
 const BLUE = "#14784a";
@@ -31,8 +34,21 @@ const campaignSchema = z
     mode: z.enum(["TARGET", "ONGOING"]),
     // Whole dalasi only — the API rejects bututs.
     target_amount: z.number().int("Target must be a whole number of dalasi").positive("Target amount must be greater than zero").optional(),
+    category: z.string({ error: "Pick a category so donors can find your campaign" }).min(1, "Pick a category so donors can find your campaign"),
+    tags: z.array(z.string()).max(8, "Use at most 8 tags"),
+    beneficiary_type: z.enum(["self", "someone_else", "organization"]),
+    organization_id: z.number().int().optional(),
+    // Undefined = let the server decide (on for schools and alumni associations).
+    class_board_enabled: z.boolean().optional(),
   })
   .superRefine((values, ctx) => {
+    if (values.beneficiary_type === "organization" && typeof values.organization_id !== "number") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["organization_id"],
+        message: "Choose the organization you're raising for",
+      });
+    }
     if (values.mode === "TARGET" && typeof values.target_amount !== "number") {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -135,10 +151,18 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
       description: "",
       mode: "TARGET",
       target_amount: undefined,
+      category: undefined,
+      tags: [],
+      beneficiary_type: "self",
+      organization_id: undefined,
+      class_board_enabled: undefined,
     },
   });
+  const { data: organizations = [] } = useMyOrganizations(true);
 
   const mode = useWatch({ control: form.control, name: "mode" });
+  const beneficiaryType = useWatch({ control: form.control, name: "beneficiary_type" });
+  const organizationId = useWatch({ control: form.control, name: "organization_id" });
 
   const onSubmit = form.handleSubmit(async (values) => {
     setSubmitError(null);
@@ -146,6 +170,11 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
       title: values.title.trim(),
       description: values.description.trim(),
       mode: values.mode,
+      category: values.category,
+      tags: values.tags,
+      beneficiary_type: values.beneficiary_type,
+      ...(values.beneficiary_type === "organization" ? { organization_id: values.organization_id } : {}),
+      ...(values.class_board_enabled !== undefined ? { class_board_enabled: values.class_board_enabled } : {}),
       ...(values.mode === "TARGET" && typeof values.target_amount === "number"
         ? { target_amount: values.target_amount }
         : {}),
@@ -269,6 +298,50 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
                 />
 
                 <Controller
+                  name="beneficiary_type"
+                  control={form.control}
+                  render={({ field: typeField }) => (
+                    <Controller
+                      name="organization_id"
+                      control={form.control}
+                      render={({ field: orgField, fieldState: orgState }) => (
+                        <BeneficiaryFields
+                          value={typeField.value}
+                          onChange={typeField.onChange}
+                          organizationId={orgField.value}
+                          onOrganizationChange={orgField.onChange}
+                          organizations={organizations}
+                          error={orgState.error?.message}
+                          showWithdrawalNote={variant === "user"}
+                        />
+                      )}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="class_board_enabled"
+                  control={form.control}
+                  render={({ field }) => {
+                    const org = organizations.find((o) => o.id === organizationId);
+                    const defaultOn = beneficiaryType === "organization"
+                      && (org?.org_type === "SCHOOL" || org?.org_type === "ALUMNI_ASSOCIATION");
+                    const checked = field.value ?? defaultOn;
+                    return (
+                      <label style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16, cursor: "pointer" }}>
+                        <input type="checkbox" checked={checked} onChange={(e) => field.onChange(e.target.checked)} style={{ marginTop: 3, accentColor: BLUE }} />
+                        <span>
+                          <span style={{ display: "block", color: "#15201a", fontSize: 13, fontWeight: 600 }}>Show a giving-by-class board</span>
+                          <span style={{ display: "block", color: "#626d66", fontSize: 12, marginTop: 2, lineHeight: 1.5 }}>
+                            Donors can add their graduating class, and classes compete on the campaign page. Great for alumni.
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  }}
+                />
+
+                <Controller
                   name="mode"
                   control={form.control}
                   render={({ field, fieldState }) => (
@@ -312,6 +385,28 @@ export function CampaignCreatePage({ variant }: CampaignCreatePageProps) {
                       />
                       {fieldState.error && <div style={{ marginTop: 6, color: "#b42323", fontSize: 12 }}>{fieldState.error.message}</div>}
                     </div>
+                  )}
+                />
+
+                <Controller
+                  name="category"
+                  control={form.control}
+                  render={({ field: categoryField, fieldState: categoryState }) => (
+                    <Controller
+                      name="tags"
+                      control={form.control}
+                      render={({ field: tagsField, fieldState: tagsState }) => (
+                        <CampaignClassificationFields
+                          category={categoryField.value}
+                          tags={tagsField.value ?? []}
+                          onCategoryChange={(value) => categoryField.onChange(value ?? undefined)}
+                          onTagsChange={tagsField.onChange}
+                          categoryError={categoryState.error?.message}
+                          tagsError={tagsState.error?.message}
+                          categoryRequired
+                        />
+                      )}
+                    />
                   )}
                 />
 

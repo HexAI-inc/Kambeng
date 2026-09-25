@@ -69,6 +69,125 @@ export type CampaignOwner = {
   kyc_verified: boolean;
 };
 
+export type OrganizationType =
+  | "SCHOOL"
+  | "FAITH"
+  | "HEALTH_CENTRE"
+  | "COMMUNITY_ASSOCIATION"
+  | "NGO"
+  | "ALUMNI_ASSOCIATION"
+  | "OTHER";
+
+export type OrgVerificationStatus = "NOT_SUBMITTED" | "SUBMITTED" | "REVIEWING" | "APPROVED" | "REJECTED";
+export type OrgEvidenceType = "REGISTRATION_CERTIFICATE" | "AUTHORIZATION_LETTER";
+export type PayoutAccountHolder = "ORGANIZATION" | "REPRESENTATIVE";
+export type BeneficiaryType = "self" | "someone_else" | "organization";
+
+/** What donors see — never includes payout details. */
+export type OrganizationPublic = {
+  id: number;
+  name: string;
+  org_type: OrganizationType;
+  region: string | null;
+  village: string | null;
+  logo_url: string | null;
+  description: string | null;
+  representative_role: string | null;
+  is_verified: boolean;
+};
+
+export type OrgVerification = {
+  id: number;
+  organization_id: number;
+  submitted_by_user_id: number;
+  evidence_type: OrgEvidenceType;
+  document_file_url: string;
+  issuer: string | null;
+  payout_wave_number: string;
+  payout_account_holder: PayoutAccountHolder;
+  status: OrgVerificationStatus;
+  reviewed_by_admin_id: number | null;
+  reviewed_at: string | null;
+  rejection_reason: string | null;
+  created_at: string;
+  updated_at: string | null;
+};
+
+export type OrganizationMember = {
+  id: number;
+  user_id: number;
+  full_name: string | null;
+  title: string | null;
+  status: "INVITED" | "ACTIVE";
+  kyc_verified: boolean;
+  accepted_at: string | null;
+  created_at: string;
+};
+
+export type OrganizationInvitation = {
+  member_id: number;
+  organization: OrganizationPublic;
+  title: string | null;
+  invited_by_name: string | null;
+  created_at: string;
+};
+
+export type WithdrawalRequest = {
+  id: number;
+  campaign_id: number;
+  amount: number;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "FAILED";
+  requested_by_user_id: number;
+  requested_by_name: string | null;
+  decided_by_name: string | null;
+  decided_at: string | null;
+  note: string | null;
+  payout_id: number | null;
+  created_at: string;
+  can_approve: boolean;
+  can_cancel: boolean;
+};
+
+export type ClassBoard = {
+  enabled: boolean;
+  classes: { graduating_class: number; total: number; donors: number }[];
+};
+
+export type SpendingSummary = {
+  withdrawn: number;
+  accounted_for: number;
+  unaccounted: number;
+  last_withdrawal_at: string | null;
+  last_spending_update_at: string | null;
+};
+
+export type Organization = OrganizationPublic & {
+  owner_user_id: number;
+  verification_status: OrgVerificationStatus;
+  verified_at: string | null;
+  rejection_reason: string | null;
+  payout_wave_number: string | null;
+  payout_account_holder: PayoutAccountHolder | null;
+  created_at: string;
+  updated_at: string | null;
+  latest_verification: OrgVerification | null;
+  approval_threshold: number | null;
+  /** OWNER manages team, verification and settings; MANAGER runs campaigns. */
+  my_role: "OWNER" | "MANAGER";
+  owner_name: string | null;
+  members: OrganizationMember[];
+};
+
+export type AdminOrgVerification = OrgVerification & {
+  organization: OrganizationPublic;
+  organization_verification_status: OrgVerificationStatus;
+  submitter_name: string | null;
+  submitter_email: string | null;
+  submitter_wave_number: string | null;
+  submitter_kyc_status: string | null;
+  campaign_count: number;
+};
+
 export type CampaignDiscoveryItem = {
   id: number;
   user_id: number;
@@ -81,7 +200,14 @@ export type CampaignDiscoveryItem = {
   status: string;
   created_at: string;
   cover_image_url: string | null;
+  category?: string | null;
+  tags?: string[];
   owner?: CampaignOwner | null;
+  beneficiary_type?: BeneficiaryType;
+  organization_id?: number | null;
+  /** Full profile on campaign endpoints; campaign-cards sends just name + badge. */
+  organization?: (Pick<OrganizationPublic, "name" | "is_verified"> & Partial<OrganizationPublic>) | null;
+  class_board_enabled?: boolean;
 };
 
 export type PublicProfileCampaign = {
@@ -388,6 +514,15 @@ export type CampaignWithdrawalResponse = {
   sub_dalasi_carried_forward: number;
   net_received: number;
   wave_number: string;
+  status: "PENDING";
+};
+
+/** Returned instead when the amount is above the organization's approval threshold. */
+export type WithdrawalPendingApprovalResponse = {
+  status: "PENDING_APPROVAL";
+  message: string;
+  request_id: number;
+  gross_amount: number;
 };
 
 export type WithdrawalHistoryItem = {
@@ -404,6 +539,15 @@ export type WithdrawalHistoryItem = {
 export type CampaignWithdrawalSummaryResponse = {
   campaign_id: number;
   campaign_title: string;
+  payout_wave_number?: string | null;
+  organization_name?: string | null;
+  organization_verification_status?: OrgVerificationStatus | null;
+  /** Set while the campaign's organization isn't verified. */
+  withdrawal_blocked_reason?: string | null;
+  /** Withdrawals above this need a second manager's approval. */
+  approval_threshold?: number | null;
+  spent_accounted_for?: number;
+  spent_unaccounted?: number;
   amount_raised: number;
   total_withdrawn: number;
   available_balance: number;

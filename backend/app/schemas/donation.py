@@ -73,6 +73,24 @@ class DonationRead(DonationBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class PublicDonor(BaseModel):
+    """Set only when the donor gave under their own account name."""
+    id: int
+    handle: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+class PublicDonationRead(BaseModel):
+    """A successful donation as shown on the public campaign page."""
+    id: int
+    amount: float
+    donor_name: Optional[str] = None
+    message: Optional[str] = None
+    graduating_class: Optional[int] = None
+    created_at: datetime
+    donor: Optional[PublicDonor] = None
+
+
 class DonationManualApproveRequest(BaseModel):
     reason: Optional[str] = None
 

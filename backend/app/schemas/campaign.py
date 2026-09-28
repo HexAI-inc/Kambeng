@@ -104,6 +104,8 @@ class CampaignOwner(BaseModel):
     """Public organizer attribution — who a campaign belongs to."""
     id: int
     full_name: Optional[str] = None
+    handle: Optional[str] = None
+    avatar_url: Optional[str] = None
     kyc_verified: bool = False
 
     model_config = ConfigDict(from_attributes=True)

@@ -51,6 +51,10 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: appRoot,
   },
+  // Custom profile URLs: kambeng.gm/@awa renders /profiles/awa, which looks the handle up.
+  async rewrites() {
+    return [{ source: "/@:handle", destination: "/profiles/:handle" }];
+  },
 };
 
 export default nextConfig;

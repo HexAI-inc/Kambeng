@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, JSON
+from sqlalchemy.sql import false, func
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 
@@ -9,6 +9,14 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String, index=True)
     bio = Column(String, nullable=True)  # public organizer bio shown on profile pages
+    avatar_url = Column(String, nullable=True)  # public profile photo
+    location = Column(String, nullable=True)  # free text, e.g. "Serekunda, KMC"
+    cover_url = Column(String, nullable=True)  # public profile banner
+    handle = Column(String(30), unique=True, nullable=True, index=True)  # kambeng.gm/@handle, stored lowercase
+    favorite_causes = Column(JSON, nullable=True)  # up to 3 campaign category slugs
+    social_links = Column(JSON, nullable=True)  # {"website": url, "facebook": url, ...}
+    # Opt-in: list campaigns this user gave to (under their own name) on their public profile
+    show_supported_campaigns = Column(Boolean, default=False, server_default=false(), nullable=False)
     email = Column(String, unique=True, index=True)
     wave_number = Column(String, unique=True, index=True) # e.g., +220...
     password_hash = Column(String)

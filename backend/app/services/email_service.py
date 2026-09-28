@@ -159,6 +159,23 @@ def render_campaign_update_notification(
     )
 
 
+def render_followed_organizer_new_campaign(
+    full_name: str,
+    organizer_name: str,
+    campaign_title: str,
+    campaign_link: str,
+    profile_link: str,
+) -> str:
+    return render_template(
+        "followed_organizer_new_campaign.html",
+        full_name=full_name,
+        organizer_name=organizer_name,
+        campaign_title=campaign_title,
+        campaign_link=campaign_link,
+        profile_link=profile_link,
+    )
+
+
 def render_kyc_pending_reminder(pending_count: int, submissions: list, queue_link: str) -> str:
     return render_template(
         "kyc_pending_reminder.html",

@@ -4,6 +4,7 @@ Abstract storage strategy interface and factory for campaign image storage.
 Supports both local disk and DigitalOcean Spaces via a configurable strategy pattern.
 """
 
+import re
 from abc import ABC, abstractmethod
 from typing import Dict, List
 from app.core.config import settings
@@ -48,9 +49,31 @@ class StorageStrategy(ABC):
         pass
 
     @abstractmethod
+    def save_user_image(self, user_id: int, kind: str, file_content: bytes, file_extension: str, content_type: str) -> str:
+        """Save a public profile image (kind: "avatar" or "cover") and return its URL."""
+        pass
+
+    @abstractmethod
+    def delete_user_image(self, user_id: int, kind: str, url: str) -> bool:
+        """Delete a profile image previously returned by save_user_image. Only
+        files we generated inside that user's folder are ever touched."""
+        pass
+
+    @abstractmethod
     def presign_get(self, path: str, expires: int = 3600) -> str:
         """Return a URL that can be used to GET the object. For local strategy this may be the direct URL."""
         pass
+
+
+# Names save_user_image generates: uuid4 hex + image extension
+USER_IMAGE_NAME = re.compile(r"^[0-9a-f]{32}\.(jpg|png|webp)$")
+
+
+def user_image_file_name(url: str | None) -> str | None:
+    """The generated file name at the end of a profile image URL, or None if
+    the URL doesn't end in one (so it's never ours to delete)."""
+    name = (url or "").split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
+    return name if USER_IMAGE_NAME.match(name) else None
 
 
 def get_storage_strategy() -> StorageStrategy:

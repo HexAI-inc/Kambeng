@@ -8,6 +8,7 @@ from app.models.proof import Proof
 from app.models.referral import Referral, CampaignShareClick, ReferralType
 from app.models.review import Review
 from app.models.user import User
+from app.models.user_follow import UserFollow
 
 __all__ = [
 	"Campaign",
@@ -31,6 +32,7 @@ __all__ = [
 	"ReferralType",
 	"Review",
 	"User",
+	"UserFollow",
 ]
 from app.models.user import User
 from app.models.campaign import Campaign

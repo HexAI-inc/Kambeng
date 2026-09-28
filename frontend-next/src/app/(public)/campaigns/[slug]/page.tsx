@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { profileHref } from "@/lib/profile-url";
 import { useParams } from "next/navigation";
 import { useMemo, useState, useCallback } from "react";
 import { CheckCircleOutlined, SafetyCertificateOutlined, FileTextOutlined, StarOutlined, AimOutlined } from "@ant-design/icons";
@@ -10,6 +11,7 @@ import { motion } from "framer-motion";
 
 import { AppProgress } from "@/components/ui";
 import { StyledSelect } from "@/components/ui/styled-select";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { UpdateFeedPost } from "@/components/UpdateFeedPost";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { ProofList } from "@/components/ProofList";
@@ -30,6 +32,7 @@ import { api } from "@/lib/api";
 import { getCampaignCategory } from "@/lib/campaign-categories";
 import type { CampaignDiscoveryItem, CampaignGoal, CampaignReview, CampaignUpdate } from "@/types/frontend";
 import { OrganizationCard } from "@/components/campaigns/organization-badge";
+import { RecentSupporters } from "@/components/campaigns/recent-supporters";
 import { ClassBoardCard, SpendingStrip } from "@/components/campaigns/campaign-accountability";
 
 const BLUE = "#14784a";
@@ -131,6 +134,14 @@ function IconFlag() {
     </svg>
   );
 }
+function IconHeart() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 000-7.8z"/>
+    </svg>
+  );
+}
+
 function IconBell() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -1087,7 +1098,7 @@ export default function CampaignDetailPage() {
               )}
 
               {campaign.owner && !campaign.organization && (
-                <Link href={`/profiles/${campaign.owner.id}`} style={{ textDecoration: "none", alignSelf: "flex-start" }}>
+                <Link href={profileHref(campaign.owner)} style={{ textDecoration: "none", alignSelf: "flex-start" }}>
                   <div
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 9,
@@ -1098,15 +1109,7 @@ export default function CampaignDetailPage() {
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(20,120,74,0.35)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(21,32,26,0.09)"; }}
                   >
-                    <div style={{
-                      width: 26, height: 26, borderRadius: "50%", flexShrink: 0,
-                      background: "linear-gradient(135deg, #e6f4ec, #cfe8da)",
-                      border: "1px solid rgba(20,120,74,0.35)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 11, fontWeight: 800, color: BLUE,
-                    }}>
-                      {(campaign.owner.full_name ?? "?").split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
-                    </div>
+                    <UserAvatar name={campaign.owner.full_name} src={campaign.owner.avatar_url} size={26} ring={1} />
                     <span style={{ fontSize: 13, color: "#56625b" }}>
                       Organized by <span style={{ color: "#15201a", fontWeight: 700 }}>{campaign.owner.full_name ?? "Kambeng organizer"}</span>
                     </span>
@@ -1371,6 +1374,12 @@ export default function CampaignDetailPage() {
                   })}
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {slug && (
+            <motion.div {...fadeUp(0.22)}>
+              <RecentSupporters slug={slug} header={<SectionHeader icon={<IconHeart />} title="Recent supporters" />} />
             </motion.div>
           )}
 

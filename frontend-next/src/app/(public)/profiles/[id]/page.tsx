@@ -5,7 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
+import { SocialLinksRow } from "@/components/profile/social-links";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { useFollowProfile, useSessionProfile } from "@/hooks/use-frontend-data";
 import { api } from "@/lib/api";
+import { getCampaignCategory } from "@/lib/campaign-categories";
+import { profileHref } from "@/lib/profile-url";
 import type { PublicProfile } from "@/types/frontend";
 
 const BLUE = "#14784a";
@@ -15,11 +20,11 @@ function fade(delay = 0) {
   return { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.32, delay, ease: "easeOut" as const } };
 }
 
-function Avatar({ name, size = 72 }: { name: string; size?: number }) {
-  const initials = name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
+function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: "linear-gradient(135deg, #e6f4ec, #cfe8da)", border: "2px solid rgba(20,120,74,0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.34, fontWeight: 800, color: BLUE, flexShrink: 0 }}>
-      {initials}
+    <div style={{ minWidth: 96 }}>
+      <div style={{ fontSize: 18, fontWeight: 900, color: "#15201a", letterSpacing: "-0.02em" }}>{value}</div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 2 }}>{label}</div>
     </div>
   );
 }
@@ -39,15 +44,41 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "missing">("loading");
+  const { data: session } = useSessionProfile(true);
+  const follow = useFollowProfile();
+  const [copied, setCopied] = useState(false);
+
+  const toggleFollow = async () => {
+    if (!profile) return;
+    if (!session) {
+      window.location.href = `/auth/login?next=${encodeURIComponent(profileHref(profile))}`;
+      return;
+    }
+    const next = !profile.is_following;
+    const apply = (following: boolean) =>
+      setProfile((p) => p && { ...p, is_following: following, followers_count: Math.max(0, p.followers_count + (following ? 1 : -1)) });
+    apply(next); // optimistic
+    try {
+      await follow.mutateAsync({ userId: profile.id, follow: next });
+    } catch {
+      apply(!next);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const response = await api.get<PublicProfile>(`/profiles/${id}`);
+        // The route param is a numeric id (/profiles/42) or a handle (/@awa → /profiles/awa)
+        const key = decodeURIComponent(id).replace(/^@/, "");
+        const path = /^\d+$/.test(key) ? `/profiles/${key}` : `/profiles/handle/${encodeURIComponent(key)}`;
+        const response = await api.get<PublicProfile>(path);
         if (!cancelled) {
           setProfile(response.data);
           setState("ready");
+          // Show the canonical custom URL in the address bar
+          const canonical = profileHref(response.data);
+          if (window.location.pathname !== canonical) window.history.replaceState(null, "", canonical);
         }
       } catch {
         if (!cancelled) setState("missing");
@@ -78,6 +109,16 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
   }
 
   const memberSince = new Date(profile.member_since).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const isOwnProfile = session?.id === profile.id;
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${profileHref(profile)}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard blocked — nothing to do */ }
+  };
+  const firstName = profile.full_name?.split(" ")[0] ?? "this organizer";
 
   return (
     <div style={{ minHeight: "100vh", padding: "36px clamp(16px,4vw,48px)", position: "relative", overflow: "hidden" }}>
@@ -86,27 +127,93 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
       <div style={{ maxWidth: 960, margin: "0 auto", position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 24 }}>
         {/* Organizer header */}
         <motion.div {...fade(0)}>
-          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 18, padding: "26px 28px", display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
-            <Avatar name={profile.full_name ?? "?"} />
-            <div style={{ flex: 1, minWidth: 220 }}>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 18, overflow: "hidden" }}>
+            <div style={{ position: "relative", height: "clamp(110px, 22vw, 190px)", background: "linear-gradient(135deg, #e6f4ec 0%, #cfe8da 55%, #eef6f1 100%)" }}>
+              {profile.cover_url && (
+                <Image src={profile.cover_url} alt="" fill unoptimized priority sizes="960px" style={{ objectFit: "cover" }} />
+              )}
+            </div>
+          <div style={{ padding: "0 28px 26px", display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
+            <div style={{ marginTop: -44, borderRadius: "50%", background: "#fff", padding: 4, flexShrink: 0 }}>
+              <UserAvatar name={profile.full_name} src={profile.avatar_url} size={88} ring={3} />
+            </div>
+            <div style={{ flex: 1, minWidth: 220, paddingTop: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>{profile.full_name ?? "Kambeng organizer"}</h1>
                 {profile.kyc_verified && <VerifiedBadge />}
+                <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => void copyLink()}
+                    title="Copy profile link"
+                    style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.12)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                  >
+                    {copied ? "Copied!" : "Copy link"}
+                  </button>
+                  {isOwnProfile ? (
+                    <Link href="/dashboard/profile" style={{ display: "inline-block", padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(21,32,26,0.12)", background: "#fff", color: "#15201a", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+                      Edit profile
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void toggleFollow()}
+                      disabled={follow.isPending}
+                      aria-pressed={profile.is_following}
+                      style={profile.is_following
+                        ? { padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(20,120,74,0.3)", background: "#e8f2ed", color: BLUE, fontSize: 13, fontWeight: 700, cursor: "pointer" }
+                        : { padding: "8px 18px", borderRadius: 10, border: "none", background: BLUE, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px rgba(20,120,74,0.25)" }}
+                    >
+                      {profile.is_following ? "Following" : "Follow"}
+                    </button>
+                  )}
+                </div>
               </div>
               <div style={{ fontSize: 13, color: "#626d66", marginTop: 6 }}>
-                Campaign organizer · Member since {memberSince}
+                {profile.handle && <span style={{ fontWeight: 700, color: "#56625b" }}>@{profile.handle} · </span>}
+                Campaign organizer{profile.location ? ` · ${profile.location}` : ""} · Member since {memberSince}
               </div>
               {profile.bio && (
                 <p style={{ margin: "14px 0 0", fontSize: 14, color: "#56625b", lineHeight: 1.7, maxWidth: 640, whiteSpace: "pre-line" }}>{profile.bio}</p>
               )}
+              {profile.favorite_causes.length > 0 && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 14 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.06em" }}>Cares about</span>
+                  {profile.favorite_causes.map((value) => {
+                    const cause = getCampaignCategory(value);
+                    if (!cause) return null;
+                    const Icon = cause.icon;
+                    return (
+                      <Link key={value} href={`/campaigns?category=${value}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 11px", borderRadius: 20, background: "#e8f2ed", border: "1px solid rgba(20,120,74,0.2)", color: BLUE, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+                        <Icon style={{ fontSize: 12 }} />{cause.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+              {Object.keys(profile.social_links).length > 0 && (
+                <div style={{ marginTop: 14 }}><SocialLinksRow links={profile.social_links} /></div>
+              )}
+              {!isOwnProfile && !profile.is_following && (
+                <div style={{ fontSize: 12, color: "#6e7872", marginTop: 12 }}>Follow to get an email when {firstName} starts a new campaign.</div>
+              )}
+              {(profile.campaigns.length > 0 || profile.followers_count > 0) && (
+                <div style={{ display: "flex", gap: 28, flexWrap: "wrap", marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(21,32,26,0.06)" }}>
+                  <Stat value={`${profile.total_raised.toLocaleString()} GMD`} label="Raised" />
+                  <Stat value={profile.supporters_count.toLocaleString()} label={profile.supporters_count === 1 ? "Donation" : "Donations"} />
+                  <Stat value={String(profile.campaigns.length)} label={profile.campaigns.length === 1 ? "Campaign" : "Campaigns"} />
+                  <Stat value={profile.followers_count.toLocaleString()} label={profile.followers_count === 1 ? "Follower" : "Followers"} />
+                </div>
+              )}
             </div>
+          </div>
           </div>
         </motion.div>
 
         {/* Campaigns */}
         <motion.div {...fade(0.06)}>
           <div style={{ fontSize: 16, fontWeight: 800, color: "#15201a", marginBottom: 14 }}>
-            Campaigns by {profile.full_name?.split(" ")[0] ?? "this organizer"} ({profile.campaigns.length})
+            Campaigns by {firstName} ({profile.campaigns.length})
           </div>
 
           {profile.campaigns.length === 0 ? (
@@ -166,6 +273,29 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
             </div>
           )}
         </motion.div>
+
+        {profile.supported_campaigns.length > 0 && (
+          <motion.div {...fade(0.1)}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#15201a", marginBottom: 4 }}>Campaigns {firstName} supports</div>
+            <div style={{ fontSize: 12, color: "#6e7872", marginBottom: 14 }}>Causes {firstName} has given to on Kambeng.</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
+              {profile.supported_campaigns.map((c) => (
+                <Link key={c.id} href={`/campaigns/${c.slug}`} style={{ textDecoration: "none" }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "center", padding: 10, borderRadius: 12, background: "#fff", border: "1px solid rgba(21,32,26,0.07)" }}>
+                    <div style={{ position: "relative", width: 52, height: 52, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "#e6f4ec" }}>
+                      {c.cover_image_url ? (
+                        <Image src={c.cover_image_url} alt="" fill unoptimized sizes="52px" style={{ objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: BLUE }}>{c.title.charAt(0).toUpperCase()}</div>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a", lineHeight: 1.35, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{c.title}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

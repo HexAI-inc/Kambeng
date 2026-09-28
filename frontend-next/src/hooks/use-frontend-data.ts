@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { api, getMyProfile } from "@/lib/api";
-import type { AuthUser } from "@/lib/api";
+import type { AuthUser, SocialLinks } from "@/lib/api";
 import {
   AdminAuditLog,
   AdminCampaign,
@@ -43,6 +43,9 @@ import {
   WithdrawalRequest,
   Proof,
   PublicCampaignImage,
+  PublicDonation,
+  FollowedProfile,
+  HandleAvailability,
   RecurringDonation,
   RecurringDonationListResponse,
 } from "@/types/frontend";
@@ -344,6 +347,11 @@ export function useUpdateMyProfile() {
     mutationFn: async (payload: {
       full_name?: string;
       bio?: string;
+      location?: string;
+      social_links?: SocialLinks;
+      show_supported_campaigns?: boolean;
+      handle?: string;
+      favorite_causes?: string[];
       account_purpose?: string;
       email?: string;
       wave_number?: string;
@@ -629,6 +637,71 @@ export function useUploadOrganizationLogo() {
       return response.data;
     },
     onSuccess: () => invalidateOrganizations(queryClient),
+  });
+}
+
+function invalidateSession(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.invalidateQueries({ queryKey: ["session", "me"] });
+}
+
+/** Upload a profile photo ("avatar") or profile banner ("cover"). */
+export function useUploadProfileImage(kind: "avatar" | "cover") {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      const response = await api.post<AuthUser>(`/auth/me/${kind}`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    },
+    onSuccess: () => invalidateSession(queryClient),
+  });
+}
+
+export function useRemoveProfileImage(kind: "avatar" | "cover") {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => (await api.delete<AuthUser>(`/auth/me/${kind}`)).data,
+    onSuccess: () => invalidateSession(queryClient),
+  });
+}
+
+export function useCampaignSupporters(slug: string | undefined, limit = 10) {
+  return useQuery({
+    queryKey: ["campaign-supporters", slug, limit],
+    enabled: Boolean(slug),
+    queryFn: async () => (await api.get<PublicDonation[]>(`/campaigns/${slug}/donations`, { params: { limit } })).data,
+  });
+}
+
+export function useFollowProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, follow }: { userId: number; follow: boolean }) => {
+      if (follow) await api.post(`/profiles/${userId}/follow`);
+      else await api.delete(`/profiles/${userId}/follow`);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["my-following"] }),
+  });
+}
+
+export function useMyFollowing(enabled = true) {
+  return useQuery({
+    queryKey: ["my-following"],
+    enabled,
+    queryFn: async () => (await api.get<FollowedProfile[]>("/profiles/me/following")).data,
+  });
+}
+
+/** Live availability for the handle picker; pass the debounced, normalized value. */
+export function useHandleAvailability(handle: string) {
+  return useQuery({
+    queryKey: ["handle-available", handle],
+    enabled: handle.length > 0,
+    staleTime: 30_000,
+    queryFn: async () => (await api.get<HandleAvailability>("/profiles/handle-available", { params: { handle } })).data,
   });
 }
 

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block preheader %}{{ organizer_name }} just launched {{ campaign_title }}.{% endblock %}
+{% block eyebrow %}New Campaign{% endblock %}
+{% block heading %}{{ organizer_name }} started a new campaign{% endblock %}
+{% block intro %}Hi {{ full_name }}, an organizer you follow on Kambeng just launched a fundraiser.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div style="font-weight:800; font-size:16px; margin-bottom:10px;">{{ campaign_title }}</div>
+    <p style="font-size:14px; color:#626d66; line-height:1.7; margin:0;">Be one of the first to support it — early gifts help a campaign build momentum.</p>
+
+    <div style="height:16px"></div>
+
+    <div style="text-align:center;">
+      <a class="button" href="{{ campaign_link }}">View the campaign</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}You get these emails because you follow {{ organizer_name }} on Kambeng. <a href="{{ profile_link }}">Unfollow from their profile</a> to stop.{% endblock %}

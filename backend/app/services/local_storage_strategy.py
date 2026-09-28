@@ -7,7 +7,7 @@ from typing import Dict, List
 import uuid
 
 from app.core.config import settings
-from app.services.storage_strategy import StorageStrategy
+from app.services.storage_strategy import StorageStrategy, user_image_file_name
 
 
 class LocalStorageStrategy(StorageStrategy):
@@ -116,6 +116,23 @@ class LocalStorageStrategy(StorageStrategy):
         (org_dir / file_name).write_bytes(file_content)
 
         return f"{settings.MEDIA_URL_PREFIX}/organizations/{organization_id}/{file_name}"
+
+    def save_user_image(self, user_id: int, kind: str, file_content: bytes, file_extension: str, content_type: str) -> str:
+        file_name = f"{uuid.uuid4().hex}.{file_extension.lstrip('.')}"
+        user_dir = self.media_root / f"{kind}s" / str(user_id)
+        user_dir.mkdir(parents=True, exist_ok=True)
+        (user_dir / file_name).write_bytes(file_content)
+        return f"{settings.MEDIA_URL_PREFIX}/{kind}s/{user_id}/{file_name}"
+
+    def delete_user_image(self, user_id: int, kind: str, url: str) -> bool:
+        file_name = user_image_file_name(url)
+        if not file_name:
+            return False
+        file_path = self.media_root / f"{kind}s" / str(user_id) / file_name
+        if not file_path.is_file():
+            return False
+        file_path.unlink()
+        return True
 
     def presign_get(self, path: str, expires: int = 3600) -> str:
         """For local storage, the media URL is directly accessible via MEDIA_URL_PREFIX; return that URL.

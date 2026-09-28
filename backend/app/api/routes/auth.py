@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import jwt
@@ -20,6 +21,7 @@ from app.schemas.user import (
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token
 from app.core.config import settings
 from app.core.logging_config import get_logger
+from app.services.storage_strategy import get_storage_strategy
 from app.services.email_service import (
     send_email,
     render_email_verification_email,
@@ -332,6 +334,10 @@ async def refresh_access_token(payload: dict):
         },
     }
 
+# KYC states in which the account name can no longer be self-edited
+NAME_LOCKED_KYC_STATUSES = ("SUBMITTED", "REVIEWING", "APPROVED")
+
+
 @router.get("/me", response_model=UserRead)
 async def get_my_profile(current_user: User = Depends(get_current_user)):
     """Get the currently logged-in user's details"""
@@ -346,10 +352,37 @@ async def update_my_profile(
 ):
     """Update the current user's own profile details."""
     if payload.full_name is not None:
-        current_user.full_name = payload.full_name.strip()
+        new_name = payload.full_name.strip()
+        if new_name != (current_user.full_name or "") and current_user.kyc_status in NAME_LOCKED_KYC_STATUSES:
+            # The name is what identity verification checks against the ID
+            # document; donors see "identity verified" next to it.
+            raise HTTPException(
+                status_code=409,
+                detail="Your name is locked because it's verified against your ID. Contact support to change it.",
+            )
+        current_user.full_name = new_name
 
     if payload.bio is not None:
         current_user.bio = payload.bio.strip() or None
+
+    if payload.location is not None:
+        current_user.location = payload.location.strip() or None
+
+    if payload.social_links is not None:
+        current_user.social_links = payload.social_links.model_dump(exclude_none=True) or None
+
+    if payload.show_supported_campaigns is not None:
+        current_user.show_supported_campaigns = payload.show_supported_campaigns
+
+    if payload.favorite_causes is not None:
+        current_user.favorite_causes = payload.favorite_causes or None
+
+    if payload.handle is not None and payload.handle != (current_user.handle or ""):
+        if payload.handle:
+            taken = await db.execute(select(User.id).where(User.handle == payload.handle, User.id != current_user.id))
+            if taken.first():
+                raise HTTPException(status_code=409, detail="That handle is already taken.")
+        current_user.handle = payload.handle or None
 
     if payload.account_purpose is not None:
         current_user.account_purpose = payload.account_purpose
@@ -375,10 +408,107 @@ async def update_my_profile(
             raise HTTPException(status_code=400, detail="New password must be at least 8 characters.")
         current_user.password_hash = get_password_hash(payload.new_password)
 
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:  # lost a race on a unique field (handle, email, Wave number)
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="That handle, email or Wave number is already in use.")
     await db.refresh(current_user)
     logger.info("Profile updated", extra={"action": "update_profile", "user_id": current_user.id})
     return current_user
+
+
+# kind -> (User column, max bytes). Both are public profile images.
+PROFILE_IMAGE_KINDS = {
+    "avatar": ("avatar_url", 5 * 1024 * 1024),
+    "cover": ("cover_url", 8 * 1024 * 1024),
+}
+# Declared type -> (extension, magic-byte check). The declared content type is
+# client-controlled, so the bytes must agree with it.
+PROFILE_IMAGE_TYPES = {
+    "image/jpeg": ("jpg", lambda b: b.startswith(b"\xff\xd8\xff")),
+    "image/png": ("png", lambda b: b.startswith(b"\x89PNG\r\n\x1a\n")),
+    "image/webp": ("webp", lambda b: b[:4] == b"RIFF" and b[8:12] == b"WEBP"),
+}
+
+
+async def _set_profile_image(kind: str, file: UploadFile, db: AsyncSession, user: User) -> User:
+    from app.api.routes.uploads import _to_public_media_url  # uploads imports this module
+
+    column, max_bytes = PROFILE_IMAGE_KINDS[kind]
+    spec = PROFILE_IMAGE_TYPES.get(file.content_type or "")
+    if not spec:
+        raise HTTPException(status_code=400, detail="Unsupported image type. Allowed: jpg, png, webp")
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+    if len(content) > max_bytes:
+        raise HTTPException(status_code=400, detail=f"File too large. Maximum size is {max_bytes // (1024 * 1024)}MB")
+    extension, matches = spec
+    if not matches(content):
+        raise HTTPException(status_code=400, detail="File content does not match its image type")
+
+    storage = get_storage_strategy()
+    previous = getattr(user, column)
+    setattr(user, column, _to_public_media_url(storage.save_user_image(
+        user_id=user.id, kind=kind, file_content=content, file_extension=extension, content_type=file.content_type,
+    )))
+    await db.commit()
+    await db.refresh(user)
+    _delete_old_image(storage, user.id, kind, previous)
+    logger.info("Profile image updated", extra={"action": f"update_{kind}", "user_id": user.id})
+    return user
+
+
+async def _clear_profile_image(kind: str, db: AsyncSession, user: User) -> User:
+    column = PROFILE_IMAGE_KINDS[kind][0]
+    previous = getattr(user, column)
+    setattr(user, column, None)
+    await db.commit()
+    await db.refresh(user)
+    _delete_old_image(get_storage_strategy(), user.id, kind, previous)
+    return user
+
+
+def _delete_old_image(storage, user_id: int, kind: str, url: str | None) -> None:
+    """Best-effort cleanup of a replaced/removed image, after the DB no longer points at it."""
+    if not url:
+        return
+    try:
+        storage.delete_user_image(user_id=user_id, kind=kind, url=url)
+    except Exception:
+        logger.exception("Failed to delete old profile image", extra={"user_id": user_id, "kind": kind})
+
+
+@router.post("/me/avatar", response_model=UserRead)
+async def upload_my_avatar(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Set the current user's public profile photo."""
+    return await _set_profile_image("avatar", file, db, current_user)
+
+
+@router.delete("/me/avatar", response_model=UserRead)
+async def remove_my_avatar(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Clear the current user's profile photo (falls back to initials)."""
+    return await _clear_profile_image("avatar", db, current_user)
+
+
+@router.post("/me/cover", response_model=UserRead)
+async def upload_my_cover(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Set the banner image on the current user's public profile."""
+    return await _set_profile_image("cover", file, db, current_user)
+
+
+@router.delete("/me/cover", response_model=UserRead)
+async def remove_my_cover(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return await _clear_profile_image("cover", db, current_user)
 
 
 @router.post("/request-password-reset")

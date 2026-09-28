@@ -1,3 +1,5 @@
+import type { SocialLinks } from "@/lib/api";
+
 export type HomeFeedCampaign = {
   id: number;
   title: string;
@@ -66,6 +68,8 @@ export type BootstrapResponse = {
 export type CampaignOwner = {
   id: number;
   full_name: string | null;
+  handle?: string | null;
+  avatar_url?: string | null;
   kyc_verified: boolean;
 };
 
@@ -226,10 +230,52 @@ export type PublicProfile = {
   id: number;
   full_name: string | null;
   bio: string | null;
+  handle: string | null;
+  avatar_url: string | null;
+  cover_url: string | null;
+  favorite_causes: string[];
+  location: string | null;
+  social_links: SocialLinks;
   kyc_verified: boolean;
   member_since: string;
+  total_raised: number;
+  supporters_count: number;
+  followers_count: number;
+  is_following: boolean;
+  /** Empty unless the owner opted in to showing it. */
+  supported_campaigns: SupportedCampaign[];
   campaigns: PublicProfileCampaign[];
 };
+
+export type SupportedCampaign = {
+  id: number;
+  title: string;
+  slug: string;
+  cover_image_url: string | null;
+};
+
+/** A successful donation on the public campaign page. `donor` is set only
+ *  when the donor gave under their own account name. */
+export type PublicDonation = {
+  id: number;
+  amount: number;
+  donor_name: string | null;
+  message: string | null;
+  graduating_class: number | null;
+  created_at: string;
+  donor: { id: number; handle: string | null; avatar_url: string | null } | null;
+};
+
+export type FollowedProfile = {
+  id: number;
+  full_name: string | null;
+  handle: string | null;
+  avatar_url: string | null;
+  kyc_verified: boolean;
+  followed_at: string;
+};
+
+export type HandleAvailability = { handle: string; available: boolean; reason: string | null };
 
 export type AdminCampaign = CampaignDiscoveryItem;
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { profileHref } from "@/lib/profile-url";
 
 import { organizationLocation, organizationTypeLabel } from "@/lib/organizations";
 import type { CampaignOwner, OrganizationPublic } from "@/types/frontend";
@@ -94,7 +95,7 @@ export function OrganizationCard({
         {owner && (
           <div style={{ fontSize: 12, color: "#626d66", marginTop: 8 }}>
             Managed by{" "}
-            <Link href={`/profiles/${owner.id}`} style={{ color: "#15201a", fontWeight: 700, textDecoration: "none" }}>
+            <Link href={profileHref(owner)} style={{ color: "#15201a", fontWeight: 700, textDecoration: "none" }}>
               {owner.full_name ?? "Kambeng organizer"}
             </Link>
             {org.representative_role ? `, ${org.representative_role}` : ""}

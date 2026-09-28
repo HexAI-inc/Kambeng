@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func, or_
 from sqlalchemy.future import select
@@ -18,8 +18,10 @@ from app.models.organization import MemberStatus, Organization, OrganizationMemb
 from app.services.spending import spending_summary
 from app.models.payout import Payout
 from app.models.user import User
+from app.models.user_follow import UserFollow
+from app.services.donor_identity import is_attributed
 from app.schemas.campaign import CampaignClassification, CampaignCreate, CampaignDetailRead, CampaignOwner, CampaignRead, ClassBoard, ClassBoardEntry, SpendingSummary, normalize_tags
-from app.schemas.donation import DonationRead
+from app.schemas.donation import PublicDonationRead, PublicDonor
 from app.schemas.fraud_report import FraudReportCreate, FraudReportRead
 from app.api.routes.auth import get_current_user
 from app.services.email_service import send_email
@@ -66,6 +68,7 @@ def generate_slug(title: str) -> str:
 @router.post("", response_model=CampaignRead, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 async def create_campaign(
     campaign_in: CampaignCreate, 
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user) # 👈 Requires user to be logged in!
 ):
@@ -130,7 +133,52 @@ async def create_campaign(
             "campaign_title": new_campaign.title,
         },
     )
+
+    try:
+        await _queue_follower_notifications(db, background_tasks, current_user, new_campaign)
+    except Exception:
+        logger.exception("Failed to queue follower notifications", extra={"campaign_id": new_campaign.id})
     return new_campaign
+
+
+async def _queue_follower_notifications(db: AsyncSession, background_tasks: BackgroundTasks, organizer: User, campaign: Campaign) -> None:
+    """Email the organizer's followers about their new campaign, after the response is sent."""
+    from app.services.email_service import render_followed_organizer_new_campaign
+
+    followers = (await db.execute(
+        select(User)
+        .join(UserFollow, UserFollow.follower_id == User.id)
+        .where(UserFollow.followed_id == organizer.id, User.is_active.is_(True), User.email.isnot(None))
+    )).scalars().all()
+    if not followers:
+        return
+
+    base = settings.FRONTEND_URL.rstrip("/")
+    campaign_link = f"{base}/campaigns/{campaign.slug}"
+    profile_link = f"{base}/@{organizer.handle}" if organizer.handle else f"{base}/profiles/{organizer.id}"
+    organizer_name = organizer.full_name or "An organizer you follow"
+    for follower in followers:
+        background_tasks.add_task(
+            _send_quietly,
+            follower.email,
+            f"{organizer_name} started a new campaign",
+            render_followed_organizer_new_campaign(
+                full_name=follower.full_name or "there",
+                organizer_name=organizer_name,
+                campaign_title=campaign.title,
+                campaign_link=campaign_link,
+                profile_link=profile_link,
+            ),
+        )
+    logger.info("Follower notifications queued", extra={"action": "follower_notify", "campaign_id": campaign.id, "count": len(followers)})
+
+
+def _send_quietly(to_email: str, subject: str, html: str) -> None:
+    try:
+        send_email(to_email, subject, html)
+    except Exception:
+        logger.exception("Failed to email follower", extra={"recipient": to_email})
+
 
 def apply_classification_filters(query, category: Optional[str], tag: Optional[str]):
     """Narrow a Campaign query to one category and/or one tag."""
@@ -215,6 +263,8 @@ async def get_campaign_by_slug(slug: str, db: AsyncSession = Depends(get_db)):
         detail.owner = CampaignOwner(
             id=campaign.owner.id,
             full_name=campaign.owner.full_name,
+            handle=campaign.owner.handle,
+            avatar_url=campaign.owner.avatar_url,
             kyc_verified=campaign.owner.kyc_status == "APPROVED",
         )
     return detail
@@ -377,7 +427,7 @@ async def get_class_board(slug: str, db: AsyncSession = Depends(get_db)):
         classes=[ClassBoardEntry(graduating_class=r.graduating_class, total=float(r.total or 0), donors=r.donors) for r in rows],
     )
 
-@router.get("/{slug}/donations", response_model=List[DonationRead])
+@router.get("/{slug}/donations", response_model=List[PublicDonationRead])
 async def get_campaign_donations(slug: str, skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     """Get successful donations for a specific campaign"""
     result = await db.execute(select(Campaign).where(Campaign.slug == slug))
@@ -386,15 +436,27 @@ async def get_campaign_donations(slug: str, skip: int = 0, limit: int = 100, db:
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    donations_result = await db.execute(
-        select(Donation)
+    rows = (await db.execute(
+        select(Donation, User)
+        .outerjoin(User, User.id == Donation.user_id)
         .where(Donation.campaign_id == campaign.id)
         .where(Donation.status == "SUCCEEDED")
         .order_by(Donation.created_at.desc())
         .offset(skip)
-        .limit(limit)
-    )
-    return donations_result.scalars().all()
+        .limit(min(limit, 100))
+    )).all()
+    return [
+        PublicDonationRead(
+            id=donation.id,
+            amount=donation.amount,
+            donor_name=donation.donor_name,
+            message=donation.message,
+            graduating_class=donation.graduating_class,
+            created_at=donation.created_at,
+            donor=PublicDonor(id=donor.id, handle=donor.handle, avatar_url=donor.avatar_url) if is_attributed(donation, donor) else None,
+        )
+        for donation, donor in rows
+    ]
 
 
 @router.post("/{slug}/report", response_model=FraudReportRead)

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/layout/brand-mark";
 import { usePathname } from "next/navigation";
 import { useSessionProfile } from "@/hooks/use-frontend-data";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 const BLUE = "#14784a";
 const BLUE_10 = "rgba(20,120,74,0.1)";
@@ -100,8 +101,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: me } = useSessionProfile(true);
 
-  const initials = me?.full_name
-    ?.split(" ").slice(0, 2).map((w: string) => w[0]).join("").toUpperCase() ?? "?";
   const firstName = me?.full_name?.split(" ")[0] ?? "";
   const isAdmin = me?.role === "ADMIN";
   const tabs = isAdmin ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS;
@@ -155,13 +154,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <div className="dash-top-nav" style={{ display: "none", alignItems: "center", gap: 12 }}>
           {me && (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{
-                width: 30, height: 30, borderRadius: "50%",
-                background: "linear-gradient(135deg, #e6f4ec, #cfe8da)",
-                border: "2px solid rgba(20,120,74,0.3)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 11, fontWeight: 800, color: BLUE, flexShrink: 0,
-              }}>{initials}</div>
+              <UserAvatar name={me.full_name} src={me.avatar_url} size={30} />
               <span style={{ fontSize: 13, color: "#56625b", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {firstName}
               </span>

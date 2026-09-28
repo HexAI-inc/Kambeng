@@ -10,7 +10,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 from app.core.config import settings
-from app.services.storage_strategy import StorageStrategy
+from app.services.storage_strategy import StorageStrategy, user_image_file_name
 from app.core.logging_config import get_logger
 
 logger = get_logger("do_spaces_strategy")
@@ -214,6 +214,30 @@ class DOSpacesStrategy(StorageStrategy):
         except ClientError as e:
             logger.error(f"Failed to upload organization file: {e}")
             raise
+
+    def save_user_image(self, user_id: int, kind: str, file_content: bytes, file_extension: str, content_type: str) -> str:
+        """Upload a profile avatar/cover as public-read."""
+        key = self._key(f"{kind}s", str(user_id), f"{uuid.uuid4().hex}.{file_extension.lstrip('.')}")
+        try:
+            self._ensure_bucket_exists()
+            self.s3_client.put_object(
+                Bucket=self.bucket, Key=key, Body=file_content, ContentType=content_type, ACL="public-read",
+            )
+            return self._public_url(key)
+        except ClientError as e:
+            logger.error(f"Failed to upload profile {kind}: {e}")
+            raise
+
+    def delete_user_image(self, user_id: int, kind: str, url: str) -> bool:
+        file_name = user_image_file_name(url)
+        if not file_name:
+            return False
+        try:
+            self.s3_client.delete_object(Bucket=self.bucket, Key=self._key(f"{kind}s", str(user_id), file_name))
+            return True
+        except ClientError as e:
+            logger.error(f"Failed to delete profile {kind}: {e}")
+            return False
 
     def presign_get(self, path: str, expires: int = 3600) -> str:
         """Return a presigned GET URL for the given object key or public URL.

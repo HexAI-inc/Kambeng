@@ -1,9 +1,19 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 
+export type SocialNetwork = "website" | "facebook" | "instagram" | "x" | "tiktok" | "linkedin";
+export type SocialLinks = Partial<Record<SocialNetwork, string>>;
+
 export type AuthUser = {
   id: number;
   full_name: string;
   bio?: string | null;
+  avatar_url?: string | null;
+  cover_url?: string | null;
+  handle?: string | null;
+  favorite_causes?: string[] | null;
+  location?: string | null;
+  social_links?: SocialLinks | null;
+  show_supported_campaigns?: boolean;
   account_purpose?: string | null;
   email: string;
   wave_number: string;

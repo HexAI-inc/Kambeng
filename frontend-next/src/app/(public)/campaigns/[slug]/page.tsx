@@ -13,6 +13,7 @@ import { StyledSelect } from "@/components/ui/styled-select";
 import { UpdateFeedPost } from "@/components/UpdateFeedPost";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { ProofList } from "@/components/ProofList";
+import MediaViewer from "@/components/ui/MediaViewer";
 import EmailCaptureForm from "@/components/marketing/email-capture-form";
 import {
   useCampaignGoals,
@@ -858,6 +859,8 @@ export default function CampaignDetailPage() {
   const [showShare, setShowShare] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [reportingUpdateId, setReportingUpdateId] = useState<number | null>(null);
+  // Full-size view of a photo tapped in the updates feed.
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
   const { data: campaign, isLoading, error } = useQuery({
     queryKey: ["campaign-detail", slug],
     enabled: Boolean(slug),
@@ -1260,6 +1263,8 @@ export default function CampaignDetailPage() {
               )}
             </div>
           </motion.div>
+
+          {viewerSrc && <MediaViewer src={viewerSrc} onClose={() => setViewerSrc(null)} />}
 
           {reportingUpdateId !== null && campaign && (
             <ReportModal

@@ -70,7 +70,7 @@ function FeaturedCampaignCard({ campaign }: {
       maxWidth: 400, width: "100%", aspectRatio: "4/5",
       boxShadow: "0 1px 2px rgba(21,32,26,0.08), 0 18px 40px -16px rgba(21,32,26,0.35)",
     }}
-      whileHover={{ y: -4, boxShadow: "0 2px 4px rgba(21,32,26,0.08), 0 28px 50px -18px rgba(21,32,26,0.45)" } as object}
+      whileHover={{ y: -4, boxShadow: "0 2px 4px rgba(21,32,26,0.08), 0 28px 50px -18px rgba(21,32,26,0.45)" }}
       transition={{ duration: 0.25, ease: "easeOut" }}
     >
       <Image src={campaign.cover_image_url ?? "/sample.png"} alt={campaign.title} fill unoptimized sizes="400px" style={{ objectFit: "cover", objectPosition: "center 15%" }} />
@@ -504,7 +504,7 @@ export default function PublicHomePage() {
               },
             ].map(({ label, tagline, desc, color, glow, border, icon }, i) => (
               <motion.div key={label} {...fadeUp(0.08 * i)} style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 20, padding: "36px 28px", position: "relative", overflow: "hidden", transition: "border-color 0.3s, box-shadow 0.3s" }}
-                whileHover={{ borderColor: border, boxShadow: `0 8px 40px ${glow}` } as object}
+                whileHover={{ borderColor: border, boxShadow: `0 8px 40px ${glow}` }}
               >
                 <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${color}, transparent)` }} />
                 <div style={{ position: "absolute", bottom: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: `radial-gradient(circle, ${glow} 0%, transparent 70%)`, pointerEvents: "none" }} />
@@ -558,7 +558,7 @@ export default function PublicHomePage() {
                 const pct = c.target_amount && c.target_amount > 0 ? Math.min(100, (c.amount_raised / c.target_amount) * 100) : 0;
                 return (
                   <motion.div key={c.id} {...fadeUp(0.06 * i)} style={{ background: "#ffffff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, overflow: "hidden", transition: "border-color 0.25s, transform 0.25s", cursor: "pointer" }}
-                    whileHover={{ y: -4, borderColor: "rgba(20,120,74,0.25)" } as object}
+                    whileHover={{ y: -4, borderColor: "rgba(20,120,74,0.25)" }}
                   >
                     <div style={{ position: "relative", height: 160, background: "#f1eee7" }}>
                       {c.cover_image_url

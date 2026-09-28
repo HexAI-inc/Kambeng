@@ -1161,6 +1161,22 @@ async def get_system_stats(
     )
 
 
+@router.get("/growth")
+async def get_growth_metrics(
+    months: int = Query(default=12, ge=3, le=36),
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Traction report: GMV, revenue, user and KYC growth, cohorts, funnel.
+
+    Read-only and investor-facing; see app/services/growth_metrics.py for how
+    each figure is defined.
+    """
+    from app.services.growth_metrics import build_growth_metrics
+
+    return await build_growth_metrics(db, months=months)
+
+
 # ===== Commissions & Revenue Management =====
 
 @router.get("/commissions", response_model=CommissionSummary)

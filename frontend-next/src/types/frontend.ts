@@ -382,6 +382,95 @@ export type AdminSystemStats = {
   last_audit_entry_date: string | null;
 };
 
+// Growth / traction report (GET /admin/growth)
+export type GrowthTrend = {
+  last_month: number;
+  previous_month: number;
+  growth_pct: number | null;
+  cmgr_pct: number | null;
+};
+
+export type GrowthMonth = {
+  month: string; // YYYY-MM
+  is_partial: boolean;
+  new_users: number;
+  cumulative_users: number;
+  kyc_approved: number;
+  gmv: number;
+  donations: number;
+  unique_donors: number;
+  new_donors: number;
+  revenue: number;
+  paid_out: number;
+  new_campaigns: number;
+  new_organizations: number;
+};
+
+export type GrowthMetrics = {
+  generated_at: string;
+  months: number;
+  current_month: string;
+  headline: {
+    gmv_total: number;
+    revenue_total: number;
+    take_rate_pct: number | null;
+    paid_out_total: number;
+    total_users: number;
+    kyc_approved: number;
+    kyc_rate_pct: number | null;
+    donations_count: number;
+    unique_donors: number;
+    avg_donation: number | null;
+    median_donation: number | null;
+    repeat_donor_rate_pct: number | null;
+    payment_success_rate_pct: number | null;
+    recurring_active_plans: number;
+    recurring_monthly_committed: number;
+    campaigns_total: number;
+    campaigns_funded: number;
+    organizations_total: number;
+    organizations_verified: number;
+    waitlist_subscribers: number;
+  };
+  trends: Record<"gmv" | "revenue" | "new_users" | "donations" | "unique_donors" | "new_campaigns", GrowthTrend>;
+  monthly: GrowthMonth[];
+  funnel: { stage: string; count: number; pct_of_signups: number | null }[];
+  kyc: {
+    not_submitted: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+    approval_rate_pct: number | null;
+    median_review_hours: number | null;
+  };
+  cohorts: { cohort: string; size: number; retention_pct: (number | null)[] }[];
+  categories: { category: string; campaigns: number; gmv: number }[];
+  rails: { rail: string; count: number; gmv: number; share_pct: number | null }[];
+  gift_bands: { band: string; count: number; gmv: number }[];
+  organizations: {
+    by_type: { type: string; count: number }[];
+    by_region: { region: string; count: number }[];
+  };
+  outcomes: {
+    funded_rate_pct: number | null;
+    target_campaigns: number;
+    target_reached: number;
+    avg_raised_per_funded: number | null;
+    avg_donors_per_funded: number | null;
+    median_days_to_first_donation: number | null;
+  };
+  top_campaigns: { title: string; slug: string; category: string | null; gmv: number; donations: number; is_organization: boolean }[];
+  trust: {
+    payouts_completed: number;
+    payout_success_rate_pct: number | null;
+    proof_coverage_pct: number | null;
+    suspended_campaigns: number;
+    suspension_rate_pct: number | null;
+    fraud_reports: number;
+    moderation_reports: number;
+  };
+};
+
 // KYC Types
 export type KYCDocument = {
   id: number;

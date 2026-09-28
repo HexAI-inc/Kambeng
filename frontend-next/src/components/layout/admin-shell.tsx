@@ -11,7 +11,7 @@ import {
   FileProtectOutlined, BankOutlined, WarningOutlined, MailOutlined, AlertOutlined,
   MenuOutlined, CloseOutlined, LogoutOutlined, SwapOutlined,
   MenuFoldOutlined, MenuUnfoldOutlined, NotificationOutlined, GiftOutlined,
-  ApiOutlined,
+  ApiOutlined, RiseOutlined,
 } from "@ant-design/icons";
 
 const BLUE = "#14784a";
@@ -25,6 +25,7 @@ const NAV: NavSection[] = [
     label: "Overview",
     items: [
       { key: "overview", label: "Dashboard", href: "/admin/overview", icon: AppstoreOutlined },
+      { key: "growth", label: "Traction Report", href: "/admin/growth", icon: RiseOutlined },
     ],
   },
   {

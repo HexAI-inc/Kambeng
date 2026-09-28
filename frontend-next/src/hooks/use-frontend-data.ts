@@ -13,6 +13,7 @@ import {
   AdminModerationReport,
   AdminPayoutOverview,
   AdminSystemStats,
+  GrowthMetrics,
   AdminTransaction,
   AdminTransactionSummary,
   AdminUserOverview,
@@ -457,6 +458,17 @@ export function useAdminSystemStats(enabled = true) {
     enabled,
     queryFn: async () => {
       const response = await api.get<AdminSystemStats>("/admin/system/stats");
+      return response.data;
+    },
+  });
+}
+
+export function useAdminGrowthMetrics(months = 12, enabled = true) {
+  return useQuery({
+    queryKey: ["admin-growth-metrics", months],
+    enabled,
+    queryFn: async () => {
+      const response = await api.get<GrowthMetrics>("/admin/growth", { params: { months } });
       return response.data;
     },
   });

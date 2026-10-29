@@ -2,6 +2,7 @@ from typing import List, Optional
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import and_, cast, String
@@ -27,6 +28,7 @@ from app.services.hexai_service import HexAIGatewayError, HexAIPaymentService
 from app.services.fees import withdrawal_fee
 from app.services.money import floor_dalasi, split_whole_dalasi
 from app.services.payout_service import apply_payout_status, normalize_gateway_status
+from app.services.campaign_audit import TotalChangedError, build_campaign_audit, correct_campaign_total
 from app.core.logging_config import get_logger
 
 hexai_service = HexAIPaymentService()
@@ -1060,6 +1062,46 @@ async def list_pending_donations(
         })
 
     return out
+
+
+class CampaignTotalCorrectionRequest(BaseModel):
+    expected_current: float = Field(..., description="The stored total the admin reviewed; the correction is refused if it has changed")
+    reason: str = Field(..., min_length=5, max_length=500)
+
+
+@router.get("/reconciliation/campaigns")
+async def campaign_money_audit(
+    include_matched: bool = False,
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Every campaign whose stored total, goals or withdrawals don't match
+    the donation and promotion records behind them."""
+    return await build_campaign_audit(db, include_matched=include_matched)
+
+
+@router.post("/reconciliation/campaigns/{campaign_id}/correct")
+async def correct_campaign_money_total(
+    campaign_id: int,
+    payload: CampaignTotalCorrectionRequest,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(get_admin_user),
+):
+    """Reset a campaign's stored total (and goals) to what its records support.
+    Recorded in the audit log. If more was already withdrawn, the balance goes
+    negative and is recovered from future donations before the next withdrawal."""
+    try:
+        return await correct_campaign_total(
+            db,
+            campaign_id=campaign_id,
+            expected_current=payload.expected_current,
+            reason=payload.reason,
+            admin=admin_user,
+        )
+    except LookupError:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    except TotalChangedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
 
 
 @router.get("/donations/successful")

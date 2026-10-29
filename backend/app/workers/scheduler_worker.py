@@ -54,6 +54,7 @@ class Job:
 
 def build_job_registry() -> list[Job]:
     # Imported here, after _load_all_models(), so mapper configuration succeeds.
+    from app.services.campaign_audit import run_daily_campaign_audit
     from app.services.kyc_reminder_service import send_pending_kyc_reminders
     from app.services.marketing_service import process_marketing_sequences
     from app.services.recurring_charge_service import process_recurring_charges
@@ -77,6 +78,12 @@ def build_job_registry() -> list[Job]:
             name="Send Pending KYC Reminders",
             func=send_pending_kyc_reminders,
             trigger=CronTrigger(hour=8, minute=0, timezone="UTC"),
+        ),
+        Job(
+            id="run_daily_campaign_audit",
+            name="Audit Campaign Totals And Alert Admins",
+            func=run_daily_campaign_audit,
+            trigger=CronTrigger(hour=6, minute=0, timezone="UTC"),
         ),
         Job(
             id="send_receipt_reminders",

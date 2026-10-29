@@ -46,6 +46,7 @@ from app.services.payment_reconciliation import (
     DonationTransitionConflictError,
     reconcile_donation_status,
 )
+from app.services.campaign_audit import payout_debit, stored_total_is_backed
 from app.services.fees import withdrawal_fee
 from app.services.money import floor_dalasi, split_whole_dalasi
 from app.services.payout_service import apply_payout_status, normalize_gateway_status
@@ -66,14 +67,15 @@ async def get_campaign_withdrawal_summary(
         .order_by(Payout.created_at.desc())
     )
     payouts = list(payouts_result.scalars().all())
-    # Use net_amount (what actually left our HexAI account) to stay consistent
-    # with amount_raised which is already net of the 2% HexAI collection fee.
-    total_net_withdrawn = sum((payout.net_amount or payout.amount or 0.0) for payout in payouts if payout.status == "SUCCEEDED")
+    # A withdrawal spends its full gross: the HexAI fee and Kambeng's commission
+    # come out of the campaign's money too, so deducting only the net would
+    # leave them in the balance to be withdrawn again.
+    total_withdrawn = sum(payout_debit(payout) for payout in payouts if payout.status == "SUCCEEDED")
     # PENDING payouts are already in flight at the gateway — reserve them so a
     # second withdrawal can't spend the same balance. FAILED releases the hold.
-    pending_reserved = sum((payout.net_amount or payout.amount or 0.0) for payout in payouts if payout.status == "PENDING")
-    available_balance = campaign.amount_raised - total_net_withdrawn - pending_reserved
-    return available_balance, total_net_withdrawn, payouts
+    pending_reserved = sum(payout_debit(payout) for payout in payouts if payout.status == "PENDING")
+    available_balance = campaign.amount_raised - total_withdrawn - pending_reserved
+    return available_balance, total_withdrawn, payouts
 
 
 @router.post("/admin/donations/{client_reference}/approve", response_model=DonationReconciliationResponse)
@@ -425,6 +427,17 @@ async def _load_campaign_for_withdrawal(db: AsyncSession, campaign_id: int, user
 
 
 async def _check_balance(db: AsyncSession, campaign: Campaign, amount: float) -> None:
+    # A stored total the donation records don't support (e.g. a donation
+    # credited twice) must not be withdrawable — hold it for admin review.
+    if not await stored_total_is_backed(db, campaign):
+        logger.error(
+            "Withdrawal blocked: campaign total exceeds its records",
+            extra={"action": "withdrawal_blocked_unbacked_total", "campaign_id": campaign.id, "amount_raised": campaign.amount_raised},
+        )
+        raise HTTPException(
+            status_code=409,
+            detail="This campaign's balance is being reviewed by Kambeng before withdrawals can continue. Please contact support.",
+        )
     available_balance, _, _ = await get_campaign_withdrawal_summary(db, campaign)
     if amount > available_balance:
         raise HTTPException(
@@ -1052,7 +1065,7 @@ async def get_withdrawal_summary(
     if not can_manage_campaign(campaign, current_user, allow_admin=False):
         raise HTTPException(status_code=403, detail="Only the campaign's managers can view withdrawal history")
 
-    available_balance, total_net_withdrawn, payouts = await get_campaign_withdrawal_summary(db, campaign)
+    available_balance, total_withdrawn, payouts = await get_campaign_withdrawal_summary(db, campaign)
     payout_number, _, org_block = resolve_payout_destination(campaign, current_user)
     spending = await spending_summary(db, campaign.id)
 
@@ -1067,7 +1080,7 @@ async def get_withdrawal_summary(
         spent_accounted_for=spending["accounted_for"],
         spent_unaccounted=spending["unaccounted"],
         amount_raised=campaign.amount_raised,
-        total_withdrawn=total_net_withdrawn,
+        total_withdrawn=total_withdrawn,
         available_balance=available_balance,
         withdrawal_history=[
             WithdrawalHistoryItem(

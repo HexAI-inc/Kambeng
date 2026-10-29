@@ -1,4 +1,6 @@
 import pytest
+
+from conftest import seed_backing_donation
 from sqlalchemy.future import select
 
 from app.api.routes.auth import get_current_user
@@ -129,6 +131,7 @@ async def test_verification_gates_withdrawals_and_sets_payout(async_client, db_s
     campaign = (await db_session.execute(select(Campaign).where(Campaign.id == campaign_id))).scalars().one()
     campaign.amount_raised = 500.0
     await db_session.commit()
+    await seed_backing_donation(db_session, campaign)
 
     sent = {}
 

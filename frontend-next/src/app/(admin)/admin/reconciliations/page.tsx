@@ -6,6 +6,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { useAdminPendingDonations, useApproveDonation, useRejectDonation } from "@/hooks/use-frontend-data";
 import type { AdminDonation } from "@/types/frontend";
+import { CampaignMoneyAudit } from "@/components/admin/campaign-money-audit";
 
 const BLUE = "#14784a";
 const GREEN = "#1f9960";
@@ -180,6 +181,10 @@ export default function ReconciliationsPage() {
             <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={pageBtnStyle(false)}>→</button>
           </div>
         )}
+
+        <motion.div {...fadeUp(0.12)} style={{ marginTop: 12 }}>
+          <CampaignMoneyAudit />
+        </motion.div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

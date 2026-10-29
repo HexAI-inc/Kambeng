@@ -1,6 +1,8 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
+
+from conftest import seed_backing_donation
 from sqlalchemy.future import select
 
 from app.core.security import get_password_hash
@@ -131,6 +133,7 @@ async def test_withdraw_blocked_when_receive_limit_reached(async_client, db_sess
     db_session.add(campaign)
     await db_session.commit()
     await db_session.refresh(campaign)
+    await seed_backing_donation(db_session, campaign)
 
     async def _get_user_override():
         return user

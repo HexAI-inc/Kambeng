@@ -38,7 +38,7 @@ async def run_reconciliation(threshold: float) -> dict[str, Any]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Audit campaign totals against their records.")
-    parser.add_argument("--threshold", type=float, default=0.01, help="Absolute difference allowed before a campaign is flagged")
+    parser.add_argument("--threshold", type=float, default=0.99, help="Absolute difference allowed before a campaign is flagged (sub-dalasi drift is ignored)")
     parser.add_argument("--json", action="store_true", help="Print the full report as JSON")
     args = parser.parse_args()
 

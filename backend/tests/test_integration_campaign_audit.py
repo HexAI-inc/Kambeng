@@ -185,3 +185,12 @@ async def test_daily_audit_emails_admins_only_when_something_is_off(db_session, 
     await db_session.commit()
     await campaign_audit.run_daily_campaign_audit()
     assert sent == [("audit-admin@example.com", "Kambeng money audit: 1 campaign(s) need review")]
+
+
+@pytest.mark.asyncio
+async def test_sub_dalasi_legacy_drift_is_not_flagged(async_client, db_session):
+    headers = await _admin_headers(async_client, db_session)
+    # Recorded at 2% with bututs before whole-dalasi rules: 40 -> 39.20 (today: 40).
+    await _campaign(db_session, slug="legacy-drift", amount_raised=39.2, donations=[40.0])
+    report = (await async_client.get("/api/admin/reconciliation/campaigns", headers=headers)).json()
+    assert report["campaigns"] == []

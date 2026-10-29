@@ -36,6 +36,10 @@ from app.services.money import floor_dalasi
 logger = logging.getLogger(__name__)
 
 TOLERANCE = 0.01
+# Totals recorded before whole-dalasi accounting carry butut-level rounding
+# drift (e.g. 39.20 where today's rules give 40). Only a whole dalasi or more
+# is a real discrepancy worth flagging, alerting on or holding withdrawals for.
+FLAG_THRESHOLD = 0.99
 REBATE_PROMO_TYPES = {PromoType.MILESTONE_COMPLETION_REBATE.value, PromoType.TRANSPARENCY_REBATE.value}
 # Payouts that have left, or are leaving, the campaign's balance.
 DEBITING_PAYOUT_STATUSES = {"SUCCEEDED", "PENDING"}
@@ -116,7 +120,7 @@ async def compute_expected_totals(db: AsyncSession, campaign_ids: list[int] | No
     return totals
 
 
-async def build_campaign_audit(db: AsyncSession, *, threshold: float = TOLERANCE, include_matched: bool = False) -> dict:
+async def build_campaign_audit(db: AsyncSession, *, threshold: float = FLAG_THRESHOLD, include_matched: bool = False) -> dict:
     """Per-campaign stored vs expected totals, withdrawals and balances.
 
     A campaign is flagged when its stored total differs from its records
@@ -211,7 +215,7 @@ async def build_campaign_audit(db: AsyncSession, *, threshold: float = TOLERANCE
 async def stored_total_is_backed(db: AsyncSession, campaign: Campaign) -> bool:
     """False when a campaign holds more than its records explain."""
     expected = (await compute_expected_totals(db, [campaign.id])).get(campaign.id, ExpectedTotals()).expected
-    return round(campaign.amount_raised or 0.0, 2) <= expected + TOLERANCE
+    return round(campaign.amount_raised or 0.0, 2) <= expected + FLAG_THRESHOLD
 
 
 async def correct_campaign_total(

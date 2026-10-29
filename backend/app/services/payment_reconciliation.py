@@ -40,15 +40,19 @@ async def reconcile_donation_status(
     reason: str | None = None,
     reviewed_by_admin_id: int | None = None,
 ) -> dict[str, object]:
+    # Callers often load the donation before reconciling (e.g. the status poll
+    # checks it is PENDING, then waits on HexAI). populate_existing makes every
+    # locked read below return the committed row, not that stale session copy —
+    # otherwise a webhook landing in between gets credited a second time.
     donation_result = await db.execute(
-        select(Donation).where(Donation.client_reference == client_reference).with_for_update()
+        select(Donation).where(Donation.client_reference == client_reference).with_for_update().execution_options(populate_existing=True)
     )
     donation = donation_result.scalars().first()
     if donation is None:
         raise DonationNotFoundError(f"Donation {client_reference!r} was not found")
 
     ledger_result = await db.execute(
-        select(TransactionLedger).where(TransactionLedger.external_reference == client_reference).with_for_update()
+        select(TransactionLedger).where(TransactionLedger.external_reference == client_reference).with_for_update().execution_options(populate_existing=True)
     )
     ledger = ledger_result.scalars().first()
 
@@ -104,7 +108,7 @@ async def reconcile_donation_status(
                 ledger.hexai_fee = collection_fee
                 ledger.net_amount = net_received
 
-            campaign_result = await db.execute(select(Campaign).where(Campaign.id == donation.campaign_id).with_for_update())
+            campaign_result = await db.execute(select(Campaign).where(Campaign.id == donation.campaign_id).with_for_update().execution_options(populate_existing=True))
             campaign = campaign_result.scalars().first()
 
             # Promotions engine: fee-free-day/first-donation absorption (Kambeng
@@ -129,7 +133,7 @@ async def reconcile_donation_status(
                         await process_completion_rebate(db, campaign)
 
             if donation.goal_id is not None:
-                goal_result = await db.execute(select(CampaignGoal).where(CampaignGoal.id == donation.goal_id).with_for_update())
+                goal_result = await db.execute(select(CampaignGoal).where(CampaignGoal.id == donation.goal_id).with_for_update().execution_options(populate_existing=True))
                 goal = goal_result.scalars().first()
                 if goal is not None:
                     goal.amount_raised += net_received + promo_credit

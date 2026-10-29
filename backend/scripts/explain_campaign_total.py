@@ -13,12 +13,20 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import importlib
+import pkgutil
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from sqlalchemy import or_, select
+
+import app.models
+
+# Relationships refer to models by name, so every model module must be loaded.
+for _module in pkgutil.iter_modules(app.models.__path__):
+    importlib.import_module(f"app.models.{_module.name}")
 
 from app.db.database import AsyncSessionLocal
 from app.models.campaign import Campaign

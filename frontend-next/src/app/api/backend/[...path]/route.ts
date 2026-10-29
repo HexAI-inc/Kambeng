@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
+import { forwardedForHeaders } from "@/lib/forwarded-for";
 
 const BACKEND_API_BASE = process.env.BACKEND_API_BASE_URL ?? "http://127.0.0.1:8001/api";
 const ACCESS_COOKIE = "kambeng_access_token";
 
 async function proxy(request: NextRequest, path: string[], method: string) {
+  // Segments arrive decoded; refuse anything that could climb out of the backend's /api prefix.
+  if (path.some((segment) => segment === "." || segment === ".." || /[\\/]/.test(segment))) {
+    return NextResponse.json({ detail: "Invalid path" }, { status: 400 });
+  }
+
   const token = request.cookies.get(ACCESS_COOKIE)?.value;
-  const backendUrl = `${BACKEND_API_BASE}/${path.join("/")}${request.nextUrl.search}`;
+  const backendUrl = `${BACKEND_API_BASE}/${path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`;
 
   const headers = new Headers();
   const contentType = request.headers.get("content-type");
   if (contentType) headers.set("content-type", contentType);
   if (token) headers.set("authorization", `Bearer ${token}`);
+  for (const [name, value] of Object.entries(forwardedForHeaders(request))) headers.set(name, value);
 
   let body: BodyInit | undefined;
   if (!["GET", "HEAD"].includes(method)) {

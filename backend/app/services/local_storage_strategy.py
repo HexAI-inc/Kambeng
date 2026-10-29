@@ -4,9 +4,11 @@ Local disk storage strategy for campaign images and KYC documents.
 
 from pathlib import Path
 from typing import Dict, List
+from urllib.parse import urlparse
 import uuid
 
 from app.core.config import settings
+from app.core.media_signing import is_private_media, signed_query
 from app.services.storage_strategy import StorageStrategy, user_image_file_name
 
 
@@ -135,19 +137,23 @@ class LocalStorageStrategy(StorageStrategy):
         return True
 
     def presign_get(self, path: str, expires: int = 3600) -> str:
-        """For local storage, the media URL is directly accessible via MEDIA_URL_PREFIX; return that URL.
+        """Return the media URL for `path`; private files (KYC) get a short-lived signature.
 
-        `path` may be a full file system path or a relative url; if it's a filesystem path we try to convert it.
+        `path` may be a filesystem path under MEDIA_ROOT, a media URL, or a path relative to MEDIA_ROOT.
         """
-        # If path looks like an absolute file path, try to map to media url
         if path.startswith(str(self.media_root)):
-            rel = path[len(str(self.media_root)):].lstrip("/\\")
-            return f"{settings.MEDIA_URL_PREFIX}/{rel}"
+            rel = path[len(str(self.media_root)):]
+        else:
+            rel = urlparse(path).path
+            prefix = settings.MEDIA_URL_PREFIX.rstrip("/")
+            if rel.startswith(prefix + "/"):
+                rel = rel[len(prefix):]
+        rel = rel.lstrip("/\\")
 
-        # If already a URL or relative path, return as-is or normalize
-        if path.startswith("/"):
-            return f"{settings.MEDIA_URL_PREFIX}/{path.lstrip('/')}"
-        return path
+        url = f"{settings.MEDIA_URL_PREFIX}/{rel}"
+        if is_private_media(rel):
+            url = f"{url}?{signed_query(rel, expires)}"
+        return url
 
     @staticmethod
     def _resolve_extension(original_filename: str, content_type: str) -> str:

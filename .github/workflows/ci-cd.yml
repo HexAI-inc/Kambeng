@@ -45,12 +45,58 @@ jobs:
       - name: Run backend tests
         run: pytest
 
+      - name: Audit backend dependencies
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+
+  frontend-checks:
+    name: Frontend audit and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-next
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend-next/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Audit frontend dependencies
+        run: npm audit --audit-level=high
+
+      - name: Build frontend
+        run: npm run build
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   deploy:
     name: Deploy backend to VPS
     runs-on: ubuntu-latest
     environment: Deployment VPS
     needs:
       - backend-tests
+      - frontend-checks
     if: github.event_name == 'push' && github.ref == 'refs/heads/development'
     steps:
       - name: Deploy backend over SSH

@@ -186,7 +186,8 @@ class DOSpacesStrategy(StorageStrategy):
                 Key=key,
                 Body=file_content,
                 ContentType=content_type,
-                ACL='public-read',
+                # Identity documents: only readable through a presigned link.
+                ACL='private',
             )
             return self._public_url(key)
         except ClientError as e:

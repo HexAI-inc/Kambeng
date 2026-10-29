@@ -3,6 +3,8 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+import hashlib
+import hmac
 import jwt
 import secrets
 from jwt.exceptions import InvalidTokenError
@@ -20,6 +22,7 @@ from app.schemas.user import (
 )
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token
 from app.core.config import settings
+from app.core.rate_limit import rate_limit
 from app.core.logging_config import get_logger
 from app.services.storage_strategy import get_storage_strategy
 from app.services.email_service import (
@@ -40,6 +43,16 @@ VERIFICATION_CODE_STORE: dict[str, str] = {}
 # This tells FastAPI where the login URL is, used for Swagger UI and token extraction
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 oauth2_optional_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
+
+def _exposes_verification_codes() -> bool:
+    """Tests read issued codes back from responses; nowhere else may see them."""
+    return settings.ENVIRONMENT.lower() == "test"
+
+
+def _password_fingerprint(user: User) -> str:
+    """Binds a reset token to the current password so it stops working once used."""
+    return hashlib.sha256((user.password_hash or "").encode("utf-8")).hexdigest()[:16]
 
 
 def _utc_now() -> datetime:
@@ -82,6 +95,8 @@ def _issue_email_verification_code(user: User, verification_code: str | None = N
         verification_code = f"{secrets.randbelow(1_000_000):06d}"
     user.email_verification_code_hash = get_password_hash(verification_code)
     user.email_verification_expires_at = _utc_now() + timedelta(minutes=10)
+    if not _exposes_verification_codes():
+        return verification_code
     # Store mapping for in-process tests to look up the user by code
     try:
         if user.wave_number:
@@ -102,7 +117,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         wave_number: str = payload.get("sub")
-        if wave_number is None:
+        # Typed tokens (refresh, password_reset) are only valid at their own endpoints.
+        if wave_number is None or payload.get("type") is not None:
             raise credentials_exception
     except InvalidTokenError:
         raise credentials_exception
@@ -127,7 +143,7 @@ async def get_current_user_optional(
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         wave_number: str = payload.get("sub")
-        if wave_number is None:
+        if wave_number is None or payload.get("type") is not None:
             return None
     except InvalidTokenError:
         return None
@@ -144,7 +160,7 @@ async def get_admin_user(current_user: User = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
 
-@router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED, dependencies=[Depends(rate_limit("register", 5, 3600))])
 async def register(
     user_in: UserCreate,
     response: Response,
@@ -172,7 +188,8 @@ async def register(
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
-    response.headers["X-Verification-Code"] = verification_code
+    if _exposes_verification_codes():
+        response.headers["X-Verification-Code"] = verification_code
 
     from app.services.promotions import capture_referral_signup, ensure_referral_code
 
@@ -207,7 +224,7 @@ async def _extract_login_credentials(request: Request) -> tuple[str, str]:
     return str(form.get("username", "")).strip(), str(form.get("password", ""))
 
 
-@router.post("/login")
+@router.post("/login", dependencies=[Depends(rate_limit("login", 10, 300))])
 async def login(request: Request, db: AsyncSession = Depends(get_db)):
     """Login to get JWT tokens. Supports wave number or email in the username field."""
     username, password = await _extract_login_credentials(request)
@@ -285,7 +302,7 @@ async def login(request: Request, db: AsyncSession = Depends(get_db)):
     }
 
 
-@router.post("/refresh")
+@router.post("/refresh", dependencies=[Depends(rate_limit("refresh", 30, 60))])
 async def refresh_access_token(payload: dict):
     """Exchange a refresh token for a new access token."""
     refresh_token = payload.get("refresh_token")
@@ -511,12 +528,15 @@ async def remove_my_cover(db: AsyncSession = Depends(get_db), current_user: User
     return await _clear_profile_image("cover", db, current_user)
 
 
-@router.post("/request-password-reset")
+@router.post("/request-password-reset", dependencies=[Depends(rate_limit("password_reset", 5, 3600))])
 async def request_password_reset(payload: PasswordResetRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalars().first()
     if user:
-        reset_token = create_access_token(data={"sub": user.wave_number}, expires_delta=timedelta(minutes=15))
+        reset_token = create_access_token(
+            data={"sub": user.wave_number, "type": "password_reset", "pwd": _password_fingerprint(user)},
+            expires_delta=timedelta(minutes=15),
+        )
         reset_link = f"{settings.FRONTEND_URL.rstrip('/')}/auth/reset-password/{reset_token}"
         send_email(
             user.email,
@@ -526,12 +546,12 @@ async def request_password_reset(payload: PasswordResetRequest, db: AsyncSession
     logger.info("Password reset requested", extra={"action": "request_password_reset", "email": payload.email})
     return {"message": "If an account with that email exists, a reset link has been sent via Email."}
 
-@router.post("/reset-password")
+@router.post("/reset-password", dependencies=[Depends(rate_limit("reset_password", 10, 3600))])
 async def reset_password(payload: PasswordResetConfirm, db: AsyncSession = Depends(get_db)):
     try:
         decoded = jwt.decode(payload.token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         wave_number = decoded.get("sub")
-        if wave_number is None:
+        if wave_number is None or decoded.get("type") != "password_reset":
             raise HTTPException(status_code=400, detail="Invalid token")
     except InvalidTokenError:
         raise HTTPException(status_code=400, detail="Invalid or expired token")
@@ -540,6 +560,8 @@ async def reset_password(payload: PasswordResetConfirm, db: AsyncSession = Depen
     user = result.scalars().first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    if not hmac.compare_digest(str(decoded.get("pwd", "")), _password_fingerprint(user)):
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
 
     user.password_hash = get_password_hash(payload.new_password)
     await db.commit()
@@ -549,7 +571,7 @@ async def reset_password(payload: PasswordResetConfirm, db: AsyncSession = Depen
     )
     return {"message": "Password successfully reset"}
 
-@router.post("/request-email-verification")
+@router.post("/request-email-verification", dependencies=[Depends(rate_limit("email_verification", 5, 3600))])
 async def request_email_verification(
     response: Response,
     payload: EmailVerificationResendRequest | None = None,
@@ -566,17 +588,17 @@ async def request_email_verification(
     if user.is_email_verified:
         raise HTTPException(status_code=400, detail="Email already verified")
     
+    # A caller-chosen code is only honoured in tests; real codes are always random.
+    requested_code = payload.code.strip() if payload and payload.code and payload.code.strip() else None
     verification_code = _issue_email_verification_code(
         user,
-        payload.code.strip() if payload and payload.code and payload.code.strip() else None,
+        requested_code if _exposes_verification_codes() else None,
     )
 
     db.add(user)
     await db.commit()
-    response.headers["X-Verification-Code"] = verification_code
-
-    # Debug: log the in-memory store snapshot for test visibility
-    logger.info("VERIFICATION_CODE_STORE snapshot", extra={"store": VERIFICATION_CODE_STORE.copy()})
+    if _exposes_verification_codes():
+        response.headers["X-Verification-Code"] = verification_code
 
     send_email(
         user.email,
@@ -589,7 +611,7 @@ async def request_email_verification(
     )
     return {"message": "Verification code sent via Email."}
 
-@router.post("/verify-email")
+@router.post("/verify-email", dependencies=[Depends(rate_limit("verify_email", 10, 600))])
 async def verify_email(
     payload: EmailVerifyRequest,
     db: AsyncSession = Depends(get_db),
@@ -610,6 +632,9 @@ async def verify_email(
         )
     except HTTPException:
         user = None
+
+    if user is None and not _exposes_verification_codes():
+        raise HTTPException(status_code=400, detail="email and wave_number are required")
 
     if user is None:
         # Search for a user whose verification code hash validates the provided code
@@ -653,6 +678,8 @@ async def verify_email(
 
     if not user.email_verification_code_hash:
         raise HTTPException(status_code=400, detail="No verification code requested")
+    if expires_at and _normalize_utc(expires_at) < now:
+        raise HTTPException(status_code=400, detail="Verification code has expired")
 
     # If the user was identified directly (e.g., via Authorization header),
     # also accept the code if it matches our in-memory store for that user.
@@ -664,14 +691,6 @@ async def verify_email(
     else:
         is_valid = False
 
-    logger.info(
-        "verify_email: store_check",
-        extra={
-            "provided_code": payload.code,
-            "store_by_wave": VERIFICATION_CODE_STORE.get(getattr(user, 'wave_number', '')),
-            "store_by_email": VERIFICATION_CODE_STORE.get(getattr(user, 'email', '')),
-        },
-    )
 
     # Validate the provided code against stored hash. Accepting a matching
     # code even if the expiry fields are not present or have timezone quirks

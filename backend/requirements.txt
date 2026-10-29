@@ -1,24 +1,26 @@
-fastapi==0.104.1
-uvicorn[standard]==0.24.0.post1
-sqlalchemy==2.0.23
-aiosqlite==0.19.0      # Async SQLite (Keep it as a fallback)
-asyncpg==0.29.0        # Async PostgreSQL string support
-psycopg2-binary==2.9.9 # Sync PostgreSQL driver for Alembic migrations
-pydantic[email]==2.5.2
-pydantic-settings==2.1.0
-python-dotenv==1.0.0
-httpx==0.25.2          # For HexAI Payment Gateway requests
-boto3==1.33.4          # For DigitalOcean Spaces (Proof of Expenditure)
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+sqlalchemy==2.0.55
+aiosqlite==0.22.1      # Async SQLite (Keep it as a fallback)
+asyncpg==0.32.0        # Async PostgreSQL string support
+psycopg2-binary==2.9.13 # Sync PostgreSQL driver for Alembic migrations
+pydantic[email]==2.14.2
+pydantic-settings==2.16.2
+python-dotenv==1.2.4
+httpx==0.28.1          # For HexAI Payment Gateway requests
+boto3==1.43.122          # For DigitalOcean Spaces (Proof of Expenditure)
+urllib3==2.8.0        # Pinned: transitive via boto3/requests; older releases have CVEs
 qrcode==7.4.2          # For QR Code generation
-Pillow==10.1.0         # Image processing for QR codes
+Pillow==13.0.0         # Image processing for QR codes
 passlib[bcrypt]==1.7.4 # For secure passwords
-PyJWT==2.8.0           # For Authentication
+PyJWT==2.15.1           # For Authentication
 alembic==1.13.1        # Database Migrations
-python-multipart==0.0.6 # For accepting file uploads (Proof of Expenditure)
-resend==0.8.0
+python-multipart==0.0.32 # For accepting file uploads (Proof of Expenditure)
+resend==2.50.1
+requests==2.34.2        # Pinned: transitive via resend; older releases have CVEs
 Jinja2==3.1.6
 apscheduler==3.10.4    # For scheduled background jobs (recurring donations)
-cryptography==42.0.8   # For field-level encryption of sensitive data
+cryptography==50.0.2   # For field-level encryption of sensitive data
 psutil==7.2.2          # System metrics for /api/monitor endpoint
-pytest==8.3.5
-pytest-asyncio==0.25.3
+pytest==9.2.0
+pytest-asyncio==1.4.1

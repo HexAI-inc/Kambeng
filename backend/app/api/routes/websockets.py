@@ -21,7 +21,7 @@ async def get_user_from_token(token: str, db: AsyncSession) -> User | None:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         wave_number: str = payload.get("sub")
-        if wave_number is None:
+        if wave_number is None or payload.get("type") is not None:
             return None
         
         result = await db.execute(select(User).where(User.wave_number == wave_number))

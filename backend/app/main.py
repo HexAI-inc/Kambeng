@@ -1,16 +1,19 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, APIRouter
+from fastapi import FastAPI, Request, APIRouter, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import IntegrityError
 from pathlib import Path
+from urllib.parse import parse_qs
 import json
 import platform
+import posixpath
 import time
 import uuid
 
 from app.core.config import settings
+from app.core.media_signing import is_private_media, verify_signed_query
 from app.core.logging_config import LOG_FILE_PATH, clear_request_context, get_logger, set_request_context
 from app.api.routes import admin, aliases, auth, campaign_updates, campaigns, fraud_report_notification_emails, gateway_audit, goals, kyc, marketing, organizations, moderation, payments, profiles, promotions, reviews, search, subscriptions, uploads, utils, webhooks, websockets, kyc_notification_emails
 import psutil
@@ -54,17 +57,24 @@ except ValueError as e:
 # Mount local media directory (used by local strategy)
 media_root = Path(settings.MEDIA_ROOT)
 media_root.mkdir(parents=True, exist_ok=True)
-app.mount(settings.MEDIA_URL_PREFIX, StaticFiles(directory=str(media_root)), name="media")
+class MediaFiles(StaticFiles):
+    """Public media, except private files (KYC), which need a signed link from /api/media/presign."""
 
-allowed_origins = {
-    settings.FRONTEND_URL,
-    "http://localhost:4200",
-    "http://localhost:4201",
-    "http://localhost:4202",
-    "http://localhost:4203",
-    "http://localhost:4204",
-    "http://localhost:4205",
-}
+    async def get_response(self, path: str, scope):
+        # Normalise first so "campaigns/../kyc/..." cannot slip past the prefix check.
+        path = posixpath.normpath(path.replace("\\", "/")).lstrip("/")
+        if is_private_media(path):
+            query = parse_qs(scope.get("query_string", b"").decode("latin-1"))
+            if not verify_signed_query(path, query.get("exp", [None])[0], query.get("sig", [None])[0]):
+                return JSONResponse(status_code=404, content={"detail": "Not Found"})
+        return await super().get_response(path, scope)
+
+
+app.mount(settings.MEDIA_URL_PREFIX, MediaFiles(directory=str(media_root)), name="media")
+
+allowed_origins = {settings.FRONTEND_URL}
+if settings.ENVIRONMENT.lower() != "prod":
+    allowed_origins |= {f"http://localhost:{port}" for port in range(4200, 4206)}
 
 app.add_middleware(
     CORSMiddleware,
@@ -73,6 +83,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+_SENSITIVE_QUERY_KEYS = {"token", "code", "sig", "signature", "password", "access_token", "refresh_token"}
 
 
 @app.middleware("http")
@@ -91,7 +104,12 @@ async def request_logging_middleware(request: Request, call_next):
         userAgent=user_agent,
     )
 
-    logger.info("Incoming request", extra={"query": dict(request.query_params)})
+    # Query strings carry one-time tokens (unsubscribe links, websocket auth); never log their values.
+    query = {
+        key: ("[redacted]" if key.lower() in _SENSITIVE_QUERY_KEYS else value)
+        for key, value in request.query_params.items()
+    }
+    logger.info("Incoming request", extra={"query": query})
     try:
         response = await call_next(request)
     except Exception:
@@ -143,8 +161,9 @@ app.include_router(gateway_audit.router, prefix="/api")
 
 # Logs, Health, and Monitoring API
 logs_router = APIRouter()
+admin_only = [Depends(auth.get_admin_user)]
 
-@logs_router.get("/logs", tags=["Logs"])
+@logs_router.get("/logs", tags=["Logs"], dependencies=admin_only)
 async def get_recent_logs(lines: int = 100):
     """Return most recent logs as parsed JSON objects for UI readability."""
     try:
@@ -166,14 +185,14 @@ async def get_recent_logs(lines: int = 100):
         return {"count": len(entries), "entries": entries}
     except Exception as e:
         logger.error(f"Failed to read logs: {e}")
-        return {"error": str(e)}
+        return {"error": "Failed to read logs"}
 
 @logs_router.get("/health", tags=["Monitoring"])
 async def health_check():
     """Basic health check endpoint."""
     return {"status": "ok", "timestamp": int(time.time())}
 
-@logs_router.get("/monitor", tags=["Monitoring"])
+@logs_router.get("/monitor", tags=["Monitoring"], dependencies=admin_only)
 async def system_monitor():
     """System resource usage and environment info."""
     try:

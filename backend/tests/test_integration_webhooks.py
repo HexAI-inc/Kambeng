@@ -65,7 +65,7 @@ def test_webhook_signature_validation_and_reconciliation(client, auth_headers, m
 
     valid_response = client.post(
         "/api/webhooks/hexai",
-        json=payload,
-        headers={"wave-signature": signature},
+        content=raw,
+        headers={"wave-signature": signature, "content-type": "application/json"},
     )
     assert valid_response.status_code == 200

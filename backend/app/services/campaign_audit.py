@@ -145,6 +145,47 @@ async def compute_expected_totals(db: AsyncSession, campaign_ids: list[int] | No
     return totals
 
 
+def _issues(difference: float, true_balance: float, goal_mismatch: bool, threshold: float) -> list[str]:
+    issues = []
+    if difference > threshold:
+        issues.append("over_credited")
+    elif difference < -threshold:
+        issues.append("under_credited")
+    if true_balance < -threshold:
+        issues.append("overdrawn")
+    if goal_mismatch:
+        issues.append("goal_mismatch")
+    return issues
+
+
+async def campaign_money(db: AsyncSession, campaign: Campaign) -> dict:
+    """The audit's figures for one campaign (the admin campaign page)."""
+    breakdown = (await compute_expected_totals(db, [campaign.id])).get(campaign.id, ExpectedTotals())
+    payouts = (
+        await db.execute(select(Payout).where(Payout.campaign_id == campaign.id, Payout.status.in_(DEBITING_PAYOUT_STATUSES)))
+    ).scalars().all()
+    withdrawn = round(sum(payout_debit(payout) for payout in payouts), 2)
+    adjusted = (await adjustments_by_campaign(db, [campaign.id])).get(campaign.id, 0.0)
+    stored = round(campaign.amount_raised or 0.0, 2)
+    expected = breakdown.expected
+    difference = round(stored - expected, 2)
+    true_balance = round(expected - withdrawn + adjusted, 2)
+    goals = (await db.execute(select(CampaignGoal).where(CampaignGoal.campaign_id == campaign.id))).scalars().all()
+    goal_mismatch = any(abs((g.amount_raised or 0.0) - breakdown.goals.get(g.id, 0.0)) > FLAG_THRESHOLD for g in goals)
+    return {
+        "amount_raised": stored,
+        "donations_net": breakdown.donations_net,
+        "promo_credit": breakdown.promo_credit,
+        "expected": expected,
+        "difference": difference,
+        "withdrawn": withdrawn,
+        "adjustments": adjusted,
+        "balance": round(stored - withdrawn + adjusted, 2),
+        "true_balance": true_balance,
+        "issues": _issues(difference, true_balance, goal_mismatch, FLAG_THRESHOLD),
+    }
+
+
 async def build_campaign_audit(db: AsyncSession, *, threshold: float = FLAG_THRESHOLD, include_matched: bool = False) -> dict:
     """Per-campaign stored vs expected totals, withdrawals and balances.
 
@@ -192,15 +233,7 @@ async def build_campaign_audit(db: AsyncSession, *, threshold: float = FLAG_THRE
                     "difference": round(goal_stored - goal_expected, 2),
                 })
 
-        issues = []
-        if difference > threshold:
-            issues.append("over_credited")
-        elif difference < -threshold:
-            issues.append("under_credited")
-        if true_balance < -threshold:
-            issues.append("overdrawn")
-        if goal_rows:
-            issues.append("goal_mismatch")
+        issues = _issues(difference, true_balance, bool(goal_rows), threshold)
 
         totals["stored"] += stored
         totals["expected"] += expected

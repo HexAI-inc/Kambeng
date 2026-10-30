@@ -127,6 +127,21 @@ class ClassBoard(BaseModel):
     classes: List[ClassBoardEntry] = []
 
 
+class CampaignPublicStats(BaseModel):
+    """Public campaign facts: counts and dates only, never who gave."""
+    created_at: Optional[datetime] = None
+    donations_count: int = 0
+    donors_count: int = 0
+    first_donation_at: Optional[datetime] = None
+    last_donation_at: Optional[datetime] = None
+    largest_donation: Optional[float] = None
+    followers_count: int = 0
+    updates_count: int = 0
+    receipts_count: int = 0
+    organizer_since: Optional[datetime] = None
+    organizer_campaigns: int = 0
+
+
 class SpendingSummary(BaseModel):
     withdrawn: float
     accounted_for: float

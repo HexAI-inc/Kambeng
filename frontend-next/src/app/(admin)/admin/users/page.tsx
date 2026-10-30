@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -117,7 +118,7 @@ export default function AdminUsersPage() {
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
                 <div data-label="User">
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#15201a" }}>{u.full_name}</div>
+                  <Link href={`/admin/users/${u.id}/view`} style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#15201a", textDecoration: "none" }}>{u.full_name}</Link>
                   <div style={{ fontSize: 11, color: "#6e7872" }}>{u.email}</div>
                   {u.wave_number && <div style={{ fontSize: 11, color: "#6e7872", fontFamily: "monospace" }}>{u.wave_number}</div>}
                 </div>

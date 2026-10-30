@@ -40,6 +40,31 @@ export function fmtDate(d: string | Date): string {
   });
 }
 
+/** "just now", "5m ago", "3h ago", "12d ago", then a date. */
+export function timeAgo(iso: string): string {
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return fmtDate(iso);
+}
+
+const RAIL_LABELS: Record<string, string> = {
+  wave: "Wave",
+  aps: "APS Mobile Money",
+  waychit_card: "Card",
+  unknown: "Unknown",
+};
+
+/** Payment rail as donors know it: "aps" → "APS Mobile Money", "waychit_card" → "Card". */
+export function railLabel(rail?: string | null): string {
+  if (!rail) return "—";
+  return RAIL_LABELS[rail.toLowerCase()] ?? humanize(rail);
+}
+
 /** Human label for KYC status enums. */
 export function kycLabel(status?: string | null): string {
   switch ((status ?? "").toUpperCase()) {

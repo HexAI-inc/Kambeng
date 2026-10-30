@@ -20,7 +20,7 @@ from app.models.payout import Payout
 from app.models.user import User
 from app.models.user_follow import UserFollow
 from app.services.donor_identity import is_attributed
-from app.schemas.campaign import CampaignClassification, CampaignCreate, CampaignDetailRead, CampaignOwner, CampaignRead, ClassBoard, ClassBoardEntry, SpendingSummary, normalize_tags
+from app.schemas.campaign import CampaignClassification, CampaignCreate, CampaignDetailRead, CampaignOwner, CampaignPublicStats, CampaignRead, ClassBoard, ClassBoardEntry, SpendingSummary, normalize_tags
 from app.schemas.donation import PublicDonationRead, PublicDonor
 from app.schemas.fraud_report import FraudReportCreate, FraudReportRead
 from app.api.routes.auth import get_current_user
@@ -401,6 +401,52 @@ async def get_campaign_spending(slug: str, db: AsyncSession = Depends(get_db)):
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
     return await spending_summary(db, campaign.id)
+
+@router.get("/{slug}/stats", response_model=CampaignPublicStats)
+async def get_campaign_public_stats(slug: str, db: AsyncSession = Depends(get_db)):
+    """Campaign facts for the public page: when it started, how many people
+    gave and when, and how active the organizer is. Counts only."""
+    from app.models.campaign_subscription import CampaignSubscription
+    from app.models.campaign_update import CampaignUpdate
+
+    campaign = (await db.execute(select(Campaign).where(Campaign.slug == slug))).scalars().first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    succeeded = (Donation.campaign_id == campaign.id, Donation.status == "SUCCEEDED")
+    count, first_at, last_at, largest = (await db.execute(
+        select(func.count(Donation.id), func.min(Donation.created_at), func.max(Donation.created_at), func.max(Donation.amount))
+        .where(*succeeded)
+    )).one()
+    # A donor is an account or an email; fully anonymous gifts each count once.
+    identities = (await db.execute(select(Donation.user_id, Donation.donor_email).where(*succeeded))).all()
+    named = {user_id or (email or "").strip().lower() for user_id, email in identities if user_id or (email or "").strip()}
+    anonymous = sum(1 for user_id, email in identities if not user_id and not (email or "").strip())
+
+    followers = (await db.execute(
+        select(func.count()).select_from(CampaignSubscription).where(CampaignSubscription.campaign_id == campaign.id)
+    )).scalar() or 0
+    updates, receipts = (await db.execute(
+        select(func.count(CampaignUpdate.id), func.count(CampaignUpdate.amount_spent)).where(CampaignUpdate.campaign_id == campaign.id)
+    )).one()
+    owner_since = (await db.execute(select(User.created_at).where(User.id == campaign.user_id))).scalar()
+    owner_campaigns = (await db.execute(
+        select(func.count(Campaign.id)).where(Campaign.user_id == campaign.user_id)
+    )).scalar() or 0
+
+    return CampaignPublicStats(
+        created_at=campaign.created_at,
+        donations_count=count or 0,
+        donors_count=len(named) + anonymous,
+        first_donation_at=first_at,
+        last_donation_at=last_at,
+        largest_donation=float(largest) if largest is not None else None,
+        followers_count=followers,
+        updates_count=updates or 0,
+        receipts_count=receipts or 0,
+        organizer_since=owner_since,
+        organizer_campaigns=owner_campaigns,
+    )
 
 @router.get("/{slug}/class-board", response_model=ClassBoard)
 async def get_class_board(slug: str, db: AsyncSession = Depends(get_db)):

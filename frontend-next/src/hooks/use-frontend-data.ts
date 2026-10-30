@@ -9,6 +9,9 @@ import {
   AdminCampaign,
   AdminDonation,
   CampaignAuditReport,
+  CampaignOverview,
+  CampaignPublicStats,
+  UserOverview,
   AdminKYCSubmission,
   AdminOrgVerification,
   AdminModerationReport,
@@ -469,6 +472,30 @@ export function useAdminSystemStats(enabled = true) {
       const response = await api.get<AdminSystemStats>("/admin/system/stats");
       return response.data;
     },
+  });
+}
+
+export function useAdminCampaignOverview(campaignId?: number) {
+  return useQuery({
+    queryKey: ["admin-campaign-overview", campaignId],
+    enabled: !!campaignId,
+    queryFn: async () => (await api.get<CampaignOverview>(`/admin/campaigns/${campaignId}/overview`)).data,
+  });
+}
+
+export function useAdminUserOverview(userId?: number) {
+  return useQuery({
+    queryKey: ["admin-user-overview", userId],
+    enabled: !!userId,
+    queryFn: async () => (await api.get<UserOverview>(`/admin/users/${userId}/overview`)).data,
+  });
+}
+
+export function useCampaignPublicStats(slug?: string) {
+  return useQuery({
+    queryKey: ["campaign-public-stats", slug],
+    enabled: !!slug,
+    queryFn: async () => (await api.get<CampaignPublicStats>(`/campaigns/${slug}/stats`)).data,
   });
 }
 

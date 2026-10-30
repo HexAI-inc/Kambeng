@@ -2,23 +2,13 @@
 
 import Link from "next/link";
 import { profileHref } from "@/lib/profile-url";
+import { timeAgo } from "@/lib/fmt";
 
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { useCampaignSupporters } from "@/hooks/use-frontend-data";
 import type { PublicDonation } from "@/types/frontend";
 
 const BLUE = "#14784a";
-
-function timeAgo(iso: string) {
-  const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
 
 function SupporterRow({ d }: { d: PublicDonation }) {
   const name = d.donor_name?.trim() || "Anonymous";

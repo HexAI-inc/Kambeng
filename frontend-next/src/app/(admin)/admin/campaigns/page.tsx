@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -141,7 +142,7 @@ export default function AdminCampaignsPage() {
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = ""; }}
               >
                 <div data-label="Campaign">
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#15201a", marginBottom: 2 }}>{c.title}</div>
+                  <Link href={`/admin/campaigns/${c.id}/view`} style={{ display: "block", fontSize: 14, fontWeight: 700, color: "#15201a", marginBottom: 2, textDecoration: "none" }}>{c.title}</Link>
                   <div style={{ fontSize: 11, color: "#6e7872", fontFamily: "monospace" }}>{c.slug}</div>
                 </div>
                 <div data-label="Status"><StatusChip status={String(c.status)} /></div>

@@ -338,6 +338,7 @@ export type AdminUserOverview = {
   role: string;
   is_active: boolean;
   kyc_status: string;
+  is_email_verified?: boolean;
   created_at: string;
   campaign_count: number;
   total_raised: number;

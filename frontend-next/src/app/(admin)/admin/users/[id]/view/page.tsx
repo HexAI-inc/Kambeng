@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { useAdminUserOverview } from "@/hooks/use-frontend-data";
+import { useAdminUserOverview, useSendVerificationEmail } from "@/hooks/use-frontend-data";
 import { fmtDate, humanize, kycLabel } from "@/lib/fmt";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import {
@@ -42,6 +42,16 @@ function Overview({ data }: { data: UserOverview }) {
   const { user, totals: t } = data;
   const flagged = data.campaigns.filter((c) => c.issues.length > 0);
   const latestKyc = data.kyc_submissions[0];
+  const sendVerification = useSendVerificationEmail();
+
+  const sendVerificationEmail = async () => {
+    try {
+      const { email } = await sendVerification.mutateAsync(user.id);
+      setNotice({ msg: `Verification link sent to ${email}`, ok: true });
+    } catch {
+      setNotice({ msg: "Couldn't send the verification email", ok: false });
+    }
+  };
 
   const setStatus = useMutation({
     mutationFn: async (status: "ACTIVE" | "SUSPENDED") => {
@@ -83,6 +93,11 @@ function Overview({ data }: { data: UserOverview }) {
       </>}
       actions={<>
         {user.handle && <a className="ov-btn" href={`/@${user.handle}`} target="_blank" rel="noreferrer">Public profile ↗</a>}
+        {!user.is_email_verified && user.email && (
+          <button className="ov-btn" disabled={sendVerification.isPending} onClick={() => void sendVerificationEmail()}>
+            {sendVerification.isPending ? "Sending…" : "Send verification email"}
+          </button>
+        )}
         <Link className="ov-btn" href={`/admin/users/${user.id}/edit`}>Edit</Link>
         {user.is_active
           ? <button className="ov-btn ov-btn-danger" disabled={setStatus.isPending} onClick={() => window.confirm(`Suspend ${user.full_name ?? user.email}? They will be signed out and blocked.`) && setStatus.mutate("SUSPENDED")}>Suspend</button>

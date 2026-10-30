@@ -635,6 +635,34 @@ async def request_email_verification(
     )
     return {"message": "Verification code sent via Email."}
 
+@router.post("/verify-email-link", dependencies=[Depends(rate_limit("verify_email_link", 20, 600))])
+async def verify_email_link(payload: dict, db: AsyncSession = Depends(get_db)):
+    """Confirm an email address from the one-click link an admin sent
+    (app/services/email_verification.py). The link only works for the
+    address it was sent to."""
+    from app.services.email_verification import TOKEN_TYPE, email_fingerprint
+
+    token = str(payload.get("token") or "")
+    try:
+        decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except InvalidTokenError:
+        raise HTTPException(status_code=400, detail="This link is invalid or has expired")
+    if decoded.get("type") != TOKEN_TYPE or not decoded.get("sub"):
+        raise HTTPException(status_code=400, detail="This link is invalid or has expired")
+
+    user = (await db.execute(select(User).where(User.wave_number == decoded["sub"]))).scalars().first()
+    if user is None or not hmac.compare_digest(str(decoded.get("em", "")), email_fingerprint(user.email)):
+        raise HTTPException(status_code=400, detail="This link is invalid or has expired")
+    if user.is_email_verified:
+        return {"status": "already_verified", "email": user.email}
+
+    user.is_email_verified = True
+    user.email_verification_code_hash = None
+    user.email_verification_expires_at = None
+    await db.commit()
+    logger.info("Email verified via link", extra={"action": "verify_email_link", "user_id": user.id})
+    return {"status": "verified", "email": user.email}
+
 @router.post("/verify-email", dependencies=[Depends(rate_limit("verify_email", 10, 600))])
 async def verify_email(
     payload: EmailVerifyRequest,

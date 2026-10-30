@@ -488,6 +488,35 @@ export function usePresignedMedia(url?: string | null) {
   });
 }
 
+export function useUnverifiedEmailSummary() {
+  return useQuery({
+    queryKey: ["admin-unverified-email-summary"],
+    queryFn: async () => (await api.get<{ unverified: number; emailed_recently: number; will_send: number }>("/admin/users/unverified-email-summary")).data,
+  });
+}
+
+export function useSendVerificationEmails() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => (await api.post<{ queued: number }>("/admin/users/send-verification-emails")).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-unverified-email-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
+    },
+  });
+}
+
+export function useSendVerificationEmail() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: number) => (await api.post<{ sent: boolean; email: string }>(`/admin/users/${userId}/send-verification-email`)).data,
+    onSuccess: (_, userId) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-user-overview", userId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-unverified-email-summary"] });
+    },
+  });
+}
+
 export function useAdminCampaignOverview(campaignId?: number) {
   return useQuery({
     queryKey: ["admin-campaign-overview", campaignId],

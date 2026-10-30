@@ -186,3 +186,25 @@ def test_suspended_user_cannot_refresh(client, integration_db_session):
 
     asyncio.run(suspend())
     assert client.post("/api/auth/refresh", json={"refresh_token": refresh}).status_code == 403
+
+
+def test_rate_limit_trusts_named_client_ip_only_with_the_proxy_secret(monkeypatch):
+    from starlette.requests import Request
+
+    from app.core.rate_limit import client_ip
+
+    def request(headers):
+        return Request({
+            "type": "http", "client": ("76.76.21.21", 443),
+            "headers": [(k.encode(), v.encode()) for k, v in headers.items()],
+        })
+
+    monkeypatch.setattr(settings, "INTERNAL_PROXY_SECRET", "s3cret")
+    named = {"x-kambeng-client-ip": "41.223.1.9"}
+    assert client_ip(request({**named, "x-kambeng-proxy-secret": "s3cret"})) == "41.223.1.9"
+    assert client_ip(request({**named, "x-kambeng-proxy-secret": "guess"})) == "76.76.21.21"
+    assert client_ip(request(named)) == "76.76.21.21"
+
+    # Unconfigured: nobody can name an IP.
+    monkeypatch.setattr(settings, "INTERNAL_PROXY_SECRET", "")
+    assert client_ip(request({**named, "x-kambeng-proxy-secret": ""})) == "76.76.21.21"

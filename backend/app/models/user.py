@@ -28,6 +28,8 @@ class User(Base):
     # default dashboard experience; users can do everything either way.
     account_purpose = Column(String, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    # Bumped to revoke every token issued before (password reset/change).
+    token_version = Column(Integer, default=0, server_default="0", nullable=False)
 
     # Referral program — see app/services/promotions.py
     referral_code = Column(String, unique=True, nullable=True, index=True)

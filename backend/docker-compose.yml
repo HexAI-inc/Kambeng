@@ -11,8 +11,9 @@ services:
     network_mode: host
     environment:
       PYTHONUNBUFFERED: "1"
-    ports:
-      - "127.0.0.1:8001:8001"
+    # Host networking ignores `ports`, so bind to loopback explicitly: only nginx
+    # may reach the API, and the client IP it forwards is trusted for rate limits.
+    command: ["uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8001", "--proxy-headers", "--forwarded-allow-ips", "127.0.0.1"]
     volumes:
       - ./uploads:/app/uploads
 

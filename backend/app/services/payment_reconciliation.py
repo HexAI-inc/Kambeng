@@ -9,7 +9,6 @@ from app.models.campaign import Campaign, CampaignMode, CampaignStatus
 from app.models.campaign_goal import CampaignGoal, GoalStatus
 from app.models.donation import Donation
 from app.models.ledger import TransactionLedger, TransactionStatus
-from app.core.config import settings
 from app.services.fees import collection_fee as fee_for_collection
 from app.services.money import floor_dalasi
 
@@ -40,15 +39,19 @@ async def reconcile_donation_status(
     reason: str | None = None,
     reviewed_by_admin_id: int | None = None,
 ) -> dict[str, object]:
+    # Callers often load the donation before reconciling (e.g. the status poll
+    # checks it is PENDING, then waits on HexAI). populate_existing makes every
+    # locked read below return the committed row, not that stale session copy —
+    # otherwise a webhook landing in between gets credited a second time.
     donation_result = await db.execute(
-        select(Donation).where(Donation.client_reference == client_reference).with_for_update()
+        select(Donation).where(Donation.client_reference == client_reference).with_for_update().execution_options(populate_existing=True)
     )
     donation = donation_result.scalars().first()
     if donation is None:
         raise DonationNotFoundError(f"Donation {client_reference!r} was not found")
 
     ledger_result = await db.execute(
-        select(TransactionLedger).where(TransactionLedger.external_reference == client_reference).with_for_update()
+        select(TransactionLedger).where(TransactionLedger.external_reference == client_reference).with_for_update().execution_options(populate_existing=True)
     )
     ledger = ledger_result.scalars().first()
 
@@ -104,7 +107,7 @@ async def reconcile_donation_status(
                 ledger.hexai_fee = collection_fee
                 ledger.net_amount = net_received
 
-            campaign_result = await db.execute(select(Campaign).where(Campaign.id == donation.campaign_id).with_for_update())
+            campaign_result = await db.execute(select(Campaign).where(Campaign.id == donation.campaign_id).with_for_update().execution_options(populate_existing=True))
             campaign = campaign_result.scalars().first()
 
             # Promotions engine: fee-free-day/first-donation absorption (Kambeng
@@ -129,7 +132,7 @@ async def reconcile_donation_status(
                         await process_completion_rebate(db, campaign)
 
             if donation.goal_id is not None:
-                goal_result = await db.execute(select(CampaignGoal).where(CampaignGoal.id == donation.goal_id).with_for_update())
+                goal_result = await db.execute(select(CampaignGoal).where(CampaignGoal.id == donation.goal_id).with_for_update().execution_options(populate_existing=True))
                 goal = goal_result.scalars().first()
                 if goal is not None:
                     goal.amount_raised += net_received + promo_credit
@@ -167,63 +170,3 @@ async def reconcile_donation_status(
         "reconciled_at": donation.reconciled_at,
     }
 
-
-async def build_campaign_amount_reconciliation(
-    db: AsyncSession,
-    *,
-    threshold: float = 0.01,
-) -> dict:
-    """Compare campaign.amount_raised against net-of-fee donation sums.
-
-    Used by scripts/reconcile_campaign_totals.py to audit the financial state.
-    Returns a report dict with summary + per-campaign discrepancies.
-    """
-    campaigns_result = await db.execute(select(Campaign))
-    campaigns = campaigns_result.scalars().all()
-
-    donations_result = await db.execute(
-        select(Donation).where(Donation.status == "SUCCEEDED")
-    )
-    succeeded = donations_result.scalars().all()
-
-    # Expected net is rail-dependent (card 6%, mobile money 2%) and whole
-    # dalasi — the same rules reconcile_donation_status applies live.
-    donation_net_by_campaign: dict[int, float] = {}
-    for d in succeeded:
-        net = floor_dalasi(d.amount - fee_for_collection(d.amount, d.provider))
-        donation_net_by_campaign[d.campaign_id] = round(
-            donation_net_by_campaign.get(d.campaign_id, 0.0) + net, 2
-        )
-
-    discrepancies = []
-    total_campaign_raised = 0.0
-    total_donation_sum = 0.0
-
-    for campaign in campaigns:
-        raised = round(campaign.amount_raised or 0.0, 2)
-        expected = round(donation_net_by_campaign.get(campaign.id, 0.0), 2)
-        diff = round(raised - expected, 2)
-        total_campaign_raised += raised
-        total_donation_sum += expected
-        if abs(diff) > threshold:
-            discrepancies.append({
-                "campaign_id": campaign.id,
-                "slug": campaign.slug,
-                "amount_raised": raised,
-                "donation_sum": expected,
-                "difference": diff,
-            })
-
-    return {
-        "summary": {
-            "total_campaigns": len(campaigns),
-            "matched_campaigns": len(campaigns) - len(discrepancies),
-            "mismatched_campaigns": len(discrepancies),
-            "total_campaign_amount_raised": round(total_campaign_raised, 2),
-            "total_donation_sum": round(total_donation_sum, 2),
-            "difference": round(total_campaign_raised - total_donation_sum, 2),
-            "fee_rate_mobile_money": settings.HEXAI_COLLECTION_FEE_PERCENT,
-            "fee_rate_card": settings.HEXAI_CARD_COLLECTION_FEE_PERCENT,
-        },
-        "discrepancies": discrepancies,
-    }

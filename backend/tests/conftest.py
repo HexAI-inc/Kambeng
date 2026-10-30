@@ -167,3 +167,26 @@ async def sample_campaign_with_alias(sample_campaign, db_session):
     await db_session.refresh(alias)
 
     return sample_campaign, alias
+
+
+async def seed_backing_donation(session, campaign) -> None:
+    """Record the SUCCEEDED donation behind a hand-set campaign.amount_raised,
+    so the withdrawal guard (app/services/campaign_audit.py) sees it as backed."""
+    from app.models.donation import Donation
+    from app.services.campaign_audit import donation_net
+
+    target = campaign.amount_raised or 0.0
+    donation = Donation(
+        campaign_id=campaign.id, client_reference=f"DON-SEED-{campaign.id}",
+        amount=target, status="SUCCEEDED", provider="wave",
+    )
+    # Each extra dalasi raises the net by 0 or 1, so this lands exactly on target.
+    while donation_net(donation) < target:
+        donation.amount += 1
+    session.add(donation)
+    await session.commit()
+
+
+@pytest.fixture
+def back_with_donation():
+    return seed_backing_donation

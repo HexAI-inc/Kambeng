@@ -568,6 +568,50 @@ export type AdminDonation = {
   reconciled_at: string | null;
 };
 
+// Campaign money audit (GET /admin/reconciliation/campaigns)
+export type CampaignAuditIssue = "over_credited" | "under_credited" | "overdrawn" | "goal_mismatch";
+
+export type CampaignAuditGoal = {
+  goal_id: number;
+  title: string;
+  amount_raised: number;
+  expected: number;
+  difference: number;
+};
+
+export type CampaignAuditRow = {
+  campaign_id: number;
+  slug: string;
+  title: string;
+  amount_raised: number;
+  donations_net: number;
+  promo_credit: number;
+  expected: number;
+  difference: number;
+  withdrawn: number;
+  adjustments: number;
+  balance: number;
+  true_balance: number;
+  issues: CampaignAuditIssue[];
+  goals: CampaignAuditGoal[];
+};
+
+export type CampaignAuditReport = {
+  generated_at: string;
+  summary: {
+    total_campaigns: number;
+    flagged_campaigns: number;
+    stored: number;
+    expected: number;
+    withdrawn: number;
+    owed_to_campaigns: number;
+    over_credited: number;
+    overdrawn: number;
+    commissions_written_off: number;
+  };
+  campaigns: CampaignAuditRow[];
+};
+
 // Campaign Image Types
 export type CampaignImage = {
   file_name: string;
@@ -625,6 +669,7 @@ export type CommissionSummary = {
   pending_commissions: number;
   available_commissions: number;
   commission_count: number;
+  written_off_commissions?: number;
   last_updated: string;
 };
 

@@ -75,12 +75,14 @@ export default function AdminCommissionsPage() {
 
         {/* KPI strip */}
         <motion.div {...fadeUp(0.06)}>
-          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden" }}>
+          <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 2, background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 14, overflow: "hidden" }}>
             {[
               { label: "Total earned", value: `${(summary?.total_commissions ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: "#15201a" },
-              { label: "Available", value: `${available.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: GREEN },
+              { label: "Available", value: `${available.toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: available < 0 ? "#d42f2f" : GREEN },
               { label: "Withdrawn", value: `${(summary?.withdrawn_commissions ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: BLUE },
               { label: "Pending", value: `${(summary?.pending_commissions ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: "#e8650f" },
+              // Spent covering campaign overdrafts (Reconciliations → Campaign totals).
+              { label: "Written off", value: `${(summary?.written_off_commissions ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD`, color: "#56625b" },
             ].map(({ label, value, color }, i, arr) => (
               <div key={label} style={{ padding: "16px 20px", borderRight: i < arr.length - 1 ? "1px solid rgba(21,32,26,0.05)" : "none" }}>
                 <div style={{ fontSize: 10, color: "#6e7872", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { forwardedForHeaders } from "@/lib/forwarded-for";
 
 const BACKEND_API_BASE = process.env.BACKEND_API_BASE_URL ?? "http://127.0.0.1:8001/api";
 const APP_BASE_URL = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://kambeng.hexai.gm";
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     const backendResponse = await fetch(`${BACKEND_API_BASE}/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...forwardedForHeaders(request) },
       body: JSON.stringify(payloadBody),
       cache: "no-store",
     });

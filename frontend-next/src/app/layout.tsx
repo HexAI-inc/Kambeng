@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import "antd/dist/reset.css";
 import { Providers } from "@/components/providers";
@@ -47,11 +48,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Render every page per request: the CSP nonce (src/proxy.ts) only reaches
+  // Next's scripts at request time, so a prerendered page's scripts would be blocked.
+  await connection();
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>

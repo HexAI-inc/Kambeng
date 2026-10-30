@@ -1,4 +1,6 @@
 import pytest
+
+from conftest import seed_backing_donation
 from sqlalchemy.future import select
 
 from app.models.user import User
@@ -24,6 +26,7 @@ async def _seed_owner_and_campaign(db_session, *, amount_raised=200.0):
     db_session.add(campaign)
     await db_session.commit()
     await db_session.refresh(campaign)
+    await seed_backing_donation(db_session, campaign)
     return user, campaign
 
 
@@ -124,7 +127,7 @@ async def test_pending_payout_reserves_balance(async_client, db_session, monkeyp
     monkeypatch.setattr(payments_router.hexai_service, "verify_payout_recipient", fake_verify_recipient)
 
     try:
-        # available = 200 - 107.6 (pending reserved) = 92.4 → 120 must be refused
+        # available = 200 - 120 (the pending payout's full gross, fees included) = 80 → 120 must be refused
         too_much = await async_client.post("/api/payments/withdraw", json={"campaign_id": campaign.id, "amount": 120.0})
         assert too_much.status_code == 400
         assert "Insufficient funds" in too_much.json()["detail"]
@@ -132,10 +135,10 @@ async def test_pending_payout_reserves_balance(async_client, db_session, monkeyp
         # summary reflects the reservation
         summary = await async_client.get(f"/api/payments/withdraw/summary/{campaign.id}")
         assert summary.status_code == 200
-        assert summary.json()["available_balance"] == pytest.approx(92.4)
+        assert summary.json()["available_balance"] == pytest.approx(80.0)
 
         # a withdrawal within the reserved-adjusted balance still works
-        ok = await async_client.post("/api/payments/withdraw", json={"campaign_id": campaign.id, "amount": 90.0})
+        ok = await async_client.post("/api/payments/withdraw", json={"campaign_id": campaign.id, "amount": 75.0})
         assert ok.status_code == 200, ok.text
 
         # a failed payout releases its hold
@@ -192,8 +195,9 @@ async def test_payout_amount_is_floored_to_whole_dalasi(async_client, db_session
         assert payload["sub_dalasi_carried_forward"] == 0.0
         assert payload["gross_amount"] - payload["hexai_fee"] - payload["platform_commission"] == 41.0
 
+        # The fees are spent too: the balance drops by the full 53, not the 41 sent.
         summary = await async_client.get(f"/api/payments/withdraw/summary/{campaign.id}")
-        assert summary.json()["available_balance"] == pytest.approx(159.0)
+        assert summary.json()["available_balance"] == pytest.approx(147.0)
     finally:
         fastapi_app.dependency_overrides.pop(get_current_user, None)
 

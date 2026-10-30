@@ -3,6 +3,8 @@ teams, two-person withdrawal approval)."""
 from datetime import UTC, datetime, timedelta
 
 import pytest
+
+from conftest import seed_backing_donation
 from sqlalchemy.future import select
 
 from app.api.routes.auth import get_current_user
@@ -176,6 +178,7 @@ async def test_two_person_approval_for_large_withdrawals(async_client, db_sessio
     campaign = (await db_session.execute(select(Campaign).where(Campaign.id == campaign_id))).scalars().one()
     campaign.amount_raised = 1000.0
     await db_session.commit()
+    await seed_backing_donation(db_session, campaign)
 
     # Below the threshold: straight through, paid to the organization.
     act_as(treasurer)

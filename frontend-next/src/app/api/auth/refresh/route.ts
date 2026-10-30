@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { forwardedForHeaders } from "@/lib/forwarded-for";
 
 const BACKEND_API_BASE = process.env.BACKEND_API_BASE_URL ?? "http://127.0.0.1:8001/api";
 const REFRESH_COOKIE = "kambeng_refresh_token";
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     // Call backend refresh endpoint
     const response = await fetch(`${BACKEND_API_BASE}/auth/refresh`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...forwardedForHeaders(request) },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
 

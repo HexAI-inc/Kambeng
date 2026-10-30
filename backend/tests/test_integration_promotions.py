@@ -1,6 +1,8 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
+
+from conftest import seed_backing_donation
 from sqlalchemy.future import select
 
 from app.core.security import get_password_hash
@@ -48,6 +50,7 @@ async def _seed_owner_and_campaign(db_session, *, slug, amount_raised=200.0, org
     db_session.add(campaign)
     await db_session.commit()
     await db_session.refresh(campaign)
+    await seed_backing_donation(db_session, campaign)
     return owner, campaign
 
 
@@ -321,6 +324,7 @@ async def test_referral_signup_and_reward_consumed_at_withdrawal(async_client, d
     db_session.add(campaign)
     await db_session.commit()
     await db_session.refresh(campaign)
+    await seed_backing_donation(db_session, campaign)
 
     # Admin must switch the referral program on (self-limiting promo, no ends_at)
     promo_resp = await async_client.post(

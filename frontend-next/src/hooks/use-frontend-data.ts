@@ -8,6 +8,7 @@ import {
   AdminAuditLog,
   AdminCampaign,
   AdminDonation,
+  CampaignAuditReport,
   AdminKYCSubmission,
   AdminOrgVerification,
   AdminModerationReport,
@@ -920,6 +921,64 @@ export function useRejectDonation() {
       queryClient.invalidateQueries({ queryKey: ["admin-pending-donations"] });
       queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
       queryClient.invalidateQueries({ queryKey: ["admin-financial-summary"] });
+    },
+  });
+}
+
+export function useCampaignMoneyAudit() {
+  return useQuery({
+    queryKey: ["admin-campaign-money-audit"],
+    queryFn: async () => {
+      const response = await api.get<CampaignAuditReport>("/admin/reconciliation/campaigns");
+      return response.data;
+    },
+  });
+}
+
+export function useGatewayWalletBalance() {
+  return useQuery({
+    queryKey: ["admin-gateway-wallet-balance"],
+    retry: false,
+    queryFn: async () => {
+      const response = await api.get<{ data?: { available_balance?: string } }>("/admin/gateway/balance");
+      const raw = response.data.data?.available_balance;
+      return raw === undefined ? null : Number(raw);
+    },
+  });
+}
+
+export function useCorrectCampaignTotal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ campaignId, expectedCurrent, reason }: { campaignId: number; expectedCurrent: number; reason: string }) => {
+      const response = await api.post<{ previous: number; corrected: number; goal_changes: string[] }>(
+        `/admin/reconciliation/campaigns/${campaignId}/correct`,
+        { expected_current: expectedCurrent, reason },
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-campaign-money-audit"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-financial-summary"] });
+    },
+  });
+}
+
+export function useWriteOffOverdraft() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ campaignId, expectedBalance, reason }: { campaignId: number; expectedBalance: number; reason: string }) => {
+      const response = await api.post<{ written_off: number; previous_balance: number }>(
+        `/admin/reconciliation/campaigns/${campaignId}/write-off`,
+        { expected_balance: expectedBalance, reason },
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-campaign-money-audit"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-commissions-summary"] });
     },
   });
 }

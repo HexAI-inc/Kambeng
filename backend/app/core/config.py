@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     HEXAI_BASE_URL: str = "https://api.hpg.hexai.gm/api/v1"
     HEXAI_API_KEY: str = os.getenv("HEXAI_API_KEY", "")
     HEXAI_WEBHOOK_SECRET: str = os.getenv("HEXAI_WEBHOOK_SECRET", "")
+    # Shared with the Next.js server (same name in its env). Requests carrying
+    # it may name the browser's IP, which per-IP rate limits then use; without
+    # it every user proxied through Vercel would share Vercel's egress IPs.
+    INTERNAL_PROXY_SECRET: str = os.getenv("INTERNAL_PROXY_SECRET", "")
     
     # DO Spaces
     DO_SPACES_KEY: str = os.getenv("DO_SPACES_KEY", "")

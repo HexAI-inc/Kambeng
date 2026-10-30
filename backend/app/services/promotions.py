@@ -228,7 +228,7 @@ async def resolve_donation_fee_absorption(
 async def apply_match(db: AsyncSession, promo_id: int, donation_amount: float) -> float:
     """Atomically draw from a matched-donation pool. Row-level lock prevents
     two concurrent donations from over-claiming the last slice (§4.1)."""
-    result = await db.execute(select(Promotion).where(Promotion.id == promo_id).with_for_update())
+    result = await db.execute(select(Promotion).where(Promotion.id == promo_id).with_for_update().execution_options(populate_existing=True))
     promo = result.scalars().first()
     if promo is None or promo.match_pool_remaining is None or promo.match_pool_remaining <= 0:
         return 0.0

@@ -475,6 +475,19 @@ export function useAdminSystemStats(enabled = true) {
   });
 }
 
+/** A short-lived signed link for a stored file. Private files (KYC documents)
+ * can't be loaded from their stored URL; the API signs a link only for
+ * whoever may see the file. Links last 5 minutes, so refresh a little sooner. */
+export function usePresignedMedia(url?: string | null) {
+  return useQuery({
+    queryKey: ["presigned-media", url],
+    enabled: !!url,
+    staleTime: 4 * 60 * 1000,
+    refetchInterval: 4 * 60 * 1000,
+    queryFn: async () => (await api.get<{ url: string }>("/media/presign", { params: { url } })).data.url,
+  });
+}
+
 export function useAdminCampaignOverview(campaignId?: number) {
   return useQuery({
     queryKey: ["admin-campaign-overview", campaignId],

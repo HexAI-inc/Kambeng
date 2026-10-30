@@ -5,6 +5,7 @@ Uses boto3 to interact with S3-compatible DO Spaces endpoints.
 """
 
 from typing import Dict, List
+from urllib.parse import unquote, urlparse
 import uuid
 import boto3
 from botocore.exceptions import ClientError
@@ -245,10 +246,7 @@ class DOSpacesStrategy(StorageStrategy):
 
         `path` may be a full public URL previously returned by `_public_url`, or a bucket key.
         """
-        # Normalize key if a full URL was provided
-        key = path
-        if path.startswith(self.public_endpoint):
-            key = path[len(self.public_endpoint):].lstrip("/")
+        key = self._key_from_location(path)
 
         try:
             url = self.s3_client.generate_presigned_url(
@@ -261,6 +259,20 @@ class DOSpacesStrategy(StorageStrategy):
             logger.error(f"Failed to generate presigned GET url for {path}: {e}")
             # Fall back to public URL
             return self._public_url(key)
+
+    def _key_from_location(self, path: str) -> str:
+        """Bucket key for a stored URL or key, whichever Spaces address it was
+        saved under: the configured public endpoint, the bucket's own or CDN
+        host (key is the path), or path-style (bucket is the first segment)."""
+        if path.startswith(self.public_endpoint):
+            return path[len(self.public_endpoint):].lstrip("/")
+        parsed = urlparse(path)
+        if not parsed.scheme:
+            return path.lstrip("/")
+        key = unquote(parsed.path).lstrip("/")
+        if not parsed.netloc.lower().startswith(f"{self.bucket.lower()}.") and key.startswith(f"{self.bucket}/"):
+            key = key[len(self.bucket) + 1:]
+        return key
 
     @staticmethod
     def _resolve_extension(original_filename: str, content_type: str) -> str:

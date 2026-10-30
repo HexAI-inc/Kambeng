@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useAdminKYCDetail, useApproveKYC, useRejectKYC } from "@/hooks/use-frontend-data";
+import { useAdminKYCDetail, useApproveKYC, useRejectKYC, usePresignedMedia } from "@/hooks/use-frontend-data";
 
 const BLUE = "#14784a";
 const GREEN = "#1f9960";
@@ -43,6 +43,8 @@ export default function KYCReviewPage() {
   const router = useRouter();
   const submissionId = Array.isArray(params?.id) ? parseInt(params.id[0]) : parseInt(params?.id as string);
   const { data: submission, isLoading, error } = useAdminKYCDetail(submissionId);
+  // KYC files are private: show them through a signed link, never the stored URL.
+  const { data: signedUrl, isError: signError } = usePresignedMedia(submission?.document_file_url);
   const approve = useApproveKYC();
   const reject = useRejectKYC();
 
@@ -126,9 +128,13 @@ export default function KYCReviewPage() {
                 </span>
               </div>
 
-              {isPdf(docUrl) ? (
+              {!signedUrl ? (
+                <div style={{ padding: 48, textAlign: "center", color: "#6e7872", fontSize: 13, background: "#f1eee7" }}>
+                  {signError ? "Couldn't load the document. Refresh to try again." : "Loading document…"}
+                </div>
+              ) : isPdf(docUrl) ? (
                 <iframe
-                  src={docUrl}
+                  src={signedUrl}
                   title="KYC Document"
                   style={{ width: "100%", height: "70vh", border: "none", display: "block", background: "#f1eee7" }}
                 />
@@ -136,7 +142,7 @@ export default function KYCReviewPage() {
                 <div style={{ position: "relative", width: "100%", minHeight: 400, background: "#f1eee7" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={docUrl}
+                    src={signedUrl}
                     alt="KYC document"
                     style={{ width: "100%", maxHeight: "70vh", objectFit: "contain", display: "block" }}
                   />
@@ -144,7 +150,7 @@ export default function KYCReviewPage() {
               ) : (
                 <div style={{ padding: 32, textAlign: "center", color: "#6e7872" }}>
                   <div style={{ fontSize: 13, marginBottom: 12 }}>Cannot preview this file type</div>
-                  <a href={docUrl} target="_blank" rel="noopener noreferrer" style={{ color: BLUE, fontSize: 13, fontWeight: 600 }}>Open in new tab</a>
+                  <a href={signedUrl} target="_blank" rel="noopener noreferrer" style={{ color: BLUE, fontSize: 13, fontWeight: 600 }}>Open in new tab</a>
                 </div>
               )}
             </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { fmtDate } from "@/lib/fmt";
 import { motion, useInView } from "framer-motion";
 import { LockOutlined } from "@ant-design/icons";
 import { useHomeFeed, useSessionProfile } from "@/hooks/use-frontend-data";
@@ -58,6 +59,7 @@ function FeaturedCampaignCard({ campaign }: {
   campaign: {
     id: number; title: string; slug: string; status: string; mode: string;
     amount_raised: number; target_amount: number | null; cover_image_url: string | null;
+    created_at?: string;
   }
 }) {
   const pct = campaign.target_amount && campaign.target_amount > 0
@@ -95,6 +97,7 @@ function FeaturedCampaignCard({ campaign }: {
         <div style={{ fontSize: 13, color: "rgba(255,255,255,0.78)", marginBottom: 12 }}>
           <span style={{ fontWeight: 700, color: "#fff", fontSize: 15 }}>{campaign.amount_raised.toLocaleString()} GMD</span>
           {hasTarget && <span> raised · {Math.round(pct)}% of goal</span>}
+          {campaign.created_at && <div style={{ fontSize: 12, marginTop: 2 }}>Started {fmtDate(campaign.created_at)}</div>}
         </div>
         {hasTarget && (
           <div style={{ height: 4, background: "rgba(255,255,255,0.22)", borderRadius: 2, marginBottom: 14, overflow: "hidden" }}>

@@ -28,6 +28,7 @@ from app.services.hexai_service import HexAIGatewayError, HexAIPaymentService
 from app.services.fees import withdrawal_fee
 from app.services.money import floor_dalasi, split_whole_dalasi
 from app.services.payout_service import apply_payout_status, normalize_gateway_status
+from app.services.admin_overview import campaign_overview, user_overview
 from app.services.campaign_audit import (
     TotalChangedError,
     WriteOffNotAllowedError,
@@ -76,6 +77,34 @@ async def get_campaign_detail(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
     return campaign
+
+
+@router.get("/campaigns/{campaign_id}/overview")
+async def campaign_overview_for_admin(
+    campaign_id: int,
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Everything about one campaign: owner and KYC, money and its audit,
+    donations, withdrawals, goals, updates, proofs, reports and audit trail."""
+    overview = await campaign_overview(db, campaign_id)
+    if overview is None:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    return overview
+
+
+@router.get("/users/{user_id}/overview")
+async def user_overview_for_admin(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """Everything about one user: KYC history, campaigns, donations received
+    and made, withdrawals, recurring plans, organizations and audit trail."""
+    overview = await user_overview(db, user_id)
+    if overview is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return overview
 
 
 @router.patch("/campaigns/{slug}/status")

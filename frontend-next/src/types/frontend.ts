@@ -212,6 +212,8 @@ export type CampaignDiscoveryItem = {
   /** Full profile on campaign endpoints; campaign-cards sends just name + badge. */
   organization?: (Pick<OrganizationPublic, "name" | "is_verified"> & Partial<OrganizationPublic>) | null;
   class_board_enabled?: boolean;
+  /** Successful donations; sent on campaign cards. */
+  donations_count?: number;
 };
 
 export type PublicProfileCampaign = {
@@ -515,6 +517,163 @@ export type GrowthMetrics = {
     fraud_reports: number;
     moderation_reports: number;
   };
+};
+
+// Admin one-page overviews (GET /admin/campaigns/{id}/overview, /admin/users/{id}/overview)
+export type OverviewDonation = {
+  id: number;
+  client_reference: string;
+  campaign_id: number;
+  campaign_title?: string | null;
+  amount: number;
+  net: number;
+  status: string;
+  provider: string | null;
+  donor_name: string | null;
+  donor_email: string | null;
+  user_id: number | null;
+  message: string | null;
+  goal_id: number | null;
+  reconciliation_source: string | null;
+  reconciliation_reason: string | null;
+  reconciled_at: string | null;
+  created_at: string;
+};
+
+export type OverviewPayout = {
+  id: number;
+  client_reference: string;
+  campaign_id: number | null;
+  campaign_title?: string | null;
+  status: string;
+  gross_amount: number | null;
+  hexai_fee: number | null;
+  platform_commission: number | null;
+  net_amount: number | null;
+  debit: number;
+  recipient_wave_number: string | null;
+  requested_by: string | null;
+  approved_by: string | null;
+  has_gateway_id: boolean;
+  reversed_at: string | null;
+  created_at: string;
+};
+
+export type OverviewKyc = {
+  id: number;
+  document_type: string;
+  status: string;
+  rejection_reason: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+};
+
+export type OverviewAuditEntry = {
+  id: number;
+  action_type: string;
+  description: string;
+  details: string | null;
+  old_value: string | null;
+  new_value: string | null;
+  performed_by: string | null;
+  created_at: string;
+};
+
+export type OverviewReports = {
+  fraud: { id: number; campaign_id: number; reason: string; details: string | null; status: string; created_at: string }[];
+  moderation: {
+    id: number; campaign_id: number | null; entity_type: string; reason: string; description: string;
+    status: string; action_taken: string | null; moderation_note: string | null; resolved_at: string | null; created_at: string | null;
+  }[];
+};
+
+export type CampaignOverview = {
+  campaign: {
+    id: number; title: string; slug: string; description: string; status: string; mode: string;
+    target_amount: number | null; amount_raised: number; category: string | null; tags: string[];
+    cover_image_url: string | null; beneficiary_type: string; organiser_type: string; class_board_enabled: boolean;
+    active_promo: string | null; qr_code_page_url: string | null; short_codes: string[]; created_at: string;
+  };
+  owner: {
+    id: number; full_name: string | null; email: string | null; wave_number: string | null; handle: string | null;
+    kyc_status: string | null; is_active: boolean; created_at: string; kyc_submissions: OverviewKyc[];
+  } | null;
+  organization: {
+    id: number; name: string; org_type: string; verification_status: string; region: string | null;
+    payout_wave_number: string | null; approval_threshold: number | null;
+  } | null;
+  money: {
+    amount_raised: number; donations_net: number; promo_credit: number; expected: number; difference: number;
+    withdrawn: number; adjustments: number; balance: number; true_balance: number; issues: CampaignAuditIssue[];
+    spending: SpendingSummary;
+  };
+  donation_stats: {
+    succeeded: number; pending: number; failed: number; unique_donors: number; anonymous_gifts: number;
+    gross: number; net: number; average: number | null; largest: number | null; first_at: string | null; last_at: string | null;
+    by_provider: { provider: string; count: number; gross: number }[];
+  };
+  donations: OverviewDonation[];
+  payouts: OverviewPayout[];
+  withdrawal_requests: {
+    id: number; amount: number; status: string; requested_by: string | null; decided_by: string | null;
+    decided_at: string | null; note: string | null; payout_id: number | null; created_at: string;
+  }[];
+  balance_adjustments: { id: number; amount: number; funded_by: string; reason: string; created_by: string | null; created_at: string }[];
+  goals: { id: number; title: string; target_amount: number; amount_raised: number; status: string; due_date: string | null }[];
+  updates: { id: number; title: string | null; text: string; category: string | null; amount_spent: number | null; posted_by: string | null; created_at: string }[];
+  proofs: { id: number; description: string | null; document_type: string; visibility: string; file_url: string; created_at: string }[];
+  reviews: { count: number; average: number | null; recent: { id: number; donor_name: string | null; rating: number; comment: string | null; created_at: string }[] };
+  promotions: {
+    id: number; name: string; promo_type: string; donation_id: number | null; payout_id: number | null;
+    fee_waived_amount: number; match_contributed_amount: number | null; reversed: boolean; applied_at: string;
+  }[];
+  recurring: { active_plans: number; monthly_committed: number; cancelled_plans: number };
+  engagement: { followers: number; share_clicks: number; share_click_donations: number };
+  reports: OverviewReports;
+  audit_log: OverviewAuditEntry[];
+};
+
+export type UserOverview = {
+  user: {
+    id: number; full_name: string | null; email: string | null; wave_number: string | null; handle: string | null;
+    avatar_url: string | null; role: string; is_active: boolean; is_email_verified: boolean; account_purpose: string | null;
+    kyc_status: string | null; kyc_verified_at: string | null; kyc_rejection_reason: string | null;
+    referral_code: string | null; referred_by_code: string | null; created_at: string;
+  };
+  kyc_submissions: OverviewKyc[];
+  totals: {
+    campaigns: number; raised: number; donations_received: number; withdrawn: number; sent_to_wave: number;
+    balance: number; donations_made: number; given: number; followers: number; following: number; referred_users: number;
+  };
+  campaigns: {
+    id: number; title: string; slug: string; status: string; mode: string; target_amount: number | null;
+    amount_raised: number; donations: number; withdrawn: number; balance: number; issues: CampaignAuditIssue[]; created_at: string;
+  }[];
+  donations_received: OverviewDonation[];
+  donations_made: OverviewDonation[];
+  withdrawals: OverviewPayout[];
+  recurring_plans: {
+    id: number; campaign_id: number; campaign_title: string | null; amount: number; frequency: string;
+    is_active: boolean; next_charge_date: string | null; cancelled_at: string | null; created_at: string;
+  }[];
+  organizations: { id: number; name: string; role: string; org_type?: string; verification_status?: string; status?: string }[];
+  reports: OverviewReports;
+  audit_log: OverviewAuditEntry[];
+};
+
+export type CampaignPublicStats = {
+  created_at: string | null;
+  donations_count: number;
+  donors_count: number;
+  first_donation_at: string | null;
+  last_donation_at: string | null;
+  largest_donation: number | null;
+  followers_count: number;
+  updates_count: number;
+  receipts_count: number;
+  organizer_since: string | null;
+  organizer_campaigns: number;
 };
 
 // KYC Types

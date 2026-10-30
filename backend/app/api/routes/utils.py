@@ -168,6 +168,11 @@ async def _build_campaign_cards_payload(
             Campaign.category,
             Organization.name.label("organization_name"),
             Organization.verification_status.label("organization_status"),
+            select(func.count(Donation.id))
+            .where(Donation.campaign_id == Campaign.id, Donation.status == "SUCCEEDED")
+            .correlate(Campaign)
+            .scalar_subquery()
+            .label("donations_count"),
         )
         .outerjoin(Organization, Organization.id == Campaign.organization_id)
         .where(cast(Campaign.status, String) == CampaignStatus.ACTIVE.value)
@@ -215,6 +220,7 @@ async def _build_campaign_cards_payload(
             "cover_image_url": _resolve_campaign_cover_image_url(row.id, row.cover_image_url),
             "category": row.category,
             "tags": tags_by_campaign[row.id],
+            "donations_count": row.donations_count or 0,
             "organization": (
                 {"name": row.organization_name, "is_verified": row.organization_status == OrgVerificationStatus.APPROVED.value}
                 if row.organization_name else None

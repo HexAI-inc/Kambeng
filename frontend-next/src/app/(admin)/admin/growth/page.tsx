@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   AreaChart, Area, BarChart, Bar, Cell,
@@ -8,7 +9,7 @@ import {
 } from "recharts";
 import { PrinterOutlined, ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 import { useAdminGrowthMetrics } from "@/hooks/use-frontend-data";
-import { fmtCompact, fmtDate, fmtGMD, fmtGMDShort, humanize } from "@/lib/fmt";
+import { fmtCompact, fmtDate, fmtGMD, fmtGMDShort, humanize, railLabel } from "@/lib/fmt";
 import type { GrowthMetrics, GrowthTrend } from "@/types/frontend";
 
 // Chart palette — validated (light surface): brand green + blue pass CVD and
@@ -173,9 +174,9 @@ export default function GrowthReportPage() {
                 </button>
               ))}
             </div>
-            <button type="button" className="gr-print" onClick={() => window.print()}>
+            <Link className="gr-print" href={`/admin/growth/report?months=${months}`}>
               <PrinterOutlined /> Export PDF
-            </button>
+            </Link>
           </div>
         </motion.header>
 
@@ -386,7 +387,7 @@ function Report({ data }: { data: GrowthMetrics }) {
         <Panel title="Payment rails" sub="Share of processed volume">
           <div className="gr-stack">
             {data.rails.map((r) => (
-              <HBar key={r.rail} label={humanize(r.rail)} value={r.gmv} max={h.gmv_total} display={pct(r.share_pct)} note={`· ${r.count.toLocaleString("en-GB")} gifts`} />
+              <HBar key={r.rail} label={railLabel(r.rail)} value={r.gmv} max={h.gmv_total} display={pct(r.share_pct)} note={`· ${r.count.toLocaleString("en-GB")} gifts`} />
             ))}
             {data.rails.length === 0 && <div className="gr-empty">No donations yet</div>}
           </div>
@@ -474,7 +475,7 @@ const CSS = `
 .gr-seg { display: inline-flex; background: rgba(21,32,26,0.05); border-radius: 10px; padding: 3px; }
 .gr-seg button { border: 0; background: transparent; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; color: ${MUTED}; cursor: pointer; }
 .gr-seg button.on { background: #fff; color: ${INK}; box-shadow: 0 1px 2px rgba(21,32,26,0.12); }
-.gr-print { display: inline-flex; align-items: center; gap: 6px; border: 0; background: ${GREEN}; color: #fff; font-size: 12px; font-weight: 700; padding: 9px 14px; border-radius: 10px; cursor: pointer; }
+.gr-print { text-decoration: none; display: inline-flex; align-items: center; gap: 6px; border: 0; background: ${GREEN}; color: #fff; font-size: 12px; font-weight: 700; padding: 9px 14px; border-radius: 10px; cursor: pointer; }
 .gr-print:hover { background: #0f5e3a; }
 .gr-state { padding: 48px; text-align: center; color: ${MUTED}; font-size: 14px; }
 

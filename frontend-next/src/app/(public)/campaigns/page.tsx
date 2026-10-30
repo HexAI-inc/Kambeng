@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { fmtDate } from "@/lib/fmt";
 import { Suspense, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -247,8 +248,12 @@ function CampaignCard({ campaign, index, onTagClick }: { campaign: ReturnType<ty
               {campaign.amount_raised.toLocaleString()} GMD
             </span>
             <span style={{ fontSize: 12, color: "#6e7872" }}>
-              of {(campaign.target_amount ?? 0).toLocaleString()} GMD
+              {campaign.target_amount ? `of ${campaign.target_amount.toLocaleString()} GMD` : "Ongoing"}
             </span>
+          </div>
+          <div style={{ fontSize: 11, color: "#6e7872", marginTop: 4 }}>
+            Started {fmtDate(campaign.created_at)}
+            {campaign.donations_count ? ` · ${campaign.donations_count} gift${campaign.donations_count === 1 ? "" : "s"}` : ""}
           </div>
         </div>
 

@@ -34,6 +34,7 @@ import type { CampaignDiscoveryItem, CampaignGoal, CampaignReview, CampaignUpdat
 import { OrganizationCard } from "@/components/campaigns/organization-badge";
 import { RecentSupporters } from "@/components/campaigns/recent-supporters";
 import { ClassBoardCard, SpendingStrip } from "@/components/campaigns/campaign-accountability";
+import { CampaignFactsCard, CampaignFactsLine } from "@/components/campaigns/campaign-facts";
 
 const BLUE = "#14784a";
 const GREEN = "#1f9960";
@@ -1179,6 +1180,7 @@ export default function CampaignDetailPage() {
                     Goal: {campaign.target_amount.toLocaleString()} GMD
                   </div>
                 )}
+                <CampaignFactsLine slug={campaign.slug} createdAt={campaign.created_at} />
               </div>
 
               <Link href={`/quick-pay/${campaign.slug}`} style={{ display: "block" }}>
@@ -1212,6 +1214,7 @@ export default function CampaignDetailPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 20, minWidth: 0 }}>
 
           <SpendingStrip slug={campaign.slug} />
+          <CampaignFactsCard slug={campaign.slug} createdAt={campaign.created_at} />
           <ClassBoardCard slug={campaign.slug} />
 
           {/* Campaign Updates — first because it builds the most trust */}

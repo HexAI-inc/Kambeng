@@ -190,8 +190,10 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       await updateProfile.mutateAsync({ current_password: currentPassword, new_password: newPassword });
-      showToast("Password changed successfully", true);
+      // Changing the password signs out every session, this one included.
+      showToast("Password changed. Please sign in again with your new password.", true);
       setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+      setTimeout(() => window.location.assign("/auth/logout"), 1500);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ?? "Failed to change password";
       showToast(msg, false);

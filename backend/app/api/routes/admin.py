@@ -28,7 +28,15 @@ from app.services.hexai_service import HexAIGatewayError, HexAIPaymentService
 from app.services.fees import withdrawal_fee
 from app.services.money import floor_dalasi, split_whole_dalasi
 from app.services.payout_service import apply_payout_status, normalize_gateway_status
-from app.services.campaign_audit import TotalChangedError, build_campaign_audit, correct_campaign_total
+from app.services.campaign_audit import (
+    TotalChangedError,
+    WriteOffNotAllowedError,
+    build_campaign_audit,
+    commissions_written_off,
+    correct_campaign_total,
+    payout_debit,
+    write_off_overdraft,
+)
 from app.core.logging_config import get_logger
 
 hexai_service = HexAIPaymentService()
@@ -925,14 +933,20 @@ async def verify_payout_with_gateway(
     }
 
 
+class MarkPayoutSucceededRequest(BaseModel):
+    reason: str = Field(..., min_length=5, max_length=500, description="How the admin confirmed the money left (e.g. Wave statement reference)")
+
+
 @router.post("/payouts/{payout_id}/mark-succeeded")
 async def mark_payout_succeeded(
     payout_id: int,
+    payload: MarkPayoutSucceededRequest,
     db: AsyncSession = Depends(get_db),
     admin_user: User = Depends(get_admin_user),
 ):
     """Guard rail: manually move a PENDING payout to SUCCEEDED when the money
-    verifiably left but the webhook never arrived. Audited."""
+    verifiably left but the webhook never arrived. Requires the admin's
+    evidence; when HPG knows the payout, HPG must agree. Audited."""
     result = await db.execute(select(Payout).where(Payout.id == payout_id))
     payout = result.scalars().first()
     if not payout:
@@ -940,6 +954,23 @@ async def mark_payout_succeeded(
 
     if payout.status != "PENDING":
         raise HTTPException(status_code=409, detail=f"Payout is {payout.status}; only PENDING payouts can be manually marked succeeded")
+
+    # Never override the gateway: if HPG has the payout, its status decides.
+    if payout.gateway_transaction_id:
+        try:
+            gateway_response = await hexai_service.get_payout_status(payout.gateway_transaction_id)
+        except HexAIGatewayError as exc:
+            if exc.status_code != 404:
+                raise HTTPException(status_code=502, detail=f"Couldn't confirm with the gateway ({exc.message}); try Verify again later")
+            gateway_response = None
+        except Exception:
+            raise HTTPException(status_code=502, detail="Couldn't confirm with the gateway; try Verify again later")
+        gateway_status = normalize_gateway_status(((gateway_response or {}).get("data") or gateway_response or {}).get("status"))
+        if gateway_status == "FAILED":
+            await apply_payout_status(db, payout, "FAILED", source="VERIFY")
+            raise HTTPException(status_code=409, detail="The gateway reports this payout FAILED; it has been marked failed and the balance released")
+        if gateway_status != "SUCCEEDED" and gateway_response is not None:
+            raise HTTPException(status_code=409, detail="The gateway still shows this payout as pending; wait for it to settle")
 
     await apply_payout_status(db, payout, "SUCCEEDED", source="MANUAL")
 
@@ -950,6 +981,7 @@ async def mark_payout_succeeded(
         target_entity_type="payout",
         target_entity_id=payout.id,
         description=f"Manually marked payout {payout.client_reference} as SUCCEEDED",
+        details=payload.reason.strip(),
         campaign_id=payout.campaign_id,
         old_value="PENDING",
         new_value="SUCCEEDED",
@@ -1101,6 +1133,34 @@ async def correct_campaign_money_total(
     except LookupError:
         raise HTTPException(status_code=404, detail="Campaign not found")
     except TotalChangedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+
+class OverdraftWriteOffRequest(BaseModel):
+    expected_balance: float = Field(..., description="The negative balance the admin reviewed; refused if it has changed")
+    reason: str = Field(..., min_length=5, max_length=500)
+
+
+@router.post("/reconciliation/campaigns/{campaign_id}/write-off")
+async def write_off_campaign_overdraft(
+    campaign_id: int,
+    payload: OverdraftWriteOffRequest,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(get_admin_user),
+):
+    """Cover an overdrawn campaign's shortfall from Kambeng's commissions,
+    bringing its balance to zero. Recorded in the audit log."""
+    try:
+        return await write_off_overdraft(
+            db,
+            campaign_id=campaign_id,
+            expected_balance=payload.expected_balance,
+            reason=payload.reason,
+            admin=admin_user,
+        )
+    except LookupError:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    except (TotalChangedError, WriteOffNotAllowedError) as exc:
         raise HTTPException(status_code=409, detail=str(exc))
 
 
@@ -1267,7 +1327,9 @@ async def get_commissions_summary(
     )
     pending_commissions = pending_result.scalar() or 0.0
     
-    available_commissions = total_commissions - withdrawn_commissions - pending_commissions
+    # Commissions spent covering campaign overdrafts are no longer Kambeng's to withdraw.
+    written_off_commissions = await commissions_written_off(db)
+    available_commissions = total_commissions - withdrawn_commissions - pending_commissions - written_off_commissions
     commission_count = len(payouts)
     
     await db.commit()
@@ -1287,6 +1349,7 @@ async def get_commissions_summary(
         pending_commissions=pending_commissions,
         available_commissions=available_commissions,
         commission_count=commission_count,
+        written_off_commissions=written_off_commissions,
         last_updated=datetime.now(UTC)
     )
 

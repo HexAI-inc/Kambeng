@@ -194,3 +194,62 @@ async def test_sub_dalasi_legacy_drift_is_not_flagged(async_client, db_session):
     await _campaign(db_session, slug="legacy-drift", amount_raised=39.2, donations=[40.0])
     report = (await async_client.get("/api/admin/reconciliation/campaigns", headers=headers)).json()
     assert report["campaigns"] == []
+
+
+@pytest.mark.asyncio
+async def test_overdraft_written_off_against_commissions(async_client, db_session):
+    headers = await _admin_headers(async_client, db_session)
+    owner, campaign = await _campaign(db_session, slug="written-off", amount_raised=123.0, donations=[100.0, 25.0])
+    # A commission-earning payout elsewhere gives Kambeng 10 GMD of commissions.
+    _, other = await _campaign(db_session, slug="commission-source", amount_raised=196.0, donations=[200.0])
+    db_session.add_all([
+        Payout(campaign_id=campaign.id, client_reference="PAYOUT-WO", gross_amount=147.0, hexai_fee=3.0,
+               platform_commission=10.0, net_amount=134.0, amount=134.0, status="SUCCEEDED"),
+        Payout(campaign_id=other.id, client_reference="PAYOUT-SRC", gross_amount=100.0, hexai_fee=2.0,
+               platform_commission=10.0, net_amount=88.0, amount=88.0, status="SUCCEEDED"),
+    ])
+    await db_session.commit()
+
+    before = (await async_client.get("/api/admin/commissions", headers=headers)).json()
+    assert before["available_commissions"] == 20.0
+
+    url = f"/api/admin/reconciliation/campaigns/{campaign.id}/write-off"
+    stale = await async_client.post(url, headers=headers, json={"expected_balance": -10.0, "reason": "test project demo"})
+    assert stale.status_code == 409
+
+    done = await async_client.post(url, headers=headers, json={"expected_balance": -24.0, "reason": "test project demo"})
+    assert done.status_code == 200, done.text
+    assert done.json()["written_off"] == 24.0
+
+    # The public total is untouched; the balance is back to zero; commissions carry the cost.
+    await db_session.refresh(campaign)
+    assert campaign.amount_raised == 123.0
+    report = (await async_client.get("/api/admin/reconciliation/campaigns", headers=headers)).json()
+    assert report["campaigns"] == []
+    assert report["summary"]["commissions_written_off"] == 24.0
+    after = (await async_client.get("/api/admin/commissions", headers=headers)).json()
+    assert (after["written_off_commissions"], after["available_commissions"]) == (24.0, -4.0)
+
+    fastapi_app = _as_user(owner)
+    try:
+        summary = await async_client.get(f"/api/payments/withdraw/summary/{campaign.id}")
+        assert summary.json()["available_balance"] == pytest.approx(0.0)
+    finally:
+        fastapi_app.dependency_overrides.pop(get_current_user, None)
+
+    # Nothing left to write off.
+    again = await async_client.post(url, headers=headers, json={"expected_balance": 0.0, "reason": "test project demo"})
+    assert again.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_write_off_requires_a_correct_total_first(async_client, db_session):
+    headers = await _admin_headers(async_client, db_session)
+    _, campaign = await _campaign(db_session, slug="needs-correction", amount_raised=98.0, donations=[50.0])
+    db_session.add(Payout(campaign_id=campaign.id, client_reference="PAYOUT-NC", gross_amount=98.0, net_amount=86.0, status="SUCCEEDED"))
+    await db_session.commit()
+    resp = await async_client.post(
+        f"/api/admin/reconciliation/campaigns/{campaign.id}/write-off", headers=headers,
+        json={"expected_balance": -49.0, "reason": "should correct first"},
+    )
+    assert resp.status_code == 409 and "Correct" in resp.json()["detail"]

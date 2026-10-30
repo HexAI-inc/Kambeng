@@ -965,6 +965,24 @@ export function useCorrectCampaignTotal() {
   });
 }
 
+export function useWriteOffOverdraft() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ campaignId, expectedBalance, reason }: { campaignId: number; expectedBalance: number; reason: string }) => {
+      const response = await api.post<{ written_off: number; previous_balance: number }>(
+        `/admin/reconciliation/campaigns/${campaignId}/write-off`,
+        { expected_balance: expectedBalance, reason },
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-campaign-money-audit"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-audit-logs"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-commissions-summary"] });
+    },
+  });
+}
+
 // ===== Campaign Image Mutations =====
 
 export function useUploadCampaignImage() {

@@ -46,7 +46,7 @@ from app.services.payment_reconciliation import (
     DonationTransitionConflictError,
     reconcile_donation_status,
 )
-from app.services.campaign_audit import payout_debit, stored_total_is_backed
+from app.services.campaign_audit import adjustments_by_campaign, payout_debit, stored_total_is_backed
 from app.services.fees import withdrawal_fee
 from app.services.money import floor_dalasi, split_whole_dalasi
 from app.services.payout_service import apply_payout_status, normalize_gateway_status
@@ -74,7 +74,10 @@ async def get_campaign_withdrawal_summary(
     # PENDING payouts are already in flight at the gateway — reserve them so a
     # second withdrawal can't spend the same balance. FAILED releases the hold.
     pending_reserved = sum(payout_debit(payout) for payout in payouts if payout.status == "PENDING")
-    available_balance = campaign.amount_raised - total_withdrawn - pending_reserved
+    # Admin balance adjustments (e.g. an overdraft written off against
+    # commissions) add to what can be withdrawn without changing amount_raised.
+    adjusted = (await adjustments_by_campaign(db, [campaign.id])).get(campaign.id, 0.0)
+    available_balance = campaign.amount_raised - total_withdrawn - pending_reserved + adjusted
     return available_balance, total_withdrawn, payouts
 
 

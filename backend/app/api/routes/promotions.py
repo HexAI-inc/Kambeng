@@ -213,7 +213,7 @@ async def assign_campaign_to_promotion(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    promo_result = await db.execute(select(Promotion).where(Promotion.id == payload.promotion_id).with_for_update())
+    promo_result = await db.execute(select(Promotion).where(Promotion.id == payload.promotion_id).with_for_update().execution_options(populate_existing=True))
     promo = promo_result.scalars().first()
     if not promo:
         raise HTTPException(status_code=404, detail="Promotion not found")

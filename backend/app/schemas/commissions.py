@@ -23,8 +23,9 @@ class CommissionSummary(BaseModel):
     total_commissions: float  # Total platform commissions across all payouts
     withdrawn_commissions: float  # Already paid out to admin
     pending_commissions: float  # In-progress or pending payouts
-    available_commissions: float  # Ready to withdraw (total - withdrawn - pending)
+    available_commissions: float  # Ready to withdraw (total - withdrawn - pending - written_off)
     commission_count: int  # Number of payout records with commissions
+    written_off_commissions: float = 0.0  # Spent covering campaign overdrafts
     last_updated: datetime
 
 

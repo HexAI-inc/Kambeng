@@ -25,6 +25,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.models.audit_log import AdminAuditLog, AuditActionType
 from app.models.campaign import Campaign
+from app.models.campaign_adjustment import CampaignBalanceAdjustment
 from app.models.campaign_goal import CampaignGoal
 from app.models.donation import Donation
 from app.models.payout import Payout
@@ -49,6 +50,10 @@ class TotalChangedError(ValueError):
     """The stored total moved since the admin loaded the report."""
 
 
+class WriteOffNotAllowedError(ValueError):
+    """The campaign isn't in a state that can be written off."""
+
+
 def donation_net(donation: Donation) -> float:
     """What a SUCCEEDED donation credits its campaign before promotions."""
     return floor_dalasi(donation.amount - fee_for_collection(donation.amount, donation.provider))
@@ -60,6 +65,26 @@ def payout_debit(payout: Payout) -> float:
     deducting only the net would leave them in the balance to withdraw again.
     Legacy rows without a gross fall back to the net."""
     return payout.gross_amount or payout.net_amount or payout.amount or 0.0
+
+
+async def adjustments_by_campaign(db: AsyncSession, campaign_ids: list[int] | None = None) -> dict[int, float]:
+    """Balance adjustments (e.g. overdrafts written off against commissions)
+    per campaign. They add to what can be withdrawn, never to amount_raised."""
+    query = select(CampaignBalanceAdjustment)
+    if campaign_ids is not None:
+        query = query.where(CampaignBalanceAdjustment.campaign_id.in_(campaign_ids))
+    totals: dict[int, float] = {}
+    for adjustment in (await db.execute(query)).scalars().all():
+        totals[adjustment.campaign_id] = round(totals.get(adjustment.campaign_id, 0.0) + adjustment.amount, 2)
+    return totals
+
+
+async def commissions_written_off(db: AsyncSession) -> float:
+    """Commissions Kambeng has spent covering campaign overdrafts."""
+    result = await db.execute(
+        select(CampaignBalanceAdjustment.amount).where(CampaignBalanceAdjustment.funded_by == "COMMISSIONS")
+    )
+    return round(sum(result.scalars().all()), 2)
 
 
 @dataclass
@@ -137,6 +162,8 @@ async def build_campaign_audit(db: AsyncSession, *, threshold: float = FLAG_THRE
     for payout in payouts:
         withdrawn_by_campaign[payout.campaign_id] = round(withdrawn_by_campaign.get(payout.campaign_id, 0.0) + payout_debit(payout), 2)
 
+    adjustments = await adjustments_by_campaign(db)
+
     goals_by_campaign: dict[int, list[CampaignGoal]] = {}
     for goal in (await db.execute(select(CampaignGoal))).scalars().all():
         goals_by_campaign.setdefault(goal.campaign_id, []).append(goal)
@@ -148,8 +175,9 @@ async def build_campaign_audit(db: AsyncSession, *, threshold: float = FLAG_THRE
         stored = round(campaign.amount_raised or 0.0, 2)
         expected = breakdown.expected
         withdrawn = withdrawn_by_campaign.get(campaign.id, 0.0)
+        adjusted = adjustments.get(campaign.id, 0.0)
         difference = round(stored - expected, 2)
-        true_balance = round(expected - withdrawn, 2)
+        true_balance = round(expected - withdrawn + adjusted, 2)
 
         goal_rows = []
         for goal in goals_by_campaign.get(campaign.id, []):
@@ -177,7 +205,7 @@ async def build_campaign_audit(db: AsyncSession, *, threshold: float = FLAG_THRE
         totals["stored"] += stored
         totals["expected"] += expected
         totals["withdrawn"] += withdrawn
-        totals["owed_to_campaigns"] += max(stored - withdrawn, 0.0)
+        totals["owed_to_campaigns"] += max(stored - withdrawn + adjusted, 0.0)
         totals["over_credited"] += max(difference, 0.0)
         totals["overdrawn"] += max(-true_balance, 0.0)
 
@@ -192,7 +220,8 @@ async def build_campaign_audit(db: AsyncSession, *, threshold: float = FLAG_THRE
                 "expected": expected,
                 "difference": difference,
                 "withdrawn": withdrawn,
-                "balance": round(stored - withdrawn, 2),
+                "adjustments": adjusted,
+                "balance": round(stored - withdrawn + adjusted, 2),
                 "true_balance": true_balance,
                 "issues": issues,
                 "goals": goal_rows,
@@ -205,6 +234,7 @@ async def build_campaign_audit(db: AsyncSession, *, threshold: float = FLAG_THRE
             "total_campaigns": len(campaigns),
             "flagged_campaigns": flagged,
             **{key: round(value, 2) for key, value in totals.items()},
+            "commissions_written_off": await commissions_written_off(db),
             "fee_rate_mobile_money": settings.HEXAI_COLLECTION_FEE_PERCENT,
             "fee_rate_card": settings.HEXAI_CARD_COLLECTION_FEE_PERCENT,
         },
@@ -283,6 +313,70 @@ async def correct_campaign_total(
         },
     )
     return {"campaign_id": campaign.id, "previous": previous, "corrected": breakdown.expected, "goal_changes": goal_changes}
+
+
+async def write_off_overdraft(
+    db: AsyncSession,
+    *,
+    campaign_id: int,
+    expected_balance: float,
+    reason: str,
+    admin: User,
+) -> dict:
+    """Bring an overdrawn campaign back to a zero balance, paid for out of
+    Kambeng's commissions. Only for a campaign whose stored total already
+    matches its records (correct it first), and only for the overdraft the
+    admin reviewed (`expected_balance`)."""
+    campaign = (
+        await db.execute(
+            select(Campaign).where(Campaign.id == campaign_id).with_for_update().execution_options(populate_existing=True)
+        )
+    ).scalars().first()
+    if campaign is None:
+        raise LookupError(f"Campaign {campaign_id} not found")
+
+    expected = (await compute_expected_totals(db, [campaign.id])).get(campaign.id, ExpectedTotals()).expected
+    if abs(round(campaign.amount_raised or 0.0, 2) - expected) > FLAG_THRESHOLD:
+        raise WriteOffNotAllowedError("Correct the campaign's raised amount before writing off its overdraft")
+
+    payouts = (
+        await db.execute(select(Payout).where(Payout.campaign_id == campaign.id, Payout.status.in_(DEBITING_PAYOUT_STATUSES)))
+    ).scalars().all()
+    withdrawn = sum(payout_debit(payout) for payout in payouts)
+    adjusted = (await adjustments_by_campaign(db, [campaign.id])).get(campaign.id, 0.0)
+    balance = round(expected - withdrawn + adjusted, 2)
+
+    if balance > -FLAG_THRESHOLD:
+        raise WriteOffNotAllowedError("This campaign is not overdrawn")
+    if abs(balance - round(expected_balance, 2)) > TOLERANCE:
+        raise TotalChangedError(f"The balance changed from {expected_balance:.2f} to {balance:.2f}; reload and review again")
+
+    amount = round(-balance, 2)
+    db.add(CampaignBalanceAdjustment(
+        campaign_id=campaign.id,
+        amount=amount,
+        funded_by="COMMISSIONS",
+        reason=reason.strip(),
+        created_by_admin_id=admin.id,
+    ))
+    db.add(AdminAuditLog(
+        action_type=AuditActionType.CAMPAIGN_OVERDRAFT_WRITTEN_OFF.value,
+        performed_by_admin_id=admin.id,
+        target_entity_type="Campaign",
+        target_entity_id=campaign.id,
+        campaign_id=campaign.id,
+        description=f"Wrote off {amount:.2f} GMD overdraft on campaign {campaign.slug} against commissions",
+        details=reason.strip(),
+        old_value=f"{balance:.2f}",
+        new_value="0.00",
+    ))
+    await db.commit()
+
+    logger.warning(
+        "Campaign overdraft written off",
+        extra={"action": "campaign_overdraft_written_off", "campaign_id": campaign.id, "admin_user_id": admin.id, "amount": amount},
+    )
+    return {"campaign_id": campaign.id, "written_off": amount, "previous_balance": balance}
 
 
 async def run_daily_campaign_audit() -> None:

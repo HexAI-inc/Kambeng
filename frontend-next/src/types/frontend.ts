@@ -589,6 +589,7 @@ export type CampaignAuditRow = {
   expected: number;
   difference: number;
   withdrawn: number;
+  adjustments: number;
   balance: number;
   true_balance: number;
   issues: CampaignAuditIssue[];
@@ -606,6 +607,7 @@ export type CampaignAuditReport = {
     owed_to_campaigns: number;
     over_credited: number;
     overdrawn: number;
+    commissions_written_off: number;
   };
   campaigns: CampaignAuditRow[];
 };
@@ -667,6 +669,7 @@ export type CommissionSummary = {
   pending_commissions: number;
   available_commissions: number;
   commission_count: number;
+  written_off_commissions?: number;
   last_updated: string;
 };
 

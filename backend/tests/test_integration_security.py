@@ -135,3 +135,54 @@ def test_verification_codes_stay_secret_outside_tests(client, monkeypatch):
 
     # Code-only lookups across all users are a test convenience only.
     assert client.post("/api/auth/verify-email", json={"code": "111111"}).status_code == 400
+
+
+@pytest.mark.integration
+def test_password_reset_revokes_existing_sessions(client, integration_db_session):
+    from datetime import timedelta
+
+    from app.api.routes.auth import _password_fingerprint
+
+    _seed_users(integration_db_session)
+    login = client.post("/api/auth/login", json={"username": "+2207800002", "password": "AlicePass123!"}).json()
+    access, refresh = login["data"]["tokens"]["accessToken"], login["data"]["tokens"]["refreshToken"]
+    assert client.get("/api/auth/me", headers={"Authorization": f"Bearer {access}"}).status_code == 200
+
+    import asyncio
+    from sqlalchemy import select
+
+    async def alice():
+        session = await integration_db_session()
+        user = (await session.execute(select(User).where(User.wave_number == "+2207800002"))).scalars().one()
+        await session.close()
+        return user
+
+    reset_token = create_access_token(
+        {"sub": "+2207800002", "type": "password_reset", "pwd": _password_fingerprint(asyncio.run(alice()))},
+        expires_delta=timedelta(minutes=15),
+    )
+    assert client.post("/api/auth/reset-password", json={"token": reset_token, "new_password": "NewAlice123!"}).status_code == 200
+
+    assert client.get("/api/auth/me", headers={"Authorization": f"Bearer {access}"}).status_code == 401
+    assert client.post("/api/auth/refresh", json={"refresh_token": refresh}).status_code == 401
+
+    fresh = client.post("/api/auth/login", json={"username": "+2207800002", "password": "NewAlice123!"}).json()
+    assert client.get("/api/auth/me", headers={"Authorization": f"Bearer {fresh['data']['tokens']['accessToken']}"}).status_code == 200
+
+
+@pytest.mark.integration
+def test_suspended_user_cannot_refresh(client, integration_db_session):
+    import asyncio
+    from sqlalchemy import update
+
+    _seed_users(integration_db_session)
+    refresh = client.post("/api/auth/login", json={"username": "+2207800003", "password": "BobPass123!"}).json()["data"]["tokens"]["refreshToken"]
+
+    async def suspend():
+        session = await integration_db_session()
+        await session.execute(update(User).where(User.wave_number == "+2207800003").values(is_active=False))
+        await session.commit()
+        await session.close()
+
+    asyncio.run(suspend())
+    assert client.post("/api/auth/refresh", json={"refresh_token": refresh}).status_code == 403

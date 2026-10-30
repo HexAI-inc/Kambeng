@@ -1,4 +1,5 @@
 from app.models.campaign import Campaign, CampaignMode, CampaignStatus, CampaignTag
+from app.models.campaign_adjustment import CampaignBalanceAdjustment
 from app.models.campaign_goal import CampaignGoal, GoalStatus
 from app.models.donation import Donation
 from app.models.organization import Organization, OrganizationMember, OrgVerification, WithdrawalRequest
@@ -15,6 +16,7 @@ __all__ = [
 	"CampaignMode",
 	"CampaignStatus",
 	"CampaignTag",
+	"CampaignBalanceAdjustment",
 	"CampaignGoal",
 	"GoalStatus",
 	"Donation",

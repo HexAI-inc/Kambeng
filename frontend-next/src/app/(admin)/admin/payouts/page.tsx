@@ -88,10 +88,15 @@ export default function PayoutsPage() {
 
   const markPaid = async (p: AdminPayoutOverview) => {
     const ref = p.client_reference ?? `payout #${p.payout_id}`;
-    if (!window.confirm(`Mark ${ref} (${Number(p.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD to ${p.user_name}) as SUCCEEDED?\n\nOnly do this after confirming with HPG or Wave that the money actually left. This action is audited.`)) return;
+    const reason = window.prompt(`Mark ${ref} (${Number(p.net_amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} GMD to ${p.user_name}) as SUCCEEDED?\n\nOnly do this after confirming with HPG or Wave that the money actually left. How did you confirm it? (e.g. Wave statement reference) This is recorded in the audit log.`);
+    if (reason === null) return;
+    if (reason.trim().length < 5) {
+      showToast("Describe how you confirmed the payout (at least 5 characters)", false);
+      return;
+    }
     setBusyId(p.payout_id);
     try {
-      await api.post(`/admin/payouts/${p.payout_id}/mark-succeeded`);
+      await api.post(`/admin/payouts/${p.payout_id}/mark-succeeded`, { reason: reason.trim() });
       showToast("Payout marked as succeeded", true);
       await refresh();
     } catch (error) {

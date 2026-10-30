@@ -8,6 +8,7 @@ from sqlalchemy.future import select
 import jwt
 from jwt.exceptions import InvalidTokenError
 
+from app.api.routes.auth import _token_is_current
 from app.core.config import settings
 from app.db.database import get_db
 from app.models.user import User
@@ -26,6 +27,8 @@ async def get_user_from_token(token: str, db: AsyncSession) -> User | None:
         
         result = await db.execute(select(User).where(User.wave_number == wave_number))
         user = result.scalars().first()
+        if user is None or not user.is_active or not _token_is_current(payload, user):
+            return None
         return user
     except InvalidTokenError:
         return None

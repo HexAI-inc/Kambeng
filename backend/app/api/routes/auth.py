@@ -50,6 +50,24 @@ def _exposes_verification_codes() -> bool:
     return settings.ENVIRONMENT.lower() == "test"
 
 
+def _session_claims(user: User) -> dict:
+    """Claims for access and refresh tokens. `tv` ties the token to the user's
+    token_version, so bumping it revokes every token issued before."""
+    return {"sub": user.wave_number, "email": user.email, "role": user.role, "tv": user.token_version or 0}
+
+
+def _token_is_current(payload: dict, user: User) -> bool:
+    # Tokens issued before token versions existed carry no `tv`: version 0.
+    try:
+        return int(payload.get("tv", 0)) == (user.token_version or 0)
+    except (TypeError, ValueError):
+        return False
+
+
+def _revoke_sessions(user: User) -> None:
+    user.token_version = (user.token_version or 0) + 1
+
+
 def _password_fingerprint(user: User) -> str:
     """Binds a reset token to the current password so it stops working once used."""
     return hashlib.sha256((user.password_hash or "").encode("utf-8")).hexdigest()[:16]
@@ -126,7 +144,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     # Fetch user from DB
     result = await db.execute(select(User).where(User.wave_number == wave_number))
     user = result.scalars().first()
-    if user is None:
+    if user is None or not _token_is_current(payload, user):
         raise credentials_exception
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is suspended")
@@ -150,7 +168,7 @@ async def get_current_user_optional(
 
     result = await db.execute(select(User).where(User.wave_number == wave_number))
     user = result.scalars().first()
-    if user is None or not user.is_active:
+    if user is None or not user.is_active or not _token_is_current(payload, user):
         return None
     return user
 
@@ -263,12 +281,9 @@ async def login(request: Request, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is suspended")
     # Generate Token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.wave_number, "email": user.email, "role": user.role},
-        expires_delta=access_token_expires,
-    )
+    access_token = create_access_token(data=_session_claims(user), expires_delta=access_token_expires)
     refresh_token = create_refresh_token(
-        data={"sub": user.wave_number, "email": user.email, "role": user.role},
+        data=_session_claims(user),
         expires_delta=timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
     expires_in = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
@@ -303,7 +318,7 @@ async def login(request: Request, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/refresh", dependencies=[Depends(rate_limit("refresh", 30, 60))])
-async def refresh_access_token(payload: dict):
+async def refresh_access_token(payload: dict, db: AsyncSession = Depends(get_db)):
     """Exchange a refresh token for a new access token."""
     refresh_token = payload.get("refresh_token")
     if not refresh_token:
@@ -321,12 +336,17 @@ async def refresh_access_token(payload: dict):
     if not wave_number:
         raise HTTPException(status_code=401, detail="Invalid refresh token payload")
 
+    # Re-check the account on every refresh: a suspended user or a revoked
+    # session (password reset/change) must not mint new access tokens, and the
+    # claims come from the account as it is now, not as it was at login.
+    user = (await db.execute(select(User).where(User.wave_number == wave_number))).scalars().first()
+    if user is None or not _token_is_current(decoded, user):
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Account is suspended")
+
     access_token = create_access_token(
-        data={
-            "sub": wave_number,
-            "email": decoded.get("email"),
-            "role": decoded.get("role"),
-        },
+        data=_session_claims(user),
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     expires_in = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
@@ -424,6 +444,9 @@ async def update_my_profile(
         if len(payload.new_password) < 8:
             raise HTTPException(status_code=400, detail="New password must be at least 8 characters.")
         current_user.password_hash = get_password_hash(payload.new_password)
+        # Sign out every session, including this one: whoever knew the old
+        # password may still hold a token.
+        _revoke_sessions(current_user)
 
     try:
         await db.commit()
@@ -564,6 +587,7 @@ async def reset_password(payload: PasswordResetConfirm, db: AsyncSession = Depen
         raise HTTPException(status_code=400, detail="Invalid or expired token")
 
     user.password_hash = get_password_hash(payload.new_password)
+    _revoke_sessions(user)
     await db.commit()
     logger.info(
         "Password reset completed",

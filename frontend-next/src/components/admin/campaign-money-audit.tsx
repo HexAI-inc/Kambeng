@@ -3,7 +3,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useCampaignMoneyAudit, useCorrectCampaignTotal, useGatewayWalletBalance } from "@/hooks/use-frontend-data";
+import { useCampaignMoneyAudit, useCorrectCampaignTotal, useGatewayWalletBalance, useWriteOffOverdraft } from "@/hooks/use-frontend-data";
 import type { CampaignAuditIssue, CampaignAuditRow } from "@/types/frontend";
 
 const GREEN = "#14784a";
@@ -17,7 +17,12 @@ const ISSUE_LABELS: Record<CampaignAuditIssue, { label: string; color: string; h
   goal_mismatch: { label: "Goal mismatch", color: ORANGE, help: "A goal's total doesn't match its donations." },
 };
 
-const COLUMNS = "1fr 90px 90px 90px 90px 100px 150px 110px";
+const COLUMNS = "1fr 90px 90px 90px 90px 100px 150px 120px";
+
+const actionStyle: React.CSSProperties = {
+  padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700,
+  border: "1px solid rgba(20,120,74,0.3)", background: "#edf7f2", color: GREEN, cursor: "pointer",
+};
 
 function gmd(value: number) {
   return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} GMD`;
@@ -33,8 +38,10 @@ export function CampaignMoneyAudit() {
   const { data: report, isLoading, isError, refetch, isFetching } = useCampaignMoneyAudit();
   const { data: walletBalance } = useGatewayWalletBalance();
   const correct = useCorrectCampaignTotal();
+  const writeOff = useWriteOffOverdraft();
 
   const [correcting, setCorrecting] = useState<CampaignAuditRow | null>(null);
+  const [writingOff, setWritingOff] = useState<CampaignAuditRow | null>(null);
   const [reason, setReason] = useState("");
   const [notice, setNotice] = useState<{ msg: string; ok: boolean } | null>(null);
 
@@ -56,6 +63,24 @@ export function CampaignMoneyAudit() {
       setNotice({ msg: errorMessage(error), ok: false });
     }
   };
+
+  const submitWriteOff = async () => {
+    if (!writingOff || reason.trim().length < 5) {
+      setNotice({ msg: "Explain the write-off (at least 5 characters)", ok: false });
+      return;
+    }
+    try {
+      const result = await writeOff.mutateAsync({ campaignId: writingOff.campaign_id, expectedBalance: writingOff.true_balance, reason: reason.trim() });
+      setNotice({ msg: `${writingOff.title}: ${gmd(result.written_off)} covered from commissions; balance is now 0 GMD`, ok: true });
+      setWritingOff(null);
+      setReason("");
+    } catch (error) {
+      setNotice({ msg: errorMessage(error), ok: false });
+    }
+  };
+
+  const openCorrect = (row: CampaignAuditRow) => { setWritingOff(null); setCorrecting(row); setReason(""); setNotice(null); };
+  const openWriteOff = (row: CampaignAuditRow) => { setCorrecting(null); setWritingOff(row); setReason(""); setNotice(null); };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -120,6 +145,24 @@ export function CampaignMoneyAudit() {
         </div>
       )}
 
+      {writingOff && (
+        <div style={{ background: "#fff", border: "1px solid rgba(185,80,11,0.25)", borderRadius: 14, padding: "20px 22px" }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#15201a" }}>Write off {writingOff.title}&apos;s overdraft</div>
+          <div style={{ fontSize: 13, color: "#56625b", marginTop: 6, lineHeight: 1.5 }}>
+            Kambeng covers <b>{gmd(-writingOff.true_balance)}</b> from its commissions and the campaign&apos;s balance returns to <b>0 GMD</b>.
+            The raised amount donors see stays {gmd(writingOff.amount_raised)}. Use this only when the money is not being recovered from the owner.
+          </div>
+          <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Why — e.g. test withdrawals during the final-year project demo"
+            style={{ width: "100%", marginTop: 12, padding: "10px 13px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.15)", fontSize: 13, resize: "vertical", boxSizing: "border-box" }} />
+          <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+            <button onClick={() => void submitWriteOff()} disabled={writeOff.isPending} style={{ padding: "9px 18px", borderRadius: 9, border: "none", background: GREEN, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              {writeOff.isPending ? "Saving…" : "Write off from commissions"}
+            </button>
+            <button onClick={() => { setWritingOff(null); setReason(""); }} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(21,32,26,0.1)", background: "#fff", color: "#56625b", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
       <div style={{ background: "#fff", border: "1px solid rgba(21,32,26,0.07)", borderRadius: 16, overflowX: "auto" }}>
         <div className="admin-table-wrap" style={{ minWidth: 900 }}>
           <div className="admin-table-header" style={{ display: "grid", gridTemplateColumns: COLUMNS, padding: "10px 18px", borderBottom: "1px solid rgba(21,32,26,0.06)", fontSize: 10, fontWeight: 700, color: "#6e7872", textTransform: "uppercase", letterSpacing: "0.07em" }}>
@@ -152,12 +195,13 @@ export function CampaignMoneyAudit() {
                 ))}
               </div>
               <div data-label="Action">
-                {row.difference !== 0 || row.goals.length > 0 ? (
-                  <button onClick={() => { setCorrecting(row); setReason(""); setNotice(null); }} style={{ padding: "5px 11px", borderRadius: 7, fontSize: 11, fontWeight: 700, border: "1px solid rgba(20,120,74,0.3)", background: "#edf7f2", color: GREEN, cursor: "pointer" }}>
-                    Correct
-                  </button>
+                {row.issues.some((issue) => issue !== "overdrawn") ? (
+                  <button onClick={() => openCorrect(row)} style={actionStyle}>Correct</button>
                 ) : (
-                  <span style={{ fontSize: 11, color: "#6e7872" }}>Recovering</span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-start" }}>
+                    <button onClick={() => openWriteOff(row)} style={actionStyle}>Write off</button>
+                    <span style={{ fontSize: 11, color: "#6e7872" }}>or recover from future donations</span>
+                  </div>
                 )}
               </div>
             </div>

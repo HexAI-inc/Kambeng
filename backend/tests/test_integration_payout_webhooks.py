@@ -210,7 +210,12 @@ async def test_admin_mark_payout_succeeded_manually(async_client, db_session):
 
     fastapi_app.dependency_overrides[get_admin_user] = _admin_override
     try:
-        resp = await async_client.post(f"/api/admin/payouts/{payout.id}/mark-succeeded")
+        # The admin must say how they confirmed the money left.
+        no_reason = await async_client.post(f"/api/admin/payouts/{payout.id}/mark-succeeded")
+        assert no_reason.status_code == 422
+
+        evidence = {"reason": "Wave statement ref WV-123 shows the transfer"}
+        resp = await async_client.post(f"/api/admin/payouts/{payout.id}/mark-succeeded", json=evidence)
         assert resp.status_code == 200, resp.text
         assert resp.json()["status"] == "SUCCEEDED"
         assert await _payout_status(db_session, payout.id) == "SUCCEEDED"
@@ -222,14 +227,57 @@ async def test_admin_mark_payout_succeeded_manually(async_client, db_session):
                 AdminAuditLog.target_entity_id == payout.id,
             )
         )
-        assert audit_result.scalars().first() is not None
+        audit = audit_result.scalars().first()
+        assert audit is not None and audit.details == evidence["reason"]
 
         # not repeatable once no longer PENDING
-        resp2 = await async_client.post(f"/api/admin/payouts/{payout.id}/mark-succeeded")
+        resp2 = await async_client.post(f"/api/admin/payouts/{payout.id}/mark-succeeded", json=evidence)
         assert resp2.status_code == 409
 
         # missing payout
-        resp3 = await async_client.post("/api/admin/payouts/999999/mark-succeeded")
+        resp3 = await async_client.post("/api/admin/payouts/999999/mark-succeeded", json=evidence)
         assert resp3.status_code == 404
+    finally:
+        fastapi_app.dependency_overrides.pop(get_admin_user, None)
+
+
+@pytest.mark.asyncio
+async def test_manual_success_defers_to_the_gateway(async_client, db_session, monkeypatch):
+    from app.api.routes import admin as admin_routes
+
+    admin = User(full_name="Admin Three", email="gw-admin@example.com", wave_number="+2207010102", password_hash="x", role="ADMIN")
+    db_session.add(admin)
+    await db_session.commit()
+
+    gateway = {"status": "PROCESSING"}
+
+    async def fake_status(transaction_id):
+        return {"data": {"status": gateway["status"]}}
+
+    monkeypatch.setattr(admin_routes.hexai_service, "get_payout_status", fake_status)
+
+    from app.main import app as fastapi_app
+
+    async def _admin_override():
+        return admin
+
+    fastapi_app.dependency_overrides[get_admin_user] = _admin_override
+    evidence = {"reason": "Owner says the money arrived"}
+    try:
+        pending = await _seed_payout(db_session, "PAYOUT-GW-1", wave="+2207009001", email="gw1@example.com", gateway_transaction_id="TX-1")
+        resp = await async_client.post(f"/api/admin/payouts/{pending.id}/mark-succeeded", json=evidence)
+        assert resp.status_code == 409 and "pending" in resp.json()["detail"]
+        assert await _payout_status(db_session, pending.id) == "PENDING"
+
+        gateway["status"] = "FAILED"
+        resp = await async_client.post(f"/api/admin/payouts/{pending.id}/mark-succeeded", json=evidence)
+        assert resp.status_code == 409 and "FAILED" in resp.json()["detail"]
+        assert await _payout_status(db_session, pending.id) == "FAILED"
+
+        settled = await _seed_payout(db_session, "PAYOUT-GW-2", wave="+2207009002", email="gw2@example.com", gateway_transaction_id="TX-2")
+        gateway["status"] = "SUCCEEDED"
+        resp = await async_client.post(f"/api/admin/payouts/{settled.id}/mark-succeeded", json=evidence)
+        assert resp.status_code == 200, resp.text
+        assert await _payout_status(db_session, settled.id) == "SUCCEEDED"
     finally:
         fastapi_app.dependency_overrides.pop(get_admin_user, None)

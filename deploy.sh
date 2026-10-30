@@ -67,11 +67,13 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=$FRONTEND_DIR
-Environment=HOST=0.0.0.0
+# Loopback only: nginx is the public entry point. Reachable directly, a client
+# could forge X-Forwarded-For and dodge the API's per-IP rate limits.
+Environment=HOST=127.0.0.1
 Environment=PORT=3005
 Environment=BACKEND_API_BASE_URL=http://127.0.0.1:8001/api
 Environment=NEXT_PUBLIC_API_BASE_URL=/api/backend
-ExecStart=/usr/bin/npm run start -- --hostname 0.0.0.0 --port 3005
+ExecStart=/usr/bin/npm run start -- --hostname 127.0.0.1 --port 3005
 Restart=always
 RestartSec=5
 StandardOutput=append:$FRONTEND_LOG_FILE
@@ -116,7 +118,7 @@ start_frontend() {
   log "systemd is unavailable; starting frontend with nohup"
   (
     cd "$FRONTEND_DIR"
-    nohup npm run start -- --hostname 0.0.0.0 --port 3005 > "$FRONTEND_LOG_FILE" 2>&1 &
+    nohup npm run start -- --hostname 127.0.0.1 --port 3005 > "$FRONTEND_LOG_FILE" 2>&1 &
     echo $! > "$FRONTEND_DIR/.deploy.pid"
   )
 }

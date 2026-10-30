@@ -29,6 +29,7 @@ class UserOverviewItem(BaseModel):
     role: str
     is_active: bool
     kyc_status: str
+    is_email_verified: bool = False
     created_at: datetime
     campaign_count: int
     total_raised: float

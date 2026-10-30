@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
-import { useAdminUsers, useUpdateAdminUserStatus } from "@/hooks/use-frontend-data";
+import { useAdminUsers, useSendVerificationEmails, useUnverifiedEmailSummary, useUpdateAdminUserStatus } from "@/hooks/use-frontend-data";
 import { AdminUserOverview } from "@/types/frontend";
 
 const BLUE = "#14784a";
@@ -37,6 +37,9 @@ export default function AdminUsersPage() {
   const updateStatus = useUpdateAdminUserStatus();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [unverifiedOnly, setUnverifiedOnly] = useState(false);
+  const { data: emailSummary } = useUnverifiedEmailSummary();
+  const sendVerification = useSendVerificationEmails();
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
   const showToast = (msg: string, ok: boolean) => {
@@ -44,7 +47,24 @@ export default function AdminUsersPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const rows = (data ?? []).filter((u) =>
+  const emailUnverified = (data ?? []).filter((u) => u.is_email_verified === false).length;
+
+  const sendToUnverified = async () => {
+    const count = emailSummary?.will_send ?? 0;
+    if (!count) {
+      showToast(emailSummary?.unverified ? "Everyone unverified was emailed in the last 24 hours" : "Every active user has verified their email", true);
+      return;
+    }
+    if (!window.confirm(`Email a one-click verification link to ${count} unverified user${count === 1 ? "" : "s"}? Anyone emailed in the last 24 hours is skipped.`)) return;
+    try {
+      const { queued } = await sendVerification.mutateAsync();
+      showToast(`Sending verification emails to ${queued} user${queued === 1 ? "" : "s"}`, true);
+    } catch {
+      showToast("Couldn't start sending — try again", false);
+    }
+  };
+
+  const rows = (data ?? []).filter((u) => !unverifiedOnly || u.is_email_verified === false).filter((u) =>
     !search ||
     u.full_name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -72,8 +92,22 @@ export default function AdminUsersPage() {
         <motion.div {...fadeUp(0)} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
           <div>
             <div style={{ fontSize: 22, fontWeight: 900, color: "#15201a", letterSpacing: "-0.03em" }}>Users</div>
-            <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>{total} total accounts</div>
+            <div style={{ fontSize: 13, color: "#626d66", marginTop: 4 }}>
+              {total} {unverifiedOnly ? "with an unverified email" : "total accounts"}
+              {emailUnverified > 0 && !unverifiedOnly && <> · <button type="button" onClick={() => { setUnverifiedOnly(true); setPage(1); }} style={{ border: "none", background: "none", padding: 0, color: "#b9500b", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>{emailUnverified} unverified email{emailUnverified === 1 ? "" : "s"}</button></>}
+              {unverifiedOnly && <> · <button type="button" onClick={() => { setUnverifiedOnly(false); setPage(1); }} style={{ border: "none", background: "none", padding: 0, color: BLUE, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Show everyone</button></>}
+            </div>
           </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button
+            type="button"
+            onClick={() => void sendToUnverified()}
+            disabled={sendVerification.isPending}
+            title="Email a one-click verification link to every active user who hasn't confirmed their email"
+            style={{ padding: "9px 14px", borderRadius: 9, border: "none", background: BLUE, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: sendVerification.isPending ? 0.6 : 1 }}
+          >
+            {sendVerification.isPending ? "Sending…" : `Email unverified users${emailSummary ? ` (${emailSummary.will_send})` : ""}`}
+          </button>
           <input
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -83,6 +117,7 @@ export default function AdminUsersPage() {
               background: "#fff", color: "#15201a", fontSize: 13, outline: "none", width: 260,
             }}
           />
+          </div>
         </motion.div>
 
         <motion.div {...fadeUp(0.06)}>
@@ -120,6 +155,7 @@ export default function AdminUsersPage() {
                 <div data-label="User">
                   <Link href={`/admin/users/${u.id}/view`} style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#15201a", textDecoration: "none" }}>{u.full_name}</Link>
                   <div style={{ fontSize: 11, color: "#6e7872" }}>{u.email}</div>
+                  {u.is_email_verified === false && <div style={{ fontSize: 10, fontWeight: 700, color: "#b9500b", textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 2 }}>Email unverified</div>}
                   {u.wave_number && <div style={{ fontSize: 11, color: "#6e7872", fontFamily: "monospace" }}>{u.wave_number}</div>}
                 </div>
                 <div data-label="Role">

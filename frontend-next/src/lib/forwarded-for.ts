@@ -1,5 +1,3 @@
-import type { NextRequest } from "next/server";
-
 /**
  * Headers that pass the browser's IP on to the backend for its per-IP rate
  * limits. This server reaches the API from Vercel's shared IPs, so it names the
@@ -10,7 +8,7 @@ import type { NextRequest } from "next/server";
  * the header with the client IP, and nginx appends the connecting IP after
  * anything the client sent.
  */
-export function forwardedForHeaders(request: NextRequest): Record<string, string> {
+export function forwardedForHeaders(request: { headers: { get(name: string): string | null } }): Record<string, string> {
   const forwardedFor = request.headers.get("x-forwarded-for");
   const clientIp = forwardedFor?.split(",").pop()?.trim();
   const secret = process.env.INTERNAL_PROXY_SECRET;

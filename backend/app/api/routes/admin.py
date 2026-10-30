@@ -1,7 +1,7 @@
 from typing import List, Optional
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Body
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -29,6 +29,7 @@ from app.services.fees import withdrawal_fee
 from app.services.money import floor_dalasi, split_whole_dalasi
 from app.services.payout_service import apply_payout_status, normalize_gateway_status
 from app.services.admin_overview import campaign_overview, user_overview
+from app.services import email_verification
 from app.services.campaign_audit import (
     TotalChangedError,
     WriteOffNotAllowedError,
@@ -91,6 +92,50 @@ async def campaign_overview_for_admin(
     if overview is None:
         raise HTTPException(status_code=404, detail="Campaign not found")
     return overview
+
+
+@router.get("/users/unverified-email-summary")
+async def unverified_email_summary(
+    db: AsyncSession = Depends(get_db),
+    _admin_user: User = Depends(get_admin_user),
+):
+    """How many active users haven't confirmed their email, and how many of
+    them a bulk send would reach (those not emailed in the last 24 hours)."""
+    return await email_verification.unverified_summary(db)
+
+
+@router.post("/users/send-verification-emails")
+async def send_verification_emails_to_unverified(
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(get_admin_user),
+):
+    """Email a one-click verification link to every active, unverified user
+    not emailed in the last 24 hours. Sending runs in the background, paced
+    for the email provider."""
+    user_ids = await email_verification.queue_bulk_verification_emails(db, admin_user)
+    if user_ids:
+        background_tasks.add_task(email_verification.send_bulk_verification_emails, user_ids)
+    return {"queued": len(user_ids)}
+
+
+@router.post("/users/{user_id}/send-verification-email")
+async def send_verification_email_to_user(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(get_admin_user),
+):
+    """Email one user a one-click verification link."""
+    user = (await db.execute(select(User).where(User.id == user_id))).scalars().first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.is_email_verified:
+        raise HTTPException(status_code=409, detail="This user's email is already verified")
+    if not user.email:
+        raise HTTPException(status_code=400, detail="This user has no email address")
+    if not await email_verification.send_one(db, user, admin_user):
+        raise HTTPException(status_code=502, detail="The email couldn't be sent; try again shortly")
+    return {"sent": True, "email": user.email}
 
 
 @router.get("/users/{user_id}/overview")
@@ -655,6 +700,7 @@ async def list_users_overview(
             role=user.role,
             is_active=user.is_active,
             kyc_status=user.kyc_status,
+            is_email_verified=bool(user.is_email_verified),
             created_at=user.created_at,
             campaign_count=campaign_count,
             total_raised=total_raised,
@@ -698,6 +744,7 @@ async def get_user_detail(
         role=user.role,
         is_active=user.is_active,
         kyc_status=user.kyc_status,
+        is_email_verified=bool(user.is_email_verified),
         created_at=user.created_at,
         campaign_count=campaign_count,
         total_raised=total_raised,
@@ -757,6 +804,7 @@ async def update_user_status(
         role=user.role,
         is_active=user.is_active,
         kyc_status=user.kyc_status,
+        is_email_verified=bool(user.is_email_verified),
         created_at=user.created_at,
         campaign_count=campaign_count,
         total_raised=total_raised,

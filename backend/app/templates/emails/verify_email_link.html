@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block preheader %}One click to confirm your {{ app_name }} email address.{% endblock %}
+{% block eyebrow %}Email verification{% endblock %}
+{% block heading %}Confirm your email{% endblock %}
+{% block intro %}Hi {{ full_name }}, your {{ app_name }} email address hasn't been confirmed yet. Confirming it lets us send you donation receipts, campaign updates and account alerts.{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="button-wrap" style="text-align: center; padding-top: 6px;">
+      <a class="button" href="{{ verify_url }}" target="_blank" rel="noopener">Confirm my email</a>
+    </div>
+
+    <p class="muted" style="margin-top: 16px; text-align: center;">This link works for {{ valid_days }} days. If you didn't create a {{ app_name }} account, you can ignore this email.</p>
+  </div>
+{% endblock %}
